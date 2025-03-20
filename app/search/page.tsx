@@ -85,7 +85,7 @@ export default function SearchPage() {
 
   console.log("results are ", results);
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="w-full mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Search Page</h1>
       <SearchBar onChange={handleSearchChange} value={searchTerm} />
       <LimitDropdown onChange={onLimitChange} value={limit} />

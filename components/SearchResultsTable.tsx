@@ -7,6 +7,7 @@ import {
   flexRender,
   createColumnHelper,
 } from "@tanstack/react-table";
+import { Transition } from "@headlessui/react";
 import type { ClinicalTrial } from "@/types/clinicalTrials";
 
 const columnHelper = createColumnHelper<ClinicalTrial>();
@@ -51,8 +52,8 @@ const columns = [
       id: "conditions",
       header: "Conditions",
       cell: (info) => {
-        if (!info.getValue()) return null;
-        (info.getValue() as string[]).join(", ");
+        const conditions = info.getValue() as string[];
+        return conditions ? conditions.join(", ") : "";
       },
     },
   ),
@@ -65,7 +66,7 @@ const columns = [
     },
   ),
   columnHelper.accessor(
-    (row) => row.protocolSection?.statusModule.completionDateStruct?.date,
+    (row) => row.protocolSection.statusModule.completionDateStruct?.date,
     {
       id: "completionDate",
       header: "Completion Date",
@@ -86,34 +87,54 @@ export default function SearchResultsTable({ data }: ClinicalTrialsTableProps) {
   });
 
   return (
-    <table className="min-w-full border-collapse">
-      <thead>
+    <div role="table" className="min-w-full border-collapse">
+      {/* Header */}
+      <div role="rowgroup" className="bg-gray-50">
         {table.getHeaderGroups().map((headerGroup) => (
-          <tr key={headerGroup.id}>
+          <div role="row" key={headerGroup.id} className="flex">
             {headerGroup.headers.map((header) => (
-              <th key={header.id} className="px-4 py-2 border-b text-left">
+              <div
+                role="columnheader"
+                key={header.id}
+                className="px-4 py-2 border-b font-medium flex-1"
+              >
                 {header.isPlaceholder
                   ? null
                   : flexRender(
                       header.column.columnDef.header,
                       header.getContext(),
                     )}
-              </th>
+              </div>
             ))}
-          </tr>
+          </div>
         ))}
-      </thead>
-      <tbody>
+      </div>
+      {/* Body */}
+      <div role="rowgroup">
         {table.getRowModel().rows.map((row) => (
-          <tr key={row.id}>
+          <Transition
+            as="div"
+            key={row.id}
+            appear={true}
+            show={true}
+            enter="transition-opacity duration-500"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            role="row"
+            className="flex"
+          >
             {row.getVisibleCells().map((cell) => (
-              <td key={cell.id} className="px-4 py-2 border-b">
+              <div
+                role="cell"
+                key={cell.id}
+                className="px-4 py-2 border-b flex-1"
+              >
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </td>
+              </div>
             ))}
-          </tr>
+          </Transition>
         ))}
-      </tbody>
-    </table>
+      </div>
+    </div>
   );
 }

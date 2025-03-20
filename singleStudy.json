@@ -1,42 +1,46 @@
 {
   "protocolSection": {
     "identificationModule": {
-      "nctId": "NCT06877299",
-      "orgStudyIdInfo": { "id": "IHC-003" },
-      "organization": { "fullName": "Sichuan University", "class": "OTHER" },
-      "briefTitle": "Low-Dose Radiation + SBRT + Tislelizumab Plus Platinum-based Chemotherapy in Stage ⅡA-ⅢB Non-small Cell Lung Cancer",
-      "officialTitle": "Low-Dose Radiation + Stereotactic Body Radiotherapy Followed by Tislelizumab Plus Platinum-based Chemotherapy As Neoadjuvant Therapy in Patients with Resectable StageⅡA-ⅢB Non-small Cell Lung Cancer"
+      "nctId": "NCT06885060",
+      "orgStudyIdInfo": { "id": "347961" },
+      "organization": {
+        "fullName": "Child And Adult Neurodevelopment Assessment Ltd",
+        "class": "OTHER"
+      },
+      "briefTitle": "Exploring Eye Vergence Markers ADHD) and ASD",
+      "officialTitle": "Exploring Eye Vergence Markers in Attention Deficit Hyperactivity Disorder (ADHD) and Autism Spectrum Disorder (ASD)."
     },
     "statusModule": {
       "statusVerifiedDate": "2025-03",
-      "overallStatus": "NOT_YET_RECRUITING",
+      "overallStatus": "RECRUITING",
       "expandedAccessInfo": { "hasExpandedAccess": false },
-      "startDateStruct": { "date": "2025-03-10", "type": "ESTIMATED" },
+      "startDateStruct": { "date": "2025-02-01", "type": "ACTUAL" },
       "primaryCompletionDateStruct": {
-        "date": "2027-07-01",
+        "date": "2026-07-31",
         "type": "ESTIMATED"
       },
-      "completionDateStruct": { "date": "2028-01-01", "type": "ESTIMATED" },
-      "studyFirstSubmitDate": "2025-03-10",
-      "studyFirstSubmitQcDate": "2025-03-10",
+      "completionDateStruct": { "date": "2027-01-31", "type": "ESTIMATED" },
+      "studyFirstSubmitDate": "2025-03-07",
+      "studyFirstSubmitQcDate": "2025-03-12",
       "studyFirstPostDateStruct": {
-        "date": "2025-03-14",
+        "date": "2025-03-19",
         "type": "ESTIMATED"
       },
-      "lastUpdateSubmitDate": "2025-03-10",
+      "lastUpdateSubmitDate": "2025-03-12",
       "lastUpdatePostDateStruct": {
-        "date": "2025-03-14",
+        "date": "2025-03-19",
         "type": "ESTIMATED"
       }
     },
     "sponsorCollaboratorsModule": {
       "responsibleParty": {
-        "type": "PRINCIPAL_INVESTIGATOR",
-        "investigatorFullName": "You Lu",
-        "investigatorTitle": "Chair of Division of Thoracic Tumor Multimodality Treatment",
-        "investigatorAffiliation": "Sichuan University"
+        "type": "SPONSOR_INVESTIGATOR",
+        "investigatorFullName": "Elizabeth Kilbey",
+        "investigatorTitle": "Consultant Clinical Psychologist",
+        "investigatorAffiliation": "Child And Adult Neurodevelopment Assessment Ltd"
       },
-      "leadSponsor": { "name": "Sichuan University", "class": "OTHER" }
+      "leadSponsor": { "name": "Elizabeth Kilbey", "class": "OTHER" },
+      "collaborators": [{ "name": "Braingaze", "class": "INDUSTRY" }]
     },
     "oversightModule": {
       "oversightHasDmc": false,
@@ -45,145 +49,309 @@
       "isUsExport": false
     },
     "descriptionModule": {
-      "briefSummary": "This phase II study aims to evaluate the efficacy and safety of low-dose radiation + SBRT + Tislelizumab plus platinum-based chemotherapy as neoadjuvant therapy for stage II-III non-small cell lung cancer.",
-      "detailedDescription": "All eligible patients will receive LDRT combined with partial SBRT, followed by PD-1 inhibitors plus platinum-based chemotherapy, initiated within 7 days after completing radiation. PD-1 inhibitors and chemotherapy will be administered at the recommended doses according to the instruction manual every 3 weeks, with 3 cycles planned as neoadjuvant therapy. Surgery will be performed within 4 to 6 weeks (+7 days) after completing the final cycle of immunochemotherapy.\n\nMain objective and endpoint: the rate of pathological complete response (pCR) in the resected primary tumor and lymph nodes."
+      "briefSummary": "The investigators study aims to evaluate the utility of eye vergence, an eye-tracking measure, as an indicator of visuo-spatial attention in children aged 4-17 years and adults, using computer-based eye-tracking tasks. Eye vergence, a binocular movement crucial for depth perception, has recently been linked to attentional control and neurodevelopmental conditions (NDCs) like ADHD and ASD. The investigators will work with children and adults from the CAN and Beckenham clinical centres to explore the relationship between eye vergence and diagnostic categories, potentially identifying subgroups with specific or overlapping attentional differences. This research may aid in the early detection of attention deficits, informing targeted treatments.\n\nThe investigators will compare neuropsychological and behavioural data from routine clinical sessions with neurophysiological data collected via eye-tracking in a large sample of children aged 7-17 and adults with ADHD and ASD. These clinical measures are well-validated. The study will assess the modulation of eye vergence, pupil size, and head movements across tasks that target different attentional processes, such as orienting, disengaging, inhibiting, and sustaining attention. These tasks will be adapted from both Braingaze's battery and other validated eye-tracking tasks.\n\nAdditionally, the investigators will explore whether AI can enhance the accuracy of rating scales and questionnaires used to measure ADHD and ASD symptoms in children and adults. With consent, the investigators will use data from previously diagnosed patients collected during routine assessments at the CAN and Beckenham centres.\n\nThe investigators will also test the accuracy of using a smartphone selfie camera as an eye tracker. In a subset of 50 children (25 clinical and 25 controls), the investigators will evaluate this technology for its ability to measure eye vergence and identify attentional differences.\n\nThis study qualifies as basic science because it aims to explore fundamental mechanisms of eye vergence and its relationship with attention, rather than evaluating or marketing a medical device for diagnosis or treatment. The primary objective is to understand how eye vergence, as a neurophysiological measure, correlates with attentional processes in individuals with ADHD and ASD. Although the study utilizes an eye-tracking device, it does so as a research tool to collect data on visual and cognitive processes. The focus is on expanding the knowledge of cognitive function and attention regulation in neurodevelopmental conditions, not on testing or validating the device for clinical use. This distinction makes the study appropriate for review by the receiving REC as basic scientific research, rather than as a clinical trial of a medical device."
     },
     "conditionsModule": {
-      "conditions": ["Lung Cancer", "Non-small Cell Lung Cancer"],
+      "conditions": [
+        "Attention Deficit Hyperactivity Disorder (ADHD)",
+        "Autism Spectrum Disorder (ASD)"
+      ],
       "keywords": [
-        "NSCNC",
-        "Neoadjuvant",
-        "Low Dose Radiotherapy",
-        "Stereotactic Body Radiotherapy",
-        "Immunotherapy"
+        "ADHD",
+        "ASD",
+        "Attention Deficit Hyperactivity Disorder",
+        "Autism Spectrum Disorder",
+        "Autism",
+        "Inattention",
+        "Impulsivity",
+        "Eye Vergence",
+        "Eye Tracking",
+        "Hyperactivity",
+        "Cognitive Eye Vergence",
+        "BGaze Clinic",
+        "Bio-marker"
       ]
     },
     "designModule": {
-      "studyType": "INTERVENTIONAL",
-      "phases": ["PHASE2"],
+      "studyType": "OBSERVATIONAL",
+      "patientRegistry": false,
       "designInfo": {
-        "allocation": "NA",
-        "interventionModel": "SINGLE_GROUP",
-        "interventionModelDescription": "Single Group Assignment",
-        "primaryPurpose": "TREATMENT",
-        "maskingInfo": { "masking": "NONE" }
+        "observationalModel": "CASE_CONTROL",
+        "timePerspective": "PROSPECTIVE"
       },
-      "enrollmentInfo": { "count": 30, "type": "ESTIMATED" }
+      "enrollmentInfo": { "count": 200, "type": "ESTIMATED" }
     },
     "armsInterventionsModule": {
       "armGroups": [
         {
-          "label": "Radiation therapy combined with PD-1 inhibitor and chemotherapy group",
-          "type": "EXPERIMENTAL",
-          "description": "Low-Dose Radiation(2Gy\\*2d) +Stereotactic body radiation therapy (10Gy\\*3d) followed by Tislelizumab (200mg) with platinum-based doublet chemotherapy administered pre-operatively every 3 weeks for 3 cycles before surgical resection.",
+          "label": "ADHD Group",
+          "description": "Patients who have a diagnosis of ADHD (but not ASD), either prior to, or diagnosed during, the duration of their participation in the study.",
           "interventionNames": [
-            "Drug: Low-Dose Radiation(LDRT) + Stereotactic body radiotherapy (SBRT)"
+            "Device: BGaze ADHD Diagnostic Test",
+            "Device: Oddball/Alerting Computer Task",
+            "Device: Facical Emotion Computer Task"
+          ]
+        },
+        {
+          "label": "ASD Group",
+          "description": "Patients who have a diagnosis of ASD (but not ADHD), either prior to, or diagnosed during, the duration of their participation in the study.",
+          "interventionNames": [
+            "Device: BGaze ADHD Diagnostic Test",
+            "Device: Oddball/Alerting Computer Task",
+            "Device: Facical Emotion Computer Task"
+          ]
+        },
+        {
+          "label": "Combined Group",
+          "description": "Patients who have a combined diagnosis of ADHD and ASD, either prior to, or diagnosed during, the duration of their participation in the study.",
+          "interventionNames": [
+            "Device: BGaze ADHD Diagnostic Test",
+            "Device: Oddball/Alerting Computer Task",
+            "Device: Facical Emotion Computer Task"
+          ]
+        },
+        {
+          "label": "Control Group",
+          "description": "Patients who do not have a diagnosis of neither ADHD and/or ASD, and do not show traits of either diagnosis.",
+          "interventionNames": [
+            "Device: BGaze ADHD Diagnostic Test",
+            "Device: Oddball/Alerting Computer Task",
+            "Device: Facical Emotion Computer Task"
           ]
         }
       ],
       "interventions": [
         {
-          "type": "DRUG",
-          "name": "Low-Dose Radiation(LDRT) + Stereotactic body radiotherapy (SBRT)",
-          "description": "Low-Dose Radiation(LDRT) + Stereotactic body radiotherapy (SBRT)",
+          "type": "DEVICE",
+          "name": "BGaze ADHD Diagnostic Test",
+          "description": "The BGaze Clinic ADHD diagnostic test will be administered to all participants. This involves a computer-based task, where an eye-tracker will be recording their eye-movements.",
           "armGroupLabels": [
-            "Radiation therapy combined with PD-1 inhibitor and chemotherapy group"
-          ],
-          "otherNames": ["Drug: Tislelizumab", "Drug: Chemotherapy"]
+            "ADHD Group",
+            "ASD Group",
+            "Combined Group",
+            "Control Group"
+          ]
+        },
+        {
+          "type": "DEVICE",
+          "name": "Oddball/Alerting Computer Task",
+          "description": "Oddball/Alerting Computer Task will be completed by all participants while an eye-tracker records their eye movements.",
+          "armGroupLabels": [
+            "ADHD Group",
+            "ASD Group",
+            "Combined Group",
+            "Control Group"
+          ]
+        },
+        {
+          "type": "DEVICE",
+          "name": "Facical Emotion Computer Task",
+          "description": "The Facial Emotion Computer Task will also be completed by all participants while their eye movements are recorded using an eye-tracker.",
+          "armGroupLabels": [
+            "ADHD Group",
+            "ASD Group",
+            "Combined Group",
+            "Control Group"
+          ]
         }
       ]
     },
     "outcomesModule": {
       "primaryOutcomes": [
         {
-          "measure": "pCR rate",
-          "description": "pCR is defined as the absence of residual invasive cancer on hematoxylin and eosin stained slides of the resected lung specimen and lymph nodes following completion of neoadjuvant therapy",
-          "timeFrame": "From date of enrollment until one month after resection"
-        }
-      ],
-      "secondaryOutcomes": [
-        {
-          "measure": "MPR rate",
-          "description": "mPR is defined as ≤10% viable tumor cells in the resected primary tumor and all resected lymph nodes.",
-          "timeFrame": "From date of enrollment until one month after resection"
-        },
-        {
-          "measure": "R0-resection rate",
-          "timeFrame": "From date of enrollment until one month after resection"
-        },
-        {
-          "measure": "Event-free survival (EFS)",
-          "description": "EFS is defined as the time from enrollment to radiographic disease progression, local progression precluding surgery, inability to resect the tumor, local or distant recurrence, or death due to any cause.",
-          "timeFrame": "up to 2 years"
+          "measure": "To evaluate the sensitivity and specificity of cognitive eye vergence data, gathered using eye-tracking, for correctly identifying specific attentional deficits in patients with NDCs such as ADHD and ASD.",
+          "timeFrame": "From enrollment of the first participant, through to study completion after 2 years."
         }
       ]
     },
     "eligibilityModule": {
-      "eligibilityCriteria": "Inclusion Criteria:\n\n1. Age ≥ 18 and ≤ 75 years;\n2. Patients with untreated stage IIa-IIIB non-small cell lung cancer, diagnosed cytologically or histologically (according to the AJCC 9th edition of thoracic tumor staging);\n3. Pulmonary lesions will be assessed as resectable or potentially resectable by a multidisciplinary team, including a thoracic surgeon;\n4. At least one imaging-measurable lesion according to the Response Evaluation Criteria in Solid Tumors (RECIST v1.1);\n5. Ability to provide tumor tissue or cell wax blocks that meet quality control standards for PD-L1 expression testing.\n\nExclusion Criteria:\n\n1. The pathology is small cell lung cancer (SCLC), including lung cancer mixed with SCLC and non-small cell lung cancer (NSCLC)；\n2. Previously received the following therapies: anti-PD-1, anti-PD-L1 or anti-PD-L2 drugs or another drug that stimulates or synergistically inhibits T cell receptors;\n3. Subjects with any known or suspected autoimmune disorder or immunodeficiency, with the following exceptions: hypothyroidism, hormone therapy is not needed, or well controlled at physiological dose; controlled type I diabetes;\n4. Active infection requiring systemic treatment.",
-      "healthyVolunteers": false,
+      "eligibilityCriteria": "Inclusion Criteria:\n\n* Clinical Groups: Patients currently undergoing or who have previously undergone an assessment for either ADHD and/or Autism at either the CAN centre or Dr Kilbey's private practice in Beckenham.\n* Control Group: Subjects without a diagnosis of either ADHD nor Autism, who show no traits of these conditions.\n* People of any gender/sex who are aged older than 6 years old.\n\nExclusion Criteria:\n\n* Those with non-corrected vision - e.g. near-sightedness, far-sightedness, strabismus or nystagmus\n* Individuals with any other oculomotor deficiency, blindness or vision loss.",
+      "healthyVolunteers": true,
       "sex": "ALL",
-      "minimumAge": "18 Years",
-      "maximumAge": "75 Years",
-      "stdAges": ["ADULT", "OLDER_ADULT"]
+      "minimumAge": "6 Years",
+      "stdAges": ["CHILD", "ADULT", "OLDER_ADULT"],
+      "studyPopulation": "Individuals from the Southeast of England, who are able to travel to either New Malden or Beckenham to partake in the study.",
+      "samplingMethod": "NON_PROBABILITY_SAMPLE"
     },
     "contactsLocationsModule": {
       "centralContacts": [
         {
-          "name": "Jianxin Xue, MD. Phd",
+          "name": "Elizabeth A Kilbey, BSc MSc MA DClinPsy CPsychol",
           "role": "CONTACT",
-          "phone": "18982251798",
-          "email": "killercell@163.com"
+          "phone": "+44 7941 020746",
+          "email": "elizabeth@drkilbey.com"
         },
         {
-          "name": "You Lu, MD. PhD",
+          "name": "Hannah L Lawton, BSc(Hons) MSc",
           "role": "CONTACT",
-          "phone": "+86 189 8060 1763",
-          "email": "radyoulu@hotmail.com"
+          "phone": "+44 7729 194143",
+          "email": "hannah.lawton@cancentre.co.uk"
         }
       ],
       "overallOfficials": [
         {
-          "name": "You Lu, MD. PhD",
-          "affiliation": "Study Principal Investigator",
-          "role": "PRINCIPAL_INVESTIGATOR"
+          "name": "Hans A Super, BSc MSc PhD",
+          "affiliation": "Braingaze & University of Barcelona",
+          "role": "STUDY_DIRECTOR"
         }
       ],
       "locations": [
         {
-          "facility": "West China Hospital of Sichuan University",
-          "city": "Chengdu",
-          "zip": "610041",
-          "country": "China",
-          "geoPoint": { "lat": 30.66667, "lon": 104.06667 }
+          "facility": "Braingaze SL",
+          "status": "RECRUITING",
+          "city": "Barcelona",
+          "state": "Catalonia",
+          "zip": "08302",
+          "country": "Spain",
+          "contacts": [
+            {
+              "name": "Hans A Super, BSc MSc PhD",
+              "role": "CONTACT",
+              "phone": "+34 654 551 250",
+              "email": "hans@braingaze.com"
+            },
+            { "name": "Hans A Super, BSc MSc PhD", "role": "CONTACT" }
+          ],
+          "geoPoint": { "lat": 41.38879, "lon": 2.15899 }
+        },
+        {
+          "facility": "The Dr Kilbey Practice",
+          "status": "RECRUITING",
+          "city": "Beckenham",
+          "state": "London",
+          "zip": "BR3 5AA",
+          "country": "United Kingdom",
+          "contacts": [
+            {
+              "name": "Elizabeth A Kilbey, BSc MSc MA DClinPsy CPsychol",
+              "role": "CONTACT",
+              "phone": "+44 7941 020746",
+              "email": "elizabeth@drkilbey.com"
+            },
+            {
+              "name": "Elizabeth A Kilbey, BSc MSc MA DClinPsy CPsychol",
+              "role": "CONTACT"
+            }
+          ],
+          "geoPoint": { "lat": 51.40878, "lon": -0.02526 }
+        },
+        {
+          "facility": "Child and Adult Neurodevelopment Assessment Ltd",
+          "status": "RECRUITING",
+          "city": "New Malden",
+          "state": "London",
+          "zip": "KT3 4BH",
+          "country": "United Kingdom",
+          "contacts": [
+            {
+              "name": "Hannah L Lawton, BSc(Hons) MSc",
+              "role": "CONTACT",
+              "phone": "+44 7729 194143",
+              "email": "hannah.lawton@cancentre.co.uk"
+            },
+            { "name": "Hannah L Lawton, BSc(Hons) MSc", "role": "CONTACT" },
+            {
+              "name": "Elizabeth A Kilbey, BSc MSc MA DClinPsy CPsychol",
+              "role": "CONTACT"
+            },
+            { "name": "Becca Seed, BSc(Hons)", "role": "CONTACT" },
+            { "name": "Becca Salmon, BSc MSc DClinPsy", "role": "CONTACT" }
+          ],
+          "geoPoint": { "lat": 51.40065, "lon": -0.2617 }
         }
       ]
     },
     "referencesModule": {
       "references": [
         {
-          "pmid": "37581611",
+          "pmid": "38339605",
           "type": "BACKGROUND",
-          "citation": "Zhou X, Zhou L, Yao Z, Huang M, Gong Y, Zou B, Zhu J, Liu Y, Peng F, Zhang Y, Yu M, Li Y, Na F, Wu Y, Kang K, Xiu W, Zhang X, Zhou L, Xu Y, Wang J, Wang Y, Yang X, Wu Y, Li R, Zhang Y, Yang Z, Zhou Z, Bai J, Yi X, Tong R, Yin L, Chen C, Niedermann G, Lu Y, Xue J. Safety and Tolerability of Low-Dose Radiation and Stereotactic Body Radiotherapy + Sintilimab for Treatment-Naive Stage IV PD-L1+ Non-Small Cell Lung Cancer Patients. Clin Cancer Res. 2023 Oct 13;29(20):4098-4108. doi: 10.1158/1078-0432.CCR-23-0315."
+          "citation": "Romeo A, Leonovych O, Sole Puig M, Super H. Cognitive Vergence Recorded with a Webcam-Based Eye-Tracker during an Oddball Task in an Elderly Population. Sensors (Basel). 2024 Jan 30;24(3):888. doi: 10.3390/s24030888."
         },
         {
-          "pmid": "32417411",
           "type": "BACKGROUND",
-          "citation": "Yin L, Xue J, Li R, Zhou L, Deng L, Chen L, Zhang Y, Li Y, Zhang X, Xiu W, Tong R, Gong Y, Huang M, Xu Y, Zhu J, Yu M, Li M, Lan J, Wang J, Mo X, Wei Y, Niedermann G, Lu Y. Effect of Low-Dose Radiation Therapy on Abscopal Responses to Hypofractionated Radiation Therapy and Anti-PD1 in Mice and Patients With Non-Small Cell Lung Cancer. Int J Radiat Oncol Biol Phys. 2020 Sep 1;108(1):212-224. doi: 10.1016/j.ijrobp.2020.05.002. Epub 2020 May 15."
+          "citation": "Hashemi, A. et al. (2023) 'Classification of MCI patients using vergence eye movements and pupil responses obtained during a visual oddball test', Aging and Health Research, 3(1), p. 100121. Available at: https://doi.org/10.1016/j.ahr.2023.100121"
         },
         {
-          "pmid": "39305910",
+          "pmid": "33930603",
           "type": "BACKGROUND",
-          "citation": "Zhao ZR, Liu SL, Zhou T, Chen G, Long H, Su XD, Zhang X, Fu JH, Lin P, Zhang LJ, Rong TH, Wu JD, Li ZC, Su HL, Chen JY, Yang YP, Lin YB, Xi M, Yang H. Stereotactic body radiotherapy with sequential tislelizumab and chemotherapy as neoadjuvant therapy in patients with resectable non-small-cell lung cancer in China (SACTION01): a single-arm, single-centre, phase 2 trial. Lancet Respir Med. 2024 Dec;12(12):988-996. doi: 10.1016/S2213-2600(24)00215-7. Epub 2024 Sep 18."
+          "citation": "Bast N, Boxhoorn S, Super H, Helfer B, Polzer L, Klein C, Cholemkery H, Freitag CM. Atypical Arousal Regulation in Children With Autism but Not With Attention-Deficit/Hyperactivity Disorder as Indicated by Pupillometric Measures of Locus Coeruleus Activity. Biol Psychiatry Cogn Neurosci Neuroimaging. 2023 Jan;8(1):11-20. doi: 10.1016/j.bpsc.2021.04.010. Epub 2021 Apr 27."
         },
         {
-          "pmid": "39581197",
           "type": "BACKGROUND",
-          "citation": "Yue D, Wang W, Liu H, Chen Q, Chen C, Liu L, Zhang P, Zhao G, Yang F, Han G, Cheng Y, Yu B, Yang Y, Chen H, Jiang J, Tan L, Xu S, Mao N, Hu J, Zhang L, Yao B, Wang S, Wang RH, Zheng W, Wang C; RATIONALE-315 investigators. Perioperative tislelizumab plus neoadjuvant chemotherapy for patients with resectable non-small-cell lung cancer (RATIONALE-315): an interim analysis of a randomised clinical trial. Lancet Respir Med. 2025 Feb;13(2):119-129. doi: 10.1016/S2213-2600(24)00269-8. Epub 2024 Nov 21."
+          "citation": "Bustos-Valenzuela, P. et al. (2022) 'Atypical cognitive vergence responses in children with attention deficit hyperactivity disorder but not with autism spectrum disorder in a facial emotion recognition task', Psychiatry Research Communications, 2(2), p. 100045. Available at: https://doi.org/10.1016/j.psycom.2022.100045"
         },
         {
-          "pmid": "35403841",
+          "pmid": "34024820",
           "type": "BACKGROUND",
-          "citation": "Forde PM, Spicer J, Lu S, Provencio M, Mitsudomi T, Awad MM, Felip E, Broderick SR, Brahmer JR, Swanson SJ, Kerr K, Wang C, Ciuleanu TE, Saylors GB, Tanaka F, Ito H, Chen KN, Liberman M, Vokes EE, Taube JM, Dorange C, Cai J, Fiore J, Jarkowski A, Balli D, Sausen M, Pandya D, Calvet CY, Girard N; CheckMate 816 Investigators. Neoadjuvant Nivolumab plus Chemotherapy in Resectable Lung Cancer. N Engl J Med. 2022 May 26;386(21):1973-1985. doi: 10.1056/NEJMoa2202170. Epub 2022 Apr 11."
+          "citation": "Jimenez EC, Sierra-Marcos A, Romeo A, Hashemi A, Leonovych O, Bustos Valenzuela P, Sole Puig M, Super H. Altered Vergence Eye Movements and Pupil Response of Patients with Alzheimer's Disease and Mild Cognitive Impairment During an Oddball Task. J Alzheimers Dis. 2021;82(1):421-433. doi: 10.3233/JAD-201301."
+        },
+        {
+          "pmid": "31959011",
+          "type": "BACKGROUND",
+          "citation": "Jimenez EC, Avella-Garcia C, Kustow J, Cubbin S, Corrales M, Richarte V, Esposito FL, Morata I, Perera A, Varela P, Canete J, Faraone SV, Super H, Ramos-Quiroga JA. Eye Vergence Responses During an Attention Task in Adults With ADHD and Clinical Controls. J Atten Disord. 2021 Jul;25(9):1302-1310. doi: 10.1177/1087054719897806. Epub 2020 Jan 20."
+        },
+        {
+          "pmid": "34022640",
+          "type": "BACKGROUND",
+          "citation": "Sole Puig M, Romeo A, Super H. Vergence eye movements during figure-ground perception. Conscious Cogn. 2021 Jul;92:103138. doi: 10.1016/j.concog.2021.103138. Epub 2021 May 19."
+        },
+        {
+          "pmid": "32143068",
+          "type": "BACKGROUND",
+          "citation": "Jimenez EC, Romeo A, Perez Zapata L, Sole Puig M, Bustos-Valenzuela P, Canete J, Varela Casal P, Super H. Eye vergence responses in children with and without reading difficulties during a word detection task. Vision Res. 2020 Apr;169:6-11. doi: 10.1016/j.visres.2020.02.001. Epub 2020 Mar 3."
+        },
+        {
+          "pmid": "31853987",
+          "type": "BACKGROUND",
+          "citation": "Boxhoorn S, Bast N, Super H, Polzer L, Cholemkery H, Freitag CM. Pupil dilation during visuospatial orienting differentiates between autism spectrum disorder and attention-deficit/hyperactivity disorder. J Child Psychol Psychiatry. 2020 May;61(5):614-624. doi: 10.1111/jcpp.13179. Epub 2019 Dec 18."
+        },
+        {
+          "pmid": "30654274",
+          "type": "BACKGROUND",
+          "citation": "Esposito FL, Super H. Eye vergence responses to novel and familiar stimuli in young children. Acta Psychol (Amst). 2019 Feb;193:190-196. doi: 10.1016/j.actpsy.2019.01.007. Epub 2019 Jan 15."
+        },
+        {
+          "pmid": "29324520",
+          "type": "BACKGROUND",
+          "citation": "Esposito FL, Super H. Vergence responses to face stimuli in young children. Neuroreport. 2018 Feb 7;29(3):219-223. doi: 10.1097/WNR.0000000000000963."
+        },
+        {
+          "type": "BACKGROUND",
+          "citation": "Super, H. et al. (2017) 'Neurobiological marker for child and adult ADHD diagnoses', European Psychiatry, 41(S1), pp. S454-S455. Available at: https://doi:10.1016/j.eurpsy.2017.01.489"
+        },
+        {
+          "pmid": "28121809",
+          "type": "BACKGROUND",
+          "citation": "Sole Puig M, Romeo A, Canete Crespillo J, Super H. Eye vergence responses during a visual memory task. Neuroreport. 2017 Feb 8;28(3):123-127. doi: 10.1097/WNR.0000000000000734."
+        },
+        {
+          "pmid": "27973591",
+          "type": "BACKGROUND",
+          "citation": "Sole Puig M, Pallares JM, Perez Zapata L, Puigcerver L, Canete J, Super H. Attentional Selection Accompanied by Eye Vergence as Revealed by Event-Related Brain Potentials. PLoS One. 2016 Dec 14;11(12):e0167646. doi: 10.1371/journal.pone.0167646. eCollection 2016."
+        },
+        {
+          "pmid": "26694162",
+          "type": "BACKGROUND",
+          "citation": "Sole Puig M, Perez Zapata L, Puigcerver L, Esperalba Iglesias N, Sanchez Garcia C, Romeo A, Canete Crespillo J, Super H. Attention-Related Eye Vergence Measured in Children with Attention Deficit Hyperactivity Disorder. PLoS One. 2015 Dec 22;10(12):e0145281. doi: 10.1371/journal.pone.0145281. eCollection 2015."
+        },
+        {
+          "pmid": "24069140",
+          "type": "BACKGROUND",
+          "citation": "Sole Puig M, Puigcerver L, Aznar-Casanova JA, Super H. Difference in visual processing assessed by eye vergence movements. PLoS One. 2013 Sep 19;8(9):e72041. doi: 10.1371/journal.pone.0072041. eCollection 2013."
+        },
+        {
+          "pmid": "23382827",
+          "type": "BACKGROUND",
+          "citation": "Sole Puig M, Perez Zapata L, Aznar-Casanova JA, Super H. A role of eye vergence in covert attention. PLoS One. 2013;8(1):e52955. doi: 10.1371/journal.pone.0052955. Epub 2013 Jan 31."
+        }
+      ],
+      "seeAlsoLinks": [
+        { "label": "Braingaze Website", "url": "https://braingaze.com/" },
+        { "label": "CAN Website", "url": "https://www.cancentre.co.uk/" },
+        {
+          "label": "The Dr Kilbey Practice Website",
+          "url": "http://www.drkilbey.com/"
         }
       ]
     },
@@ -193,91 +361,139 @@
     "miscInfoModule": { "versionHolder": "2025-03-19" },
     "conditionBrowseModule": {
       "meshes": [
-        { "id": "D008175", "term": "Lung Neoplasms" },
-        { "id": "D002289", "term": "Carcinoma, Non-Small-Cell Lung" }
+        { "id": "D006948", "term": "Hyperkinesis" },
+        { "id": "D001321", "term": "Autistic Disorder" },
+        {
+          "id": "D001289",
+          "term": "Attention Deficit Disorder with Hyperactivity"
+        },
+        { "id": "D000067877", "term": "Autism Spectrum Disorder" },
+        { "id": "D002659", "term": "Child Development Disorders, Pervasive" }
       ],
       "ancestors": [
-        { "id": "D012142", "term": "Respiratory Tract Neoplasms" },
-        { "id": "D013899", "term": "Thoracic Neoplasms" },
-        { "id": "D009371", "term": "Neoplasms by Site" },
-        { "id": "D009369", "term": "Neoplasms" },
-        { "id": "D008171", "term": "Lung Diseases" },
-        { "id": "D012140", "term": "Respiratory Tract Diseases" },
-        { "id": "D002283", "term": "Carcinoma, Bronchogenic" },
-        { "id": "D001984", "term": "Bronchial Neoplasms" }
+        { "id": "D065886", "term": "Neurodevelopmental Disorders" },
+        { "id": "D001523", "term": "Mental Disorders" },
+        {
+          "id": "D019958",
+          "term": "Attention Deficit and Disruptive Behavior Disorders"
+        },
+        { "id": "D020820", "term": "Dyskinesias" },
+        { "id": "D009461", "term": "Neurologic Manifestations" },
+        { "id": "D009422", "term": "Nervous System Diseases" }
       ],
       "browseLeaves": [
         {
-          "id": "M11172",
-          "name": "Lung Neoplasms",
-          "asFound": "Lung Cancer",
+          "id": "M9999",
+          "name": "Hyperkinesis",
+          "asFound": "Hyperactivity",
           "relevance": "HIGH"
         },
         {
-          "id": "M5546",
-          "name": "Carcinoma, Non-Small-Cell Lung",
-          "asFound": "Non-small Cell Lung Cancer",
-          "relevance": "HIGH"
-        },
-        { "id": "M5534", "name": "Carcinoma", "relevance": "LOW" },
-        {
-          "id": "M14979",
-          "name": "Respiratory Tract Neoplasms",
-          "relevance": "LOW"
-        },
-        { "id": "M16658", "name": "Thoracic Neoplasms", "relevance": "LOW" },
-        { "id": "M11168", "name": "Lung Diseases", "relevance": "LOW" },
-        {
-          "id": "M14977",
-          "name": "Respiratory Tract Diseases",
-          "relevance": "LOW"
-        },
-        {
-          "id": "M5540",
-          "name": "Carcinoma, Bronchogenic",
-          "relevance": "LOW"
-        },
-        { "id": "M5260", "name": "Bronchial Neoplasms", "relevance": "LOW" }
-      ],
-      "browseBranches": [
-        { "abbrev": "BC04", "name": "Neoplasms" },
-        {
-          "abbrev": "BC08",
-          "name": "Respiratory Tract (Lung and Bronchial) Diseases"
-        },
-        { "abbrev": "All", "name": "All Conditions" }
-      ]
-    },
-    "interventionBrowseModule": {
-      "meshes": [{ "id": "C000707970", "term": "Tislelizumab" }],
-      "ancestors": [
-        {
-          "id": "D000074322",
-          "term": "Antineoplastic Agents, Immunological"
-        },
-        { "id": "D000970", "term": "Antineoplastic Agents" }
-      ],
-      "browseLeaves": [
-        {
-          "id": "M137899",
-          "name": "Tislelizumab",
-          "asFound": "Stable",
+          "id": "M4623",
+          "name": "Autistic Disorder",
+          "asFound": "Autism",
           "relevance": "HIGH"
         },
         {
-          "id": "M2853",
-          "name": "Immunomodulating Agents",
+          "id": "M4594",
+          "name": "Attention Deficit Disorder with Hyperactivity",
+          "asFound": "Attention Deficit Hyperactivity Disorder",
+          "relevance": "HIGH"
+        },
+        {
+          "id": "M206",
+          "name": "Autism Spectrum Disorder",
+          "asFound": "Autism Spectrum Disorder",
+          "relevance": "HIGH"
+        },
+        { "id": "M10220", "name": "Impulsive Behavior", "relevance": "LOW" },
+        {
+          "id": "M5903",
+          "name": "Child Development Disorders, Pervasive",
+          "asFound": "Autism Spectrum Disorder",
+          "relevance": "HIGH"
+        },
+        {
+          "id": "M5902",
+          "name": "Developmental Disabilities",
           "relevance": "LOW"
         },
         {
-          "id": "M1346",
-          "name": "Antineoplastic Agents, Immunological",
+          "id": "M30644",
+          "name": "Neurodevelopmental Disorders",
+          "relevance": "LOW"
+        },
+        { "id": "M4815", "name": "Mental Disorders", "relevance": "LOW" },
+        { "id": "M14473", "name": "Psychotic Disorders", "relevance": "LOW" },
+        {
+          "id": "M21830",
+          "name": "Attention Deficit and Disruptive Behavior Disorders",
+          "relevance": "LOW"
+        },
+        { "id": "M22574", "name": "Dyskinesias", "relevance": "LOW" },
+        {
+          "id": "M12404",
+          "name": "Neurologic Manifestations",
           "relevance": "LOW"
         }
       ],
       "browseBranches": [
-        { "abbrev": "ANeo", "name": "Antineoplastic Agents" },
-        { "abbrev": "All", "name": "All Drugs and Chemicals" }
+        { "abbrev": "BC10", "name": "Nervous System Diseases" },
+        { "abbrev": "BC23", "name": "Symptoms and General Pathology" },
+        { "abbrev": "All", "name": "All Conditions" },
+        { "abbrev": "BXM", "name": "Behaviors and Mental Disorders" }
+      ]
+    },
+    "interventionBrowseModule": {
+      "meshes": [{ "id": "D002110", "term": "Caffeine" }],
+      "ancestors": [
+        { "id": "D000697", "term": "Central Nervous System Stimulants" },
+        { "id": "D045505", "term": "Physiological Effects of Drugs" },
+        { "id": "D010726", "term": "Phosphodiesterase Inhibitors" },
+        { "id": "D004791", "term": "Enzyme Inhibitors" },
+        {
+          "id": "D045504",
+          "term": "Molecular Mechanisms of Pharmacological Action"
+        },
+        { "id": "D058915", "term": "Purinergic P1 Receptor Antagonists" },
+        { "id": "D058914", "term": "Purinergic Antagonists" },
+        { "id": "D058905", "term": "Purinergic Agents" },
+        { "id": "D018377", "term": "Neurotransmitter Agents" }
+      ],
+      "browseLeaves": [
+        {
+          "id": "M5373",
+          "name": "Caffeine",
+          "asFound": "Cellulite",
+          "relevance": "HIGH"
+        },
+        {
+          "id": "M4029",
+          "name": "Central Nervous System Stimulants",
+          "relevance": "LOW"
+        },
+        {
+          "id": "M13629",
+          "name": "Phosphodiesterase Inhibitors",
+          "relevance": "LOW"
+        },
+        { "id": "M7951", "name": "Enzyme Inhibitors", "relevance": "LOW" },
+        {
+          "id": "M20504",
+          "name": "Neurotransmitter Agents",
+          "relevance": "LOW"
+        },
+        {
+          "id": "T370",
+          "name": "Caffeine",
+          "asFound": "Cellulite",
+          "relevance": "HIGH"
+        }
+      ],
+      "browseBranches": [
+        { "abbrev": "CNSSti", "name": "Central Nervous System Stimulants" },
+        { "abbrev": "All", "name": "All Drugs and Chemicals" },
+        { "abbrev": "Ot", "name": "Other Dietary Supplements" }
       ]
     }
   },
