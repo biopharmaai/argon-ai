@@ -11,14 +11,15 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ onChange, value = "" }: SearchBarProps) {
-  console.log("value inside", value);
+  // console.log("value inside", value);
   const [searchTerm, setSearchTerm] = useState(value);
   // console.log("searchTerm inside", searchTerm);
 
   // Update local searchTerm state when the value prop changes (for hard refresh)
-  useEffect(() => {
-    setSearchTerm(value);
-  }, [value]);
+  // useEffect(() => {
+  //   setSearchTerm(value);
+  // }, [value]);
+
   // Create a debounced function using useMemo
   const debouncedSetSearchTerm = useMemo(
     () =>
@@ -31,6 +32,7 @@ export default function SearchBar({ onChange, value = "" }: SearchBarProps) {
   // Clean up the debounced function on unmount
   useEffect(() => {
     return () => {
+      console.error("cleaning up");
       debouncedSetSearchTerm.cancel();
     };
   }, [debouncedSetSearchTerm]);
@@ -43,6 +45,7 @@ export default function SearchBar({ onChange, value = "" }: SearchBarProps) {
   // Call onChange after the debounced searchTerm state updates
   useEffect(() => {
     console.log("firing onchange");
+    console.log("onchange searchTerm", searchTerm);
     onChange(searchTerm);
   }, [searchTerm, onChange]);
 

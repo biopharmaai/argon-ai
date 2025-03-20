@@ -40,10 +40,10 @@ export async function GET(req: Request) {
     if (term) {
       // Check term in conditions and keywords fields
       const conditionsStr = (
-        trial.protocolSection.conditionsModule.conditions?.join(" ") || ""
+        trial.protocolSection.conditionsModule?.conditions?.join(" ") || ""
       ).toLowerCase();
       const keywordsStr = (
-        trial.protocolSection.conditionsModule.keywords?.join(" ") || ""
+        trial.protocolSection.conditionsModule?.keywords?.join(" ") || ""
       ).toLowerCase();
       matchesTerm = conditionsStr.includes(term) || keywordsStr.includes(term);
     }

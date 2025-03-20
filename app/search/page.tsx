@@ -12,16 +12,22 @@ import { ClinicalTrial } from "@/types/clinicalTrials";
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [limit, setLimit] = useState(10);
+
+  const currentQuery = qs.parse(searchParams.toString());
+  const termFromUrl = (currentQuery.term as string) || "";
+  const limitFromUrl = Number((currentQuery.limit as string) || "10");
+  const [searchTerm, setSearchTerm] = useState(termFromUrl);
+  const [limit, setLimit] = useState(limitFromUrl);
   const [queryString, setQueryString] = useState("");
   const [results, setResults] = useState<ClinicalTrial[]>([]);
 
   useEffect(() => {
     const currentQuery = qs.parse(searchParams.toString());
     qs.parse(searchParams.toString());
-    const termFromUrl = (currentQuery.search as string) || "";
-    const limitFromUrl = (currentQuery.limit as string) || "10";
+    const termFromUrl = (currentQuery.term as string) || "";
+    const limitFromUrl = Number((currentQuery.limit as string) || "10");
+    console.log("term from url", termFromUrl);
+    console.log("limit from url", limitFromUrl);
     setLimit(Number(limitFromUrl));
     setSearchTerm(termFromUrl);
     setQueryString(qs.stringify(currentQuery));
@@ -30,9 +36,6 @@ export default function SearchPage() {
   }, []);
 
   useEffect(() => {
-    if (searchTerm.trim().length === 0) {
-      return;
-    }
     router.push(`?${queryString}`);
 
     const getData = async () => {
@@ -47,9 +50,11 @@ export default function SearchPage() {
   const handleSearchChange = useCallback(
     (term: string) => {
       // Get the current query parameters as an object
+
+      setSearchTerm(term);
       const currentQuery = qs.parse(searchParams.toString());
       // Update the search term in the query object
-      const newQuery = { ...currentQuery, search: term, page: 1 }; // Reset page on new search
+      const newQuery = { ...currentQuery, term: term, page: 1 }; // Reset page on new search
       // Stringify the new query object using qs
       const newQueryString = qs.stringify(newQuery);
       // Update the URL
@@ -61,6 +66,7 @@ export default function SearchPage() {
 
   const onLimitChange = useCallback(
     (newLimit: number) => {
+      console.log("limit change", newLimit);
       // Get the current query parameters as an object
       const currentQuery = qs.parse(searchParams.toString());
       // Update the limit in the query object
@@ -83,7 +89,10 @@ export default function SearchPage() {
     setSearchTerm(termFromUrl);
   }, [searchParams]);
 
-  console.log("results are ", results);
+  // console.log("results are ", results);
+  console.log("term", searchTerm);
+  console.log("limit", limit);
+
   return (
     <div className="w-full mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Search Page</h1>
