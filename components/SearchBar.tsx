@@ -11,21 +11,15 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ onChange, value = "" }: SearchBarProps) {
-  // console.log("value inside", value);
   const [searchTerm, setSearchTerm] = useState(value);
-  // console.log("searchTerm inside", searchTerm);
-
-  // Update local searchTerm state when the value prop changes (for hard refresh)
-  // useEffect(() => {
-  //   setSearchTerm(value);
-  // }, [value]);
 
   // Create a debounced function using useMemo
   const debouncedSetSearchTerm = useMemo(
     () =>
       debounce((newTerm: string) => {
-        setSearchTerm(newTerm);
+        onChange(newTerm);
       }, 50),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
@@ -39,15 +33,9 @@ export default function SearchBar({ onChange, value = "" }: SearchBarProps) {
 
   // Update the debounced state on input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
     debouncedSetSearchTerm(e.target.value);
   };
-
-  // Call onChange after the debounced searchTerm state updates
-  useEffect(() => {
-    console.log("firing onchange");
-    console.log("onchange searchTerm", searchTerm);
-    onChange(searchTerm);
-  }, [searchTerm, onChange]);
 
   return (
     <Transition

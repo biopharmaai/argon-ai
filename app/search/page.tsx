@@ -26,8 +26,6 @@ export default function SearchPage() {
     qs.parse(searchParams.toString());
     const termFromUrl = (currentQuery.term as string) || "";
     const limitFromUrl = Number((currentQuery.limit as string) || "10");
-    console.log("term from url", termFromUrl);
-    console.log("limit from url", limitFromUrl);
     setLimit(Number(limitFromUrl));
     setSearchTerm(termFromUrl);
     setQueryString(qs.stringify(currentQuery));
@@ -45,7 +43,7 @@ export default function SearchPage() {
       setResults(results.data);
     };
     getData();
-  }, [queryString, router, searchTerm]);
+  }, [queryString, router]);
   // Memoize handleSearchChange to avoid recreating it on every render
   const handleSearchChange = useCallback(
     (term: string) => {
