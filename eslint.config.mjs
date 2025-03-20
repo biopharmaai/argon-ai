@@ -10,7 +10,30 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...compat.extends(
+    "next/core-web-vitals",
+    "next/typescript",
+    "plugin:prettier/recommended", // Prettier plugin with recommended settings
+  ),
+  {
+    settings: {
+      "import/resolver": {
+        typescript: {
+          // Uses tsconfig.json to resolve imports
+          project: "./tsconfig.json",
+        },
+      },
+    },
+    rules: {
+      "prettier/prettier": [
+        "error",
+        {
+          endOfLine: "auto",
+        },
+      ],
+      "import/no-unresolved": "error", // Ensure imports resolve correctly
+    },
+  },
 ];
 
 export default eslintConfig;

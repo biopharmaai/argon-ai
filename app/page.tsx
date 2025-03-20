@@ -1,103 +1,217 @@
-import Image from "next/image";
+"use client";
+// app/search/page.tsx (if using Next.js App Router)
+import { useState } from "react";
+import { Transition } from "@headlessui/react";
+import { Search as SearchIcon } from "lucide-react";
 
-export default function Home() {
+export default function SearchPage() {
+  // State for query parameters
+  const [term, setTerm] = useState("");
+  const [limit, setLimit] = useState(10);
+  const [sortField, setSortField] = useState("");
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [studyTypeFilter, setStudyTypeFilter] = useState("");
+
+  // State for results and loading/error state
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Function to build querystring and fetch data
+  const handleSearch = async () => {
+    setLoading(true);
+    setError("");
+
+    // Base query string with term and limit
+    let queryString = `?term=${encodeURIComponent(term)}&limit=${limit}`;
+
+    // Append sort parameter if provided (e.g. sort=overallStatus:asc)
+    if (sortField) {
+      queryString += `&sort=${encodeURIComponent(sortField)}:${encodeURIComponent(sortDirection)}`;
+    }
+
+    // Append filters using bracket notation
+    if (statusFilter) {
+      queryString += `&filter[overallStatus]=${encodeURIComponent(statusFilter)}`;
+    }
+    if (studyTypeFilter) {
+      queryString += `&filter[studyType]=${encodeURIComponent(studyTypeFilter)}`;
+    }
+
+    try {
+      const res = await fetch(`/api/search${queryString}`);
+      const data = await res.json();
+      if (data.success) {
+        setResults(data.data);
+      } else {
+        setError("No data returned");
+      }
+    } catch (err) {
+      setError("Failed to fetch search results");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">Clinical Trials Search</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Search Term */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Search Term
+          </label>
+          <div className="relative mt-1">
+            <input
+              type="text"
+              value={term}
+              onChange={(e) => setTerm(e.target.value)}
+              placeholder="e.g. nsclc"
+              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring focus:border-blue-300"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <SearchIcon className="h-5 w-5 text-gray-400" />
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        {/* Limit */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Limit
+          </label>
+          <input
+            type="number"
+            value={limit}
+            onChange={(e) => setLimit(Number(e.target.value))}
+            className="mt-1 block w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring focus:border-blue-300"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        </div>
+
+        {/* Sort Field */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Sort Field
+          </label>
+          <select
+            value={sortField}
+            onChange={(e) => setSortField(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring focus:border-blue-300"
+          >
+            <option value="">None</option>
+            <option value="overallStatus">Overall Status</option>
+            <option value="officialTitle">Official Title</option>
+            <option value="briefTitle">Brief Title</option>
+          </select>
+        </div>
+
+        {/* Sort Direction */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Sort Direction
+          </label>
+          <select
+            value={sortDirection}
+            onChange={(e) => setSortDirection(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring focus:border-blue-300"
+          >
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </div>
+
+        {/* Filter by Overall Status */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Filter by Overall Status
+          </label>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring focus:border-blue-300"
+          >
+            <option value="">None</option>
+            <option value="RECRUITING">Recruiting</option>
+            <option value="NOT_YET_RECRUITING">Not Yet Recruiting</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="TERMINATED">Terminated</option>
+          </select>
+        </div>
+
+        {/* Filter by Study Type */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Filter by Study Type
+          </label>
+          <select
+            value={studyTypeFilter}
+            onChange={(e) => setStudyTypeFilter(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring focus:border-blue-300"
+          >
+            <option value="">None</option>
+            <option value="INTERVENTIONAL">Interventional</option>
+            <option value="OBSERVATIONAL">Observational</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <button
+          onClick={handleSearch}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Search
+        </button>
+      </div>
+
+      {loading && (
+        <div className="mt-4 text-center text-gray-600">Loading...</div>
+      )}
+
+      {error && <div className="mt-4 text-center text-red-600">{error}</div>}
+
+      <Transition
+        show={results.length > 0}
+        enter="transition-opacity duration-500"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+      >
+        <div className="mt-6 overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  NCT ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Brief Title
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Overall Status
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {results.map((trial) => (
+                <tr key={trial.protocolSection.identificationModule.nctId}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {trial.protocolSection.identificationModule.nctId}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {trial.protocolSection.identificationModule.briefTitle}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {trial.protocolSection.statusModule.overallStatus}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Transition>
     </div>
   );
 }
