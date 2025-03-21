@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { ClinicalTrial } from "@/types/clinicalTrials";
 import _data from "../../../ctg-studies.json";
 import Fuse from "fuse.js";
-import qs from "qs";
 
 // Assert the JSON data as an array of ClinicalTrial
 const data = _data as ClinicalTrial[];

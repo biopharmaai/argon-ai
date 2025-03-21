@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import qs from "qs";
 import { ClinicalTrial } from "@/types/clinicalTrials";
@@ -35,7 +35,7 @@ export default function SearchPage() {
 
   const [queryString, setQueryString] = useState(() => {
     const query = qs.parse(searchParams.toString());
-    if (!query.page) query.page = 1;
+    if (!query.page) query.page = (1).toString();
     return qs.stringify(query);
   });
 
@@ -85,7 +85,7 @@ export default function SearchPage() {
     (term: string) => {
       const q = qs.parse(searchParams.toString());
       q.term = term;
-      q.page = 1;
+      q.page = (1).toString();
       setQueryString(qs.stringify(q));
     },
     [searchParams],
@@ -94,8 +94,8 @@ export default function SearchPage() {
   const onLimitChange = useCallback(
     (newLimit: number) => {
       const q = qs.parse(searchParams.toString());
-      q.limit = newLimit;
-      q.page = 1;
+      q.limit = newLimit.toString();
+      q.page = (1).toString();
       setQueryString(qs.stringify(q));
     },
     [searchParams],
@@ -109,7 +109,7 @@ export default function SearchPage() {
       } else {
         delete q.sort;
       }
-      q.page = 1;
+      q.page = (1).toString();
       setQueryString(qs.stringify(q));
     },
     [searchParams],
@@ -117,7 +117,7 @@ export default function SearchPage() {
 
   const handlePageChange = (newPage: number) => {
     const q = qs.parse(searchParams.toString());
-    q.page = newPage;
+    q.page = newPage.toString();
     setQueryString(qs.stringify(q));
   };
 
@@ -144,8 +144,6 @@ export default function SearchPage() {
         <GuidedSortBar
           sortTokens={sortTokens}
           onSortTokensChange={handleSortTokensChange}
-          queryString={queryString}
-          setQueryString={setQueryString}
           sortableFields={[
             "nctId",
             "briefTitle",

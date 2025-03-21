@@ -10,7 +10,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronUp, ChevronDown, X } from "lucide-react";
-import qs from "qs";
 
 export interface SortToken {
   field: string;
@@ -52,13 +51,13 @@ function SortableSortItem({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className="flex items-center border border-gray-300 rounded px-2 py-1 bg-white"
+      className="flex items-center rounded border border-gray-300 bg-white px-2 py-1"
     >
       <div {...listeners} className="mr-2 cursor-grab select-none">
         ☰
       </div>
       <div
-        className="flex-1 flex items-center select-none"
+        className="flex flex-1 items-center select-none"
         onClick={onToggleDirection}
       >
         <span className="mr-1">{token.field}</span>
@@ -134,7 +133,7 @@ export default function GuidedSortBar({
         <select
           value={selectedField}
           onChange={(e) => setSelectedField(e.target.value)}
-          className="border border-gray-300 rounded px-2 py-1"
+          className="rounded border border-gray-300 px-2 py-1"
         >
           <option value="">Select field...</option>
           {sortableFields.map((field) => (
@@ -150,7 +149,7 @@ export default function GuidedSortBar({
             onChange={(e) =>
               setSelectedDirection(e.target.value as "asc" | "desc")
             }
-            className="border border-gray-300 rounded px-2 py-1"
+            className="rounded border border-gray-300 px-2 py-1"
           >
             <option value="asc">asc</option>
             <option value="desc">desc</option>
@@ -160,7 +159,7 @@ export default function GuidedSortBar({
         <button
           onClick={addSort}
           disabled={!selectedField}
-          className="bg-blue-600 text-white px-3 py-1 rounded disabled:opacity-50"
+          className="rounded bg-blue-600 px-3 py-1 text-white disabled:opacity-50"
         >
           Add Sort
         </button>
@@ -190,7 +189,7 @@ export default function GuidedSortBar({
           </DndContext>
           <button
             onClick={clearAllSorts}
-            className="text-sm text-blue-600 underline self-start"
+            className="self-start text-sm text-blue-600 underline"
           >
             Clear All Sorts
           </button>
