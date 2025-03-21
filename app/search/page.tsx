@@ -9,106 +9,94 @@ import SearchBar from "@/components/SearchBar";
 import LimitDropdown from "@/components/LimitDropdown";
 import SearchResultsTable from "@/components/SearchResultsTable";
 import GuidedFilterBar, { FilterToken } from "@/components/GuidedFilterBar";
-// Import GuidedSortBar with SSR disabled to avoid hydration issues
+// Import GuidedSortBar with SSR disabled.
 const GuidedSortBar = dynamic(() => import("@/components/GuidedSortBar"), {
   ssr: false,
 });
 import { SortToken } from "@/components/GuidedSortBar";
+// Import ColumnSelector
+import ColumnSelector, { ColumnConfig } from "@/components/ColumnSelector";
 
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const currentQuery = qs.parse(searchParams.toString());
 
-  // Initialize state from query string (source of truth)
-  const [searchTerm, setSearchTerm] = useState("");
-  const [limit, setLimit] = useState(10);
+  // Initialize search term and limit from query string.
+  const termFromUrl = (currentQuery.term as string) || "";
+  const limitFromUrl = Number((currentQuery.limit as string) || "10");
+
+  // Define default columns.
+  const defaultColumns: ColumnConfig[] = [
+    { id: "selection", label: "#", enabled: true },
+    { id: "nctId", label: "NCT ID", enabled: true },
+    { id: "briefTitle", label: "Title", enabled: true },
+    { id: "organization", label: "Sponsor / Organization", enabled: true },
+    { id: "status", label: "Status", enabled: true },
+    { id: "conditions", label: "Conditions", enabled: true },
+    { id: "startDate", label: "Start Date", enabled: true },
+    { id: "completionDate", label: "Completion Date", enabled: true },
+  ];
+
+  // If the query string has a "columns" parameter, initialize enabled state accordingly.
+  let initialColumns: ColumnConfig[] = defaultColumns;
+  if (currentQuery.columns) {
+    const columnsParam = currentQuery.columns as string;
+    const enabledIds = columnsParam.split(",");
+    initialColumns = defaultColumns.map((col) => ({
+      ...col,
+      enabled: enabledIds.includes(col.id),
+    }));
+  }
+
+  const [searchTerm, setSearchTerm] = useState(termFromUrl);
+  const [limit, setLimit] = useState(limitFromUrl);
   const [filterTokens, setFilterTokens] = useState<FilterToken[]>([]);
-  const [sortTokens, setSortTokens] = useState<SortToken[]>([]);
-  const [queryString, setQueryString] = useState("");
+  const [sortTokens, setSortTokens] = useState<SortToken[]>([]); // default no sort tokens if desired
+  const [displayColumns, setDisplayColumns] =
+    useState<ColumnConfig[]>(initialColumns);
+  const [queryString, setQueryString] = useState(qs.stringify(currentQuery));
   const [results, setResults] = useState<ClinicalTrial[]>([]);
 
-  // On mount (or when searchParams change), update initial state from the query string.
-  useEffect(() => {
-    const parsedParams = qs.parse(searchParams.toString());
-
-    // Initialize search term & limit
-    const termFromUrl = (parsedParams.term as string) || "";
-    const limitFromUrl = Number(parsedParams.limit) || 10;
-    setSearchTerm(termFromUrl);
-    setLimit(limitFromUrl);
-
-    // Parse filter tokens from keys that start with "filter["
-    const filters: FilterToken[] = [];
-    for (const key in parsedParams) {
-      if (key.startsWith("filter[")) {
-        const field = key.slice(7, key.length - 1); // remove "filter[" and trailing "]"
-        const value = parsedParams[key] as string;
-        filters.push({ field, value });
-      }
-    }
-    setFilterTokens(filters);
-
-    // Parse sort tokens from the sort parameter
-    const sortParam = (parsedParams.sort as string) || "";
-    const sorts: SortToken[] = sortParam
-      .split(",")
-      .filter((token) => token.trim() !== "")
-      .map((tokenStr) => {
-        const [field, direction] = tokenStr.split(":");
-        return { field, direction: (direction || "asc") as "asc" | "desc" };
-      });
-    // If no sort tokens exist, default to nctId:asc
-    if (sorts.length === 0) {
-      // sorts.push({ field: "nctId", direction: "asc" });
-    }
-    setSortTokens(sorts);
-
-    // Finally, set the query string state as the current URL's query string
-    setQueryString(qs.stringify(parsedParams));
-  }, [searchParams]);
-
-  /**
-   * Whenever filterTokens or sortTokens change, rebuild the query string.
-   */
+  // Rebuild the query string when filters, sort tokens, search term, limit, or columns change.
   useEffect(() => {
     const q = qs.parse(searchParams.toString());
-
-    // Update term and limit if present
     q.term = searchTerm;
     q.limit = limit;
 
-    // Add filter tokens to the query (using bracket notation)
     filterTokens.forEach((token) => {
       q[`filter[${token.field}]`] = token.value;
     });
-
-    // Add sort tokens as a comma-separated list
     if (sortTokens.length > 0) {
       q.sort = sortTokens.map((t) => `${t.field}:${t.direction}`).join(",");
     }
-
-    // Reset page to 1 when filters/sorts change
+    // Build the columns param from enabled columns, in order.
+    const enabledCols = displayColumns
+      .filter((col) => col.enabled)
+      .map((col) => col.id);
+    q.columns = enabledCols.join(",");
     q.page = 1;
-    const newQS = qs.stringify(q);
-    setQueryString(newQS);
-  }, [filterTokens, sortTokens, searchTerm, limit, searchParams]);
+    setQueryString(qs.stringify(q));
+  }, [
+    filterTokens,
+    sortTokens,
+    searchTerm,
+    limit,
+    displayColumns,
+    searchParams,
+  ]);
 
-  /**
-   * When queryString updates, push new URL and fetch data.
-   */
+  // Push the query string to the URL and fetch results.
   useEffect(() => {
     router.push(`?${queryString}`);
     const getData = async () => {
       const response = await fetch(`/api/search?${queryString}`);
-      const resultsData = await response.json();
-      setResults(resultsData.data);
+      const json = await response.json();
+      setResults(json.data);
     };
     getData();
   }, [queryString, router]);
 
-  /**
-   * Handlers for search term and limit changes.
-   */
   const handleSearchChange = useCallback(
     (term: string) => {
       setSearchTerm(term);
@@ -163,11 +151,22 @@ export default function SearchPage() {
         />
       </div>
 
+      <div className="mt-4">
+        <h2 className="text-lg font-semibold mb-2">Display Columns</h2>
+        <ColumnSelector
+          columns={displayColumns}
+          onColumnsChange={setDisplayColumns}
+        />
+      </div>
+
       {results && (
         <SearchResultsTable
           data={results}
           queryString={queryString}
           setQueryString={setQueryString}
+          displayColumns={displayColumns
+            .filter((col) => col.enabled)
+            .map((col) => col.id)}
         />
       )}
     </div>

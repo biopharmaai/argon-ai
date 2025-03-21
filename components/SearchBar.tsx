@@ -26,7 +26,7 @@ export default function SearchBar({ onChange, value = "" }: SearchBarProps) {
   // Clean up the debounced function on unmount
   useEffect(() => {
     return () => {
-      console.error("cleaning up");
+      // console.error("cleaning up");
       debouncedSetSearchTerm.cancel();
     };
   }, [debouncedSetSearchTerm]);

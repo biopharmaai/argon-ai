@@ -22,106 +22,23 @@ import {
 } from "@/components/ui/table";
 import type { ClinicalTrial } from "@/types/clinicalTrials";
 
-// -----------------------
-// Reusable SortableHeader component
-// -----------------------
-
-interface SortableHeaderProps {
-  field: string;
-  label: string;
-  queryString: string;
-  setQueryString: (newQS: string) => void;
-}
-
-function SortableHeader({
-  field,
-  label,
-  queryString,
-  setQueryString,
-}: SortableHeaderProps) {
-  // Parse the current sort information from the query string.
-  const query = qs.parse(queryString);
-  const currentSort: string = (query.sort as string) || "";
-  const sortItems = currentSort ? currentSort.split(",") : [];
-  const sortItem = sortItems.find((s) => s.split(":")[0] === field);
-  const sortDirection = sortItem ? sortItem.split(":")[1] : "asc";
-
-  // When clicked, toggle the sort order for the field.
-  const handleSortToggle = () => {
-    const query = qs.parse(queryString);
-    const currentSort: string = (query.sort as string) || "";
-    const sortItems = currentSort ? currentSort.split(",") : [];
-    let found = false;
-    const newSortItems = sortItems.map((item) => {
-      const [key, direction] = item.split(":");
-      if (key === field) {
-        found = true;
-        return `${key}:${direction === "asc" ? "desc" : "asc"}`;
-      }
-      return item;
-    });
-    if (!found) {
-      // Field not present – default was ascending; toggle to descending.
-      newSortItems.push(`${field}:desc`);
-    }
-    query.sort = newSortItems.join(",");
-    const newQS = qs.stringify(query);
-    setQueryString(newQS);
-  };
-
-  return (
-    <div
-      className="flex items-center cursor-pointer select-none"
-      onClick={handleSortToggle}
-    >
-      <span>{label}</span>
-      {sortDirection === "asc" ? (
-        <ChevronUp className="ml-1 h-4 w-4" />
-      ) : (
-        <ChevronDown className="ml-1 h-4 w-4" />
-      )}
-    </div>
-  );
-}
-SortableHeader.displayName = "SortableHeader";
-
-// Helper to generate a header function for sortable columns.
-const getSortableHeader =
-  (
-    field: string,
-    label: string,
-    queryString: string,
-    setQueryString: (newQS: string) => void,
-  ) =>
-  () => (
-    <SortableHeader
-      field={field}
-      label={label}
-      queryString={queryString}
-      setQueryString={setQueryString}
-    />
-  );
-
-// -----------------------
-// Table Component
-// -----------------------
-
 export type SearchResultsTableProps = {
   data: ClinicalTrial[];
   queryString: string;
   setQueryString: (newQS: string) => void;
+  displayColumns: string[]; // Array of column IDs to display, in order.
 };
 
 export default function SearchResultsTable({
   data,
   queryString,
   setQueryString,
+  displayColumns,
 }: SearchResultsTableProps) {
-  // Create the column helper
   const columnHelper = createColumnHelper<ClinicalTrial>();
 
-  // Declare columns inside a useMemo so they update when queryString changes.
-  const columns = useMemo(
+  // All possible columns
+  const allColumns = useMemo(
     () => [
       // Selection column (non-sortable)
       columnHelper.display({
@@ -144,11 +61,11 @@ export default function SearchResultsTable({
         (row) => row.protocolSection.identificationModule.nctId,
         {
           id: "nctId",
-          header: getSortableHeader(
-            "nctId",
-            "NCT ID",
-            queryString,
-            setQueryString,
+          header: () => (
+            <div className="flex items-center cursor-pointer select-none">
+              <span>NCT ID</span>
+              <ChevronUp className="ml-1 h-4 w-4" />
+            </div>
           ),
           cell: (info) => {
             const nctId = info.getValue();
@@ -168,16 +85,10 @@ export default function SearchResultsTable({
         (row) => row.protocolSection.identificationModule.briefTitle,
         {
           id: "briefTitle",
-          header: getSortableHeader(
-            "briefTitle",
-            "Title",
-            queryString,
-            setQueryString,
-          ),
+          header: () => <div className="select-none">Title</div>,
           cell: (info) => (
             <div className="max-w-[200px] truncate" title={info.getValue()}>
-              {" "}
-              {info.getValue()}{" "}
+              {info.getValue()}
             </div>
           ),
         },
@@ -187,11 +98,8 @@ export default function SearchResultsTable({
         (row) => row.protocolSection.identificationModule.organization.fullName,
         {
           id: "organization",
-          header: getSortableHeader(
-            "organization",
-            "Sponsor / Organization",
-            queryString,
-            setQueryString,
+          header: () => (
+            <div className="select-none">Sponsor / Organization</div>
           ),
           cell: (info) => info.getValue(),
         },
@@ -201,12 +109,7 @@ export default function SearchResultsTable({
         (row) => row.protocolSection.statusModule.overallStatus,
         {
           id: "status",
-          header: getSortableHeader(
-            "status",
-            "Status",
-            queryString,
-            setQueryString,
-          ),
+          header: () => <div className="select-none">Status</div>,
           cell: (info) => info.getValue(),
         },
       ),
@@ -215,17 +118,10 @@ export default function SearchResultsTable({
         (row) => row.protocolSection.conditionsModule?.conditions,
         {
           id: "conditions",
-          header: getSortableHeader(
-            "conditions",
-            "Conditions",
-            queryString,
-            setQueryString,
-          ),
+          header: () => <div className="select-none">Conditions</div>,
           cell: (info) => {
-            const _conditions = info.getValue() as string[];
-
-            const conditions = _conditions ? _conditions.join(", ") : "";
-
+            const conditionsArr = info.getValue() as string[];
+            const conditions = conditionsArr ? conditionsArr.join(", ") : "";
             return <div className="max-w-2xl truncate">{conditions}</div>;
           },
         },
@@ -235,12 +131,7 @@ export default function SearchResultsTable({
         (row) => row.protocolSection.statusModule.startDateStruct?.date,
         {
           id: "startDate",
-          header: getSortableHeader(
-            "startDate",
-            "Start Date",
-            queryString,
-            setQueryString,
-          ),
+          header: () => <div className="select-none">Start Date</div>,
           cell: (info) => info.getValue(),
         },
       ),
@@ -249,18 +140,18 @@ export default function SearchResultsTable({
         (row) => row.protocolSection.statusModule.completionDateStruct?.date,
         {
           id: "completionDate",
-          header: getSortableHeader(
-            "completionDate",
-            "Completion Date",
-            queryString,
-            setQueryString,
-          ),
+          header: () => <div className="select-none">Completion Date</div>,
           cell: (info) => info.getValue(),
         },
       ),
     ],
-    [columnHelper, queryString, setQueryString],
+    [columnHelper],
   );
+
+  // Filter to only include columns that are enabled in displayColumns.
+  const columns = useMemo(() => {
+    return allColumns.filter((col) => displayColumns.includes(col.id));
+  }, [allColumns, displayColumns]);
 
   const table = useReactTable({
     data,
