@@ -97,7 +97,13 @@ export default function SearchPage() {
       <SearchBar onChange={handleSearchChange} value={searchTerm} />
       <LimitDropdown onChange={onLimitChange} value={limit} />
       {/* Your search results and other UI would go here */}
-      {results && <SearchResultsTable data={results} />}
+      {results && (
+        <SearchResultsTable
+          data={results}
+          setQueryString={setQueryString}
+          queryString={queryString}
+        />
+      )}
     </div>
   );
 }

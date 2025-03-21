@@ -18,7 +18,7 @@ export default function SearchBar({ onChange, value = "" }: SearchBarProps) {
     () =>
       debounce((newTerm: string) => {
         onChange(newTerm);
-      }, 50),
+      }, 500),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );

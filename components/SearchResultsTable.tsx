@@ -1,18 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo } from "react";
+import qs from "qs";
 import {
   useReactTable,
   getCoreRowModel,
-  getSortedRowModel,
   flexRender,
   createColumnHelper,
 } from "@tanstack/react-table";
 import Link from "next/link";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import type { ClinicalTrial } from "@/types/clinicalTrials";
 
-// Import shadcn UI table components (adjust the import path as needed)
+// Shadcn UI table components – adjust the import paths as needed
 import {
   Table,
   TableHeader,
@@ -21,147 +20,252 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
+import type { ClinicalTrial } from "@/types/clinicalTrials";
 
-const columnHelper = createColumnHelper<ClinicalTrial>();
+// -----------------------
+// Reusable SortableHeader component
+// -----------------------
 
-// First column: Checkbox with row number.
-const selectionColumn = columnHelper.display({
-  id: "selection",
-  header: () => (
-    <div className="flex items-center">
-      <input type="checkbox" className="mr-2" />
-      <span>#</span>
+interface SortableHeaderProps {
+  field: string;
+  label: string;
+  queryString: string;
+  setQueryString: (newQS: string) => void;
+}
+
+function SortableHeader({
+  field,
+  label,
+  queryString,
+  setQueryString,
+}: SortableHeaderProps) {
+  // Parse the current sort information from the query string.
+  const query = qs.parse(queryString);
+  const currentSort: string = (query.sort as string) || "";
+  const sortItems = currentSort ? currentSort.split(",") : [];
+  const sortItem = sortItems.find((s) => s.split(":")[0] === field);
+  const sortDirection = sortItem ? sortItem.split(":")[1] : "asc";
+
+  // When clicked, toggle the sort order for the field.
+  const handleSortToggle = () => {
+    const query = qs.parse(queryString);
+    const currentSort: string = (query.sort as string) || "";
+    const sortItems = currentSort ? currentSort.split(",") : [];
+    let found = false;
+    const newSortItems = sortItems.map((item) => {
+      const [key, direction] = item.split(":");
+      if (key === field) {
+        found = true;
+        return `${key}:${direction === "asc" ? "desc" : "asc"}`;
+      }
+      return item;
+    });
+    if (!found) {
+      // Field not present – default was ascending; toggle to descending.
+      newSortItems.push(`${field}:desc`);
+    }
+    query.sort = newSortItems.join(",");
+    const newQS = qs.stringify(query);
+    setQueryString(newQS);
+  };
+
+  return (
+    <div
+      className="flex items-center cursor-pointer select-none"
+      onClick={handleSortToggle}
+    >
+      <span>{label}</span>
+      {sortDirection === "asc" ? (
+        <ChevronUp className="ml-1 h-4 w-4" />
+      ) : (
+        <ChevronDown className="ml-1 h-4 w-4" />
+      )}
     </div>
-  ),
-  cell: ({ row }) => (
-    <div className="flex items-center">
-      <input type="checkbox" className="mr-2" />
-      <span>{row.index + 1}</span>
-    </div>
-  ),
-});
+  );
+}
+SortableHeader.displayName = "SortableHeader";
 
-// Second column: NCT ID with Link and sorting.
-const nctIdColumn = columnHelper.accessor(
-  (row) => row.protocolSection.identificationModule.nctId,
-  {
-    id: "nctId",
-    header: ({ column }) => {
-      const sorted = column.getIsSorted();
-      return (
-        <div
-          className="flex items-center cursor-pointer select-none"
-          onClick={() => column.toggleSorting()}
-        >
-          <span>NCT ID</span>
-          {sorted === "asc" ? (
-            <ChevronUp className="ml-1 h-4 w-4" />
-          ) : sorted === "desc" ? (
-            <ChevronDown className="ml-1 h-4 w-4" />
-          ) : (
-            // Default state: show ChevronUp in a muted color.
-            <ChevronUp className="ml-1 h-4 w-4 text-gray-400" />
-          )}
-        </div>
-      );
-    },
-    cell: (info) => {
-      const nctId = info.getValue();
-      return (
-        <Link
-          href={`/clinical-trials/${nctId}`}
-          className="text-blue-600 hover:underline"
-        >
-          {nctId}
-        </Link>
-      );
-    },
-  },
-);
+// Helper to generate a header function for sortable columns.
+const getSortableHeader =
+  (
+    field: string,
+    label: string,
+    queryString: string,
+    setQueryString: (newQS: string) => void,
+  ) =>
+  () => (
+    <SortableHeader
+      field={field}
+      label={label}
+      queryString={queryString}
+      setQueryString={setQueryString}
+    />
+  );
 
-const briefTitleColumn = columnHelper.accessor(
-  (row) => row.protocolSection.identificationModule.briefTitle,
-  {
-    id: "briefTitle",
-    header: "Title",
-    cell: (info) => info.getValue(),
-  },
-);
+// -----------------------
+// Table Component
+// -----------------------
 
-const organizationColumn = columnHelper.accessor(
-  (row) => row.protocolSection.identificationModule.organization.fullName,
-  {
-    id: "organization",
-    header: "Sponsor / Organization",
-    cell: (info) => info.getValue(),
-  },
-);
-
-const statusColumn = columnHelper.accessor(
-  (row) => row.protocolSection.statusModule.overallStatus,
-  {
-    id: "status",
-    header: "Status",
-    cell: (info) => info.getValue(),
-  },
-);
-
-const conditionsColumn = columnHelper.accessor(
-  (row) => row.protocolSection.conditionsModule?.conditions,
-  {
-    id: "conditions",
-    header: "Conditions",
-    cell: (info) => {
-      const conditions = info.getValue() as string[];
-      return conditions ? conditions.join(", ") : "";
-    },
-  },
-);
-
-const startDateColumn = columnHelper.accessor(
-  (row) => row.protocolSection.statusModule.startDateStruct?.date,
-  {
-    id: "startDate",
-    header: "Start Date",
-    cell: (info) => info.getValue(),
-  },
-);
-
-const completionDateColumn = columnHelper.accessor(
-  (row) => row.protocolSection.statusModule.completionDateStruct?.date,
-  {
-    id: "completionDate",
-    header: "Completion Date",
-    cell: (info) => info.getValue(),
-  },
-);
-
-const columns = [
-  selectionColumn,
-  nctIdColumn,
-  briefTitleColumn,
-  organizationColumn,
-  statusColumn,
-  conditionsColumn,
-  startDateColumn,
-  completionDateColumn,
-];
-
-type SearchResultsTableProps = {
+export type SearchResultsTableProps = {
   data: ClinicalTrial[];
+  queryString: string;
+  setQueryString: (newQS: string) => void;
 };
 
-export default function SearchResultsTable({ data }: SearchResultsTableProps) {
-  // Initialize sorting with default sort on nctId ascending.
-  const [sorting, setSorting] = useState([{ id: "nctId", desc: false }]);
+export default function SearchResultsTable({
+  data,
+  queryString,
+  setQueryString,
+}: SearchResultsTableProps) {
+  // Create the column helper
+  const columnHelper = createColumnHelper<ClinicalTrial>();
+
+  // Declare columns inside a useMemo so they update when queryString changes.
+  const columns = useMemo(
+    () => [
+      // Selection column (non-sortable)
+      columnHelper.display({
+        id: "selection",
+        header: () => (
+          <div className="flex items-center">
+            <input type="checkbox" className="mr-2" />
+            <span>#</span>
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div className="flex items-center">
+            <input type="checkbox" className="mr-2" />
+            <span>{row.index + 1}</span>
+          </div>
+        ),
+      }),
+      // NCT ID column with Link and sorting
+      columnHelper.accessor(
+        (row) => row.protocolSection.identificationModule.nctId,
+        {
+          id: "nctId",
+          header: getSortableHeader(
+            "nctId",
+            "NCT ID",
+            queryString,
+            setQueryString,
+          ),
+          cell: (info) => {
+            const nctId = info.getValue();
+            return (
+              <Link
+                href={`/clinical-trials/${nctId}`}
+                className="text-blue-600 hover:underline"
+              >
+                {nctId}
+              </Link>
+            );
+          },
+        },
+      ),
+      // Title column (with constrained width)
+      columnHelper.accessor(
+        (row) => row.protocolSection.identificationModule.briefTitle,
+        {
+          id: "briefTitle",
+          header: getSortableHeader(
+            "briefTitle",
+            "Title",
+            queryString,
+            setQueryString,
+          ),
+          cell: (info) => (
+            <div className="max-w-[200px] truncate" title={info.getValue()}>
+              {" "}
+              {info.getValue()}{" "}
+            </div>
+          ),
+        },
+      ),
+      // Organization column
+      columnHelper.accessor(
+        (row) => row.protocolSection.identificationModule.organization.fullName,
+        {
+          id: "organization",
+          header: getSortableHeader(
+            "organization",
+            "Sponsor / Organization",
+            queryString,
+            setQueryString,
+          ),
+          cell: (info) => info.getValue(),
+        },
+      ),
+      // Status column
+      columnHelper.accessor(
+        (row) => row.protocolSection.statusModule.overallStatus,
+        {
+          id: "status",
+          header: getSortableHeader(
+            "status",
+            "Status",
+            queryString,
+            setQueryString,
+          ),
+          cell: (info) => info.getValue(),
+        },
+      ),
+      // Conditions column
+      columnHelper.accessor(
+        (row) => row.protocolSection.conditionsModule?.conditions,
+        {
+          id: "conditions",
+          header: getSortableHeader(
+            "conditions",
+            "Conditions",
+            queryString,
+            setQueryString,
+          ),
+          cell: (info) => {
+            const _conditions = info.getValue() as string[];
+
+            const conditions = _conditions ? _conditions.join(", ") : "";
+
+            return <div className="max-w-2xl truncate">{conditions}</div>;
+          },
+        },
+      ),
+      // Start Date column
+      columnHelper.accessor(
+        (row) => row.protocolSection.statusModule.startDateStruct?.date,
+        {
+          id: "startDate",
+          header: getSortableHeader(
+            "startDate",
+            "Start Date",
+            queryString,
+            setQueryString,
+          ),
+          cell: (info) => info.getValue(),
+        },
+      ),
+      // Completion Date column
+      columnHelper.accessor(
+        (row) => row.protocolSection.statusModule.completionDateStruct?.date,
+        {
+          id: "completionDate",
+          header: getSortableHeader(
+            "completionDate",
+            "Completion Date",
+            queryString,
+            setQueryString,
+          ),
+          cell: (info) => info.getValue(),
+        },
+      ),
+    ],
+    [columnHelper, queryString, setQueryString],
+  );
 
   const table = useReactTable({
     data,
     columns,
-    state: { sorting },
-    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
   });
 
   return (
@@ -196,3 +300,4 @@ export default function SearchResultsTable({ data }: SearchResultsTableProps) {
     </Table>
   );
 }
+SearchResultsTable.displayName = "SearchResultsTable";

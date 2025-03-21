@@ -1,30 +1,63 @@
-// app/api/search/route.ts (for Next.js App Router)
 import { NextResponse } from "next/server";
 import { ClinicalTrial } from "@/types/clinicalTrials";
 import _data from "../../../ctg-studies.json";
+import Fuse from "fuse.js";
+import qs from "qs";
 
 // Assert the JSON data as an array of ClinicalTrial
 const data = _data as ClinicalTrial[];
 
+// Helper function to extract a sortable string value from a trial for a given field.
+function getSortValue(trial: ClinicalTrial, field: string): string {
+  switch (field) {
+    case "nctId":
+      return trial.protocolSection.identificationModule.nctId || "";
+    case "briefTitle":
+      return trial.protocolSection.identificationModule.briefTitle || "";
+    case "organization":
+      return (
+        trial.protocolSection.identificationModule.organization.fullName || ""
+      );
+    case "status":
+      return trial.protocolSection.statusModule.overallStatus || "";
+    case "startDate":
+      return trial.protocolSection.statusModule.startDateStruct?.date || "";
+    case "completionDate":
+      return (
+        trial.protocolSection.statusModule.completionDateStruct?.date || ""
+      );
+    // Note: We intentionally do not sort by "conditions".
+    default:
+      return "";
+  }
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
 
-  // Get the term and limit parameters
+  // Parse basic parameters
   const term = searchParams.get("term")?.toLowerCase() || "";
   const limitParam = searchParams.get("limit");
   const limit = limitParam ? parseInt(limitParam) : 10;
+  const pageParam = searchParams.get("page");
+  const page = pageParam ? parseInt(pageParam) : 1;
 
-  // Get the sort parameter in the format "field:direction"
+  // Parse sort parameter (comma-separated)
+  // e.g., "nctId:asc,briefTitle:asc,organization:asc,status:asc,conditions:asc,startDate:asc,completionDate:desc"
   const sortParam = searchParams.get("sort") || "";
-  let sortField = "";
-  let sortDirection = "asc";
-  if (sortParam) {
-    const parts = sortParam.split(":");
-    sortField = parts[0];
-    sortDirection = parts[1] || "asc";
-  }
+  const sortItems = sortParam
+    ? sortParam.split(",").map((item) => {
+        const [field, direction] = item.split(":");
+        return { field, direction: direction || "asc" };
+      })
+    : [];
 
-  // Parse filter parameters that use bracket notation, e.g., filter[overallStatus]=RECRUITING
+  // Remove any sort instructions for "conditions"
+  const effectiveSortItems = sortItems.filter(
+    (item) => item.field !== "conditions",
+  );
+
+  // Parse explicit filters (using bracket notation, e.g., filter[overallStatus]=RECRUITING)
   const filters: { [key: string]: string } = {};
   for (const [key, value] of searchParams.entries()) {
     const match = key.match(/^filter\[(.+)\]$/);
@@ -34,21 +67,32 @@ export async function GET(req: Request) {
     }
   }
 
-  // Filter the data
-  let filteredData = data.filter((trial) => {
-    let matchesTerm = true;
-    if (term) {
-      // Check term in conditions and keywords fields
-      const conditionsStr = (
-        trial.protocolSection.conditionsModule?.conditions?.join(" ") || ""
-      ).toLowerCase();
-      const keywordsStr = (
-        trial.protocolSection.conditionsModule?.keywords?.join(" ") || ""
-      ).toLowerCase();
-      matchesTerm = conditionsStr.includes(term) || keywordsStr.includes(term);
-    }
+  // ---------------------------
+  // Use Fuse.js for fuzzy filtering.
+  // ---------------------------
+  const fuseOptions = {
+    keys: [
+      "protocolSection.identificationModule.briefTitle",
+      "protocolSection.conditionsModule.conditions",
+      "protocolSection.conditionsModule.keywords",
+    ],
+    threshold: 0.4,
+    includeScore: true,
+  };
 
-    // Apply filters based on the filter fields
+  let filteredData: ClinicalTrial[] = [];
+  if (term) {
+    const fuse = new Fuse(data, fuseOptions);
+    const fuseResults = fuse.search(term);
+    filteredData = fuseResults.map((result) => result.item);
+  } else {
+    filteredData = [...data];
+  }
+
+  // ---------------------------
+  // Apply explicit filters.
+  // ---------------------------
+  filteredData = filteredData.filter((trial) => {
     let matchesFilters = true;
     for (const [field, filterValue] of Object.entries(filters)) {
       if (field === "overallStatus") {
@@ -68,38 +112,43 @@ export async function GET(req: Request) {
           break;
         }
       }
-      // Add additional filter fields here as needed.
+      // Add additional filter fields as needed.
     }
-
-    return matchesTerm && matchesFilters;
+    return matchesFilters;
   });
 
-  // Sort the data if a sort field is provided
-  if (sortField) {
+  // ---------------------------
+  // Apply multi-field sorting for effectiveSortItems.
+  // ---------------------------
+  if (effectiveSortItems.length > 0) {
     filteredData.sort((a, b) => {
-      let aValue = "";
-      let bValue = "";
-
-      if (sortField === "overallStatus") {
-        aValue = a.protocolSection.statusModule.overallStatus;
-        bValue = b.protocolSection.statusModule.overallStatus;
-      } else if (sortField === "officialTitle") {
-        aValue = a.protocolSection.identificationModule.officialTitle;
-        bValue = b.protocolSection.identificationModule.officialTitle;
-      } else if (sortField === "briefTitle") {
-        aValue = a.protocolSection.identificationModule.briefTitle;
-        bValue = b.protocolSection.identificationModule.briefTitle;
+      for (const sortItem of effectiveSortItems) {
+        const aValue = getSortValue(a, sortItem.field);
+        const bValue = getSortValue(b, sortItem.field);
+        const cmp = aValue.localeCompare(bValue, undefined, {
+          numeric: true,
+          sensitivity: "base",
+        });
+        if (cmp !== 0) {
+          return sortItem.direction === "asc" ? cmp : -cmp;
+        }
       }
-
-      // For simplicity, we use localeCompare for string sorting
-      return sortDirection === "asc"
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
+      return 0;
     });
   }
 
-  // Limit the number of results
-  filteredData = filteredData.slice(0, limit);
+  // ---------------------------
+  // Pagination: Calculate total count, total pages, and slice the data.
+  // ---------------------------
+  const totalCount = filteredData.length;
+  const totalPages = Math.ceil(totalCount / limit);
+  const startIndex = (page - 1) * limit;
+  const pagedData = filteredData.slice(startIndex, startIndex + limit);
 
-  return NextResponse.json({ success: true, data: filteredData });
+  return NextResponse.json({
+    success: true,
+    data: pagedData,
+    totalCount,
+    totalPages,
+  });
 }
