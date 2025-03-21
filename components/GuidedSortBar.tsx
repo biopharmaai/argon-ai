@@ -18,7 +18,7 @@ export interface SortToken {
 }
 
 interface GuidedSortBarProps {
-  sortTokens: SortToken;
+  sortTokens: SortToken[];
   onSortTokensChange: (newTokens: SortToken) => void;
   sortableFields: string;
 }

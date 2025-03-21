@@ -30,16 +30,16 @@ export default function SearchPage() {
   const [limit, setLimit] = useState(limitFromUrl);
   const [filterTokens, setFilterTokens] = useState<FilterToken>();
   const sortFromUrl = (currentQuery.sort as string) || "";
-  const initialSortTokens: SortToken = sortFromUrl
+  const initialSortTokens: SortToken[] = sortFromUrl
     .split(",")
     .filter(Boolean)
     .map((tokenStr) => {
       const [field, direction] = tokenStr.split(":");
       return { field, direction: (direction as "asc" | "desc") || "asc" };
     });
-  const [sortTokens, setSortTokens] = useState<SortToken>(initialSortTokens);
+  const [sortTokens, setSortTokens] = useState<SortToken[]>(initialSortTokens);
   const [queryString, setQueryString] = useState(qs.stringify(currentQuery));
-  const [results, setResults] = useState<ClinicalTrial>();
+  const [results, setResults] = useState<ClinicalTrial[]>();
 
   const hasMountedRef = useRef(false);
 
@@ -54,7 +54,7 @@ export default function SearchPage() {
     q.term = searchTerm;
     q.limit = limit;
 
-    if (filterTokens.length > 0) {
+    if (Array.isArray(filterTokens) && filterTokens.length > 0) {
       q.filter = {};
       filterTokens.forEach((token) => {
         q.filter[token.field] = token.value;
@@ -158,6 +158,7 @@ export default function SearchPage() {
         <SearchResultsTable
           data={results}
           sortTokens={sortTokens}
+          setQueryString={setQueryString}
           onSortChange={handleSortTokensChange} // Ensure this is passed correctly
           displayColumns={[
             "selection",
