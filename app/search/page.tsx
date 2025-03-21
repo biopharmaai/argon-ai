@@ -9,6 +9,7 @@ import SearchBar from "@/components/SearchBar";
 import LimitDropdown from "@/components/LimitDropdown";
 import SearchResultsTable from "@/components/SearchResultsTable";
 import GuidedFilterBar, { FilterToken } from "@/components/GuidedFilterBar";
+import Pagination from "@/components/Pagination";
 // Import GuidedSortBar with SSR disabled.
 const GuidedSortBar = dynamic(() => import("@/components/GuidedSortBar"), {
   ssr: false,
@@ -21,6 +22,7 @@ export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentQuery = qs.parse(searchParams.toString());
+  const [totalPages, setTotalPages] = useState(1);
 
   // Initialize search term and limit from query string.
   const termFromUrl = (currentQuery.term as string) || "";
@@ -91,6 +93,7 @@ export default function SearchPage() {
       const response = await fetch(`/api/search?${queryString}`);
       const json = await response.json();
       setResults(json.data);
+      setTotalPages(json.totalPages);
     };
     getData();
   }, [queryString, router]);
@@ -120,6 +123,7 @@ export default function SearchPage() {
   const handleSortTokensChange = useCallback((newSortTokens: SortToken[]) => {
     setSortTokens(newSortTokens);
   }, []);
+  console.log("totalPages", totalPages);
 
   return (
     <div className="w-full mx-auto p-6">
@@ -154,6 +158,7 @@ export default function SearchPage() {
           ]}
         />
       </div>
+      <Pagination totalPages={totalPages} />
 
       {results && (
         <SearchResultsTable
