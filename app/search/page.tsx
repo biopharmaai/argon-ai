@@ -10,97 +10,79 @@ import LimitDropdown from "@/components/LimitDropdown";
 import SearchResultsTable from "@/components/SearchResultsTable";
 import GuidedFilterBar, { FilterToken } from "@/components/GuidedFilterBar";
 import Pagination from "@/components/Pagination";
-// Import GuidedSortBar with SSR disabled.
+
 const GuidedSortBar = dynamic(() => import("@/components/GuidedSortBar"), {
   ssr: false,
 });
 import { SortToken } from "@/components/GuidedSortBar";
-// Import ColumnSelector
-// import ColumnSelector, { ColumnConfig } from "@/components/ColumnSelector";
 
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentQuery = qs.parse(searchParams.toString());
+
+  const [results, setResults] = useState<ClinicalTrial[]>([]);
+  const [filterTokens, setFilterTokens] = useState<FilterToken[]>([]);
+  const [sortTokens, setSortTokens] = useState<SortToken[]>([]);
+  const [searchTerm, setSearchTerm] = useState(
+    (currentQuery.term as string) || "",
+  );
+  const [limit, setLimit] = useState(Number(currentQuery.limit) || 10);
   const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(
+    Number(currentQuery.page) || 1,
+  );
 
-  // Initialize search term and limit from query string.
-  const termFromUrl = (currentQuery.term as string) || "";
-  const limitFromUrl = Number((currentQuery.limit as string) || "10");
+  const [queryString, setQueryString] = useState(() => {
+    const query = qs.parse(searchParams.toString());
+    if (!query.page) query.page = 1;
+    return qs.stringify(query);
+  });
 
-  const [searchTerm, setSearchTerm] = useState(termFromUrl);
-  const [limit, setLimit] = useState(limitFromUrl);
-  const [filterTokens, setFilterTokens] = useState<FilterToken[]>([]); // Fixed: initialize as empty array
-  const sortFromUrl = (currentQuery.sort as string) || "";
-  const initialSortTokens: SortToken[] = sortFromUrl
-    .split(",")
-    .filter(Boolean)
-    .map((tokenStr) => {
-      const [field, direction] = tokenStr.split(":");
-      return { field, direction: (direction as "asc" | "desc") || "asc" };
-    });
-  const [sortTokens, setSortTokens] = useState<SortToken[]>(initialSortTokens);
-  const [queryString, setQueryString] = useState(qs.stringify(currentQuery));
-  const [results, setResults] = useState<ClinicalTrial[]>([]); // Fixed: initialize as empty array
-
-  const hasMountedRef = useRef(false);
-
-  // Rebuild the query string when filters, sort tokens, search term, limit, or columns change.
+  // Sync derived states from the actual URL query params
   useEffect(() => {
-    if (!hasMountedRef.current) {
-      hasMountedRef.current = true;
-      return; // Skip initial sync on mount
-    }
+    const query = qs.parse(searchParams.toString());
 
-    const q = qs.parse(searchParams.toString());
-    q.term = searchTerm;
-    q.limit = limit;
+    setSearchTerm((query.term as string) || "");
+    setLimit(Number(query.limit) || 10);
+    setCurrentPage(Number(query.page) || 1);
 
-    if (Array.isArray(filterTokens) && filterTokens.length > 0) {
-      q.filter = {};
-      filterTokens.forEach((token) => {
-        q.filter[token.field] = token.value;
+    if (typeof query.sort === "string") {
+      const parsedSort = query.sort.split(",").map((s) => {
+        const [field, dir] = s.split(":");
+        return { field, direction: (dir as "asc" | "desc") || "asc" };
       });
-    } else if ("filter" in q) {
-      delete q.filter;
+      setSortTokens(parsedSort);
     }
 
-    if (Array.isArray(sortTokens) && sortTokens.length > 0) {
-      q.sort = sortTokens.map((t) => `${t.field}:${t.direction}`).join(",");
-    } else if ("sort" in q) {
-      delete q.sort;
+    if (typeof query.filter === "object" && query.filter !== null) {
+      const parsedFilters = Object.entries(query.filter).map(
+        ([field, value]) => ({
+          field,
+          value: String(value),
+        }),
+      );
+      setFilterTokens(parsedFilters);
     }
 
-    q.page = 1;
-    const newQS = qs.stringify(q);
-    if (newQS !== queryString) {
-      console.log("SearchPage - Rebuilding query string from state:", q);
-      setQueryString(newQS);
-    }
-  }, [
-    filterTokens,
-    sortTokens,
-    searchTerm,
-    limit,
-    searchParams, // Added searchParams to the dependency array
-    queryString, // Added queryString to check against new query string
-  ]);
+    setQueryString(qs.stringify(query));
+  }, [searchParams]);
 
-  // Push the query string to the URL and fetch results.
+  // Fetch results when query string changes
   useEffect(() => {
     router.push(`?${queryString}`);
     const getData = async () => {
-      const response = await fetch(`/api/search?${queryString}`);
-      const json = await response.json();
+      const res = await fetch(`/api/search?${queryString}`);
+      const json = await res.json();
       setResults(json.data);
       setTotalPages(json.totalPages);
     };
     getData();
-  }, [queryString, router]);
+  }, [queryString]);
 
+  // Handlers to update search term and limit
   const handleSearchChange = useCallback(
     (term: string) => {
-      setSearchTerm(term);
       const q = qs.parse(searchParams.toString());
       q.term = term;
       q.page = 1;
@@ -111,7 +93,6 @@ export default function SearchPage() {
 
   const onLimitChange = useCallback(
     (newLimit: number) => {
-      setLimit(newLimit);
       const q = qs.parse(searchParams.toString());
       q.limit = newLimit;
       q.page = 1;
@@ -120,14 +101,29 @@ export default function SearchPage() {
     [searchParams],
   );
 
-  const handleSortTokensChange = useCallback((newSortTokens: SortToken[]) => {
-    setSortTokens(newSortTokens);
-  }, []);
-  console.log("totalPages", totalPages);
+  const handleSortTokensChange = useCallback(
+    (tokens: SortToken[]) => {
+      const q = qs.parse(searchParams.toString());
+      if (tokens.length > 0) {
+        q.sort = tokens.map((t) => `${t.field}:${t.direction}`).join(",");
+      } else {
+        delete q.sort;
+      }
+      q.page = 1;
+      setQueryString(qs.stringify(q));
+    },
+    [searchParams],
+  );
+
+  const handlePageChange = (newPage: number) => {
+    const q = qs.parse(searchParams.toString());
+    q.page = newPage;
+    setQueryString(qs.stringify(q));
+  };
 
   return (
-    <div className="w-full mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Search Page</h1>
+    <div className="mx-auto w-full p-6">
+      <h1 className="mb-4 text-2xl font-bold">Search Page</h1>
       <SearchBar onChange={handleSearchChange} value={searchTerm} />
 
       <div className="mt-4">
@@ -144,10 +140,12 @@ export default function SearchPage() {
       </div>
 
       <div className="mt-4">
-        <h2 className="text-lg font-semibold mb-2">Sort Order</h2>
+        <h2 className="mb-2 text-lg font-semibold">Sort Order</h2>
         <GuidedSortBar
           sortTokens={sortTokens}
           onSortTokensChange={handleSortTokensChange}
+          queryString={queryString}
+          setQueryString={setQueryString}
           sortableFields={[
             "nctId",
             "briefTitle",
@@ -158,26 +156,29 @@ export default function SearchPage() {
           ]}
         />
       </div>
-      <Pagination totalPages={totalPages} />
 
-      {results && (
-        <SearchResultsTable
-          data={results}
-          sortTokens={sortTokens}
-          setQueryString={setQueryString}
-          onSortChange={handleSortTokensChange}
-          displayColumns={[
-            "selection",
-            "nctId",
-            "briefTitle",
-            "organization",
-            "status",
-            "conditions",
-            "startDate",
-            "completionDate",
-          ]}
-        />
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
+
+      <SearchResultsTable
+        data={results}
+        sortTokens={sortTokens}
+        setQueryString={setQueryString}
+        onSortChange={handleSortTokensChange}
+        displayColumns={[
+          "selection",
+          "nctId",
+          "briefTitle",
+          "organization",
+          "status",
+          "conditions",
+          "startDate",
+          "completionDate",
+        ]}
+      />
     </div>
   );
 }

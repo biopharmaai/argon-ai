@@ -10,10 +10,9 @@ import {
 } from "@tanstack/react-table";
 import Link from "next/link";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import { SortToken } from "@/components/GuidedSortBar"; // Ensure this path is correct
-import type { ClinicalTrial } from "@/types/clinicalTrials"; // Ensure this path is correct
+import { SortToken } from "@/components/GuidedSortBar";
+import type { ClinicalTrial } from "@/types/clinicalTrials";
 
-// Shadcn UI table components – adjust the import paths as needed
 import {
   Table,
   TableHeader,
@@ -21,19 +20,19 @@ import {
   TableHead,
   TableBody,
   TableCell,
-} from "@/components/ui/table"; // Ensure this path is correct
+} from "@/components/ui/table";
 
 export type SearchResultsTableProps = {
   data: ClinicalTrial[];
-  sortTokens: SortToken[];
+  sortTokens?: SortToken[];
   onSortChange: (tokens: SortToken[]) => void;
   setQueryString: (newQS: string) => void;
-  displayColumns: string[]; // Array of column IDs to display, in order.
+  displayColumns: string[];
 };
 
 export default function SearchResultsTable({
   data,
-  sortTokens,
+  sortTokens = [],
   onSortChange,
   setQueryString,
   displayColumns,
@@ -42,33 +41,27 @@ export default function SearchResultsTable({
 
   const toggleSort = React.useCallback(
     (field: string) => {
-      // Check if the field is already in the sort tokens
       const existingIndex = sortTokens.findIndex(
         (token) => token.field === field,
       );
+
       let newSortTokens: SortToken[];
 
       if (existingIndex === -1) {
-        // Field not present: add it as ascending
         newSortTokens = [...sortTokens, { field, direction: "asc" }];
       } else {
-        // Field exists: toggle direction or remove
         const currentDirection = sortTokens[existingIndex].direction;
         if (currentDirection === "asc") {
-          // Toggle to descending
           newSortTokens = sortTokens.map((token) =>
             token.field === field ? { ...token, direction: "desc" } : token,
           );
         } else {
-          // Remove from sort tokens
           newSortTokens = sortTokens.filter((token) => token.field !== field);
         }
       }
 
-      // Update sortTokens state via callback
       onSortChange(newSortTokens);
 
-      // Update query string
       const q = qs.parse("");
       if (newSortTokens.length > 0) {
         q.sort = newSortTokens
@@ -84,8 +77,9 @@ export default function SearchResultsTable({
 
   const renderSortableHeader = React.useCallback(
     (field: string, label: string) => {
-      // Find if the field exists in current sort tokens
-      const sortToken = sortTokens.find((token) => token.field === field);
+      const sortToken = Array.isArray(sortTokens)
+        ? sortTokens.find((token) => token.field === field)
+        : null;
       const sortDirection = sortToken?.direction;
 
       let icon = null;
@@ -130,16 +124,17 @@ export default function SearchResultsTable({
         {
           id: "nctId",
           header: () => renderSortableHeader("nctId", "NCT ID"),
-          cell: (info) => (
-            <Link
-              href={`/clinical-trials/${
-                info.row.original.protocolSection.identificationModule.nctId
-              }`}
-              className="text-blue-600 hover:underline"
-            >
-              {info.getValue()}
-            </Link>
-          ),
+          cell: (info) => {
+            const nctId = info.getValue();
+            return (
+              <Link
+                href={`/clinical-trials/${nctId}`}
+                className="text-blue-600 hover:underline"
+              >
+                {nctId}
+              </Link>
+            );
+          },
         },
       ),
       columnHelper.accessor(
@@ -201,7 +196,7 @@ export default function SearchResultsTable({
         },
       ),
     ],
-    [columnHelper, renderSortableHeader],
+    [columnHelper, renderSortableHeader, sortTokens],
   );
 
   const columns = useMemo(() => {

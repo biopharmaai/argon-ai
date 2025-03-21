@@ -1,65 +1,56 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import qs from "qs";
+import React from "react";
 
-interface PaginationProps {
+type PaginationProps = {
+  currentPage: number;
   totalPages: number;
-}
+  onPageChange: (newPage: number) => void;
+};
 
-export default function Pagination({ totalPages }: PaginationProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    const q = qs.parse(searchParams.toString());
-    const pageFromUrl = parseInt((q.page as string) || "1");
-    setCurrentPage(pageFromUrl);
-  }, [searchParams]);
-
-  const updatePage = (page: number) => {
-    const q = qs.parse(searchParams.toString());
-    q.page = page;
-    const newQS = qs.stringify(q);
-    router.push(`?${newQS}`);
-  };
-
+export default function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: PaginationProps) {
   const getVisiblePages = () => {
-    if (totalPages <= 1) return [1];
-    if (currentPage === 1)
-      return [1, 2, Math.min(3, totalPages)].filter((p) => p <= totalPages);
-    if (currentPage === totalPages)
-      return [Math.max(totalPages - 2, 1), totalPages - 1, totalPages];
-    return [currentPage - 1, currentPage, currentPage + 1];
+    if (totalPages <= 1) return [];
+
+    if (currentPage === 1) {
+      return [1, 2, 3].filter((p) => p <= totalPages);
+    }
+
+    if (currentPage === totalPages) {
+      return [totalPages - 2, totalPages - 1, totalPages].filter((p) => p >= 1);
+    }
+
+    return [currentPage - 1, currentPage, currentPage + 1].filter(
+      (p) => p >= 1 && p <= totalPages,
+    );
   };
 
   const visiblePages = getVisiblePages();
 
   return (
-    <div className="flex items-center gap-2 justify-center mt-6">
+    <div className="my-4 flex items-center justify-center space-x-2">
       <button
-        onClick={() => updatePage(currentPage - 1)}
+        onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className={`p-2 rounded border ${
-          currentPage === 1
-            ? "opacity-50 cursor-not-allowed"
-            : "hover:bg-gray-100"
-        }`}
+        className="rounded border p-2 hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+        aria-label="Previous Page"
       >
-        <ChevronLeft className="w-4 h-4" />
+        <ChevronLeft className="h-4 w-4" />
       </button>
 
       {visiblePages.map((page) => (
         <button
           key={page}
-          onClick={() => updatePage(page)}
-          className={`px-3 py-1 rounded border ${
+          onClick={() => onPageChange(page)}
+          className={`rounded border px-3 py-1 ${
             page === currentPage
-              ? "bg-blue-600 text-white font-bold"
-              : "hover:bg-gray-100"
+              ? "bg-blue-600 font-bold text-white"
+              : "bg-white text-gray-800 hover:cursor-pointer hover:bg-gray-100"
           }`}
         >
           {page}
@@ -67,15 +58,12 @@ export default function Pagination({ totalPages }: PaginationProps) {
       ))}
 
       <button
-        onClick={() => updatePage(currentPage + 1)}
+        onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className={`p-2 rounded border ${
-          currentPage === totalPages
-            ? "opacity-50 cursor-not-allowed"
-            : "hover:bg-gray-100"
-        }`}
+        className="rounded border p-2 hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+        aria-label="Next Page"
       >
-        <ChevronRight className="w-4 h-4" />
+        <ChevronRight className="h-4 w-4" />
       </button>
     </div>
   );
