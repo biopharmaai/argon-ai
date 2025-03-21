@@ -15,7 +15,7 @@ const GuidedSortBar = dynamic(() => import("@/components/GuidedSortBar"), {
 });
 import { SortToken } from "@/components/GuidedSortBar";
 // Import ColumnSelector
-import ColumnSelector, { ColumnConfig } from "@/components/ColumnSelector";
+// import ColumnSelector, { ColumnConfig } from "@/components/ColumnSelector";
 
 export default function SearchPage() {
   const router = useRouter();
@@ -26,35 +26,18 @@ export default function SearchPage() {
   const termFromUrl = (currentQuery.term as string) || "";
   const limitFromUrl = Number((currentQuery.limit as string) || "10");
 
-  // Define default columns.
-  const defaultColumns: ColumnConfig[] = [
-    { id: "selection", label: "#", enabled: true },
-    { id: "nctId", label: "NCT ID", enabled: true },
-    { id: "briefTitle", label: "Title", enabled: true },
-    { id: "organization", label: "Sponsor / Organization", enabled: true },
-    { id: "status", label: "Status", enabled: true },
-    { id: "conditions", label: "Conditions", enabled: true },
-    { id: "startDate", label: "Start Date", enabled: true },
-    { id: "completionDate", label: "Completion Date", enabled: true },
-  ];
-
-  // If the query string has a "columns" parameter, initialize enabled state accordingly.
-  let initialColumns: ColumnConfig[] = defaultColumns;
-  if (currentQuery.columns) {
-    const columnsParam = currentQuery.columns as string;
-    const enabledIds = columnsParam.split(",");
-    initialColumns = defaultColumns.map((col) => ({
-      ...col,
-      enabled: enabledIds.includes(col.id),
-    }));
-  }
-
   const [searchTerm, setSearchTerm] = useState(termFromUrl);
   const [limit, setLimit] = useState(limitFromUrl);
   const [filterTokens, setFilterTokens] = useState<FilterToken[]>([]);
-  const [sortTokens, setSortTokens] = useState<SortToken[]>([]); // default no sort tokens if desired
-  const [displayColumns, setDisplayColumns] =
-    useState<ColumnConfig[]>(initialColumns);
+  const sortFromUrl = (currentQuery.sort as string) || "";
+  const initialSortTokens: SortToken[] = sortFromUrl
+    .split(",")
+    .filter(Boolean)
+    .map((tokenStr) => {
+      const [field, direction] = tokenStr.split(":");
+      return { field, direction: (direction as "asc" | "desc") || "asc" };
+    });
+  const [sortTokens, setSortTokens] = useState<SortToken[]>(initialSortTokens);
   const [queryString, setQueryString] = useState(qs.stringify(currentQuery));
   const [results, setResults] = useState<ClinicalTrial[]>([]);
 
@@ -64,25 +47,27 @@ export default function SearchPage() {
     q.term = searchTerm;
     q.limit = limit;
 
-    filterTokens.forEach((token) => {
-      q[`filter[${token.field}]`] = token.value;
-    });
+    if (filterTokens.length > 0) {
+      q.filter = {};
+      filterTokens.forEach((token) => {
+        q.filter[token.field] = token.value;
+      });
+    } else {
+      delete q.filter;
+    }
     if (sortTokens.length > 0) {
       q.sort = sortTokens.map((t) => `${t.field}:${t.direction}`).join(",");
+    } else {
+      delete q.sort;
     }
-    // Build the columns param from enabled columns, in order.
-    const enabledCols = displayColumns
-      .filter((col) => col.enabled)
-      .map((col) => col.id);
-    q.columns = enabledCols.join(",");
     q.page = 1;
+    console.log("SearchPage - Rebuilding query string from state:", q);
     setQueryString(qs.stringify(q));
   }, [
     filterTokens,
     sortTokens,
     searchTerm,
     limit,
-    displayColumns,
     searchParams,
   ]);
 
@@ -128,6 +113,8 @@ export default function SearchPage() {
         <GuidedFilterBar
           filters={filterTokens}
           onFiltersChange={setFilterTokens}
+          queryString={queryString}
+          updateQueryString={setQueryString}
         />
       </div>
 
@@ -139,7 +126,13 @@ export default function SearchPage() {
         <h2 className="text-lg font-semibold mb-2">Sort Order</h2>
         <GuidedSortBar
           sortTokens={sortTokens}
-          onSortTokensChange={setSortTokens}
+          queryString={queryString}
+          onSortTokensChange={(parsedTokens) => {
+            setSortTokens(parsedTokens);
+            const parsed = qs.parse(queryString);
+            setQueryString(qs.stringify(parsed));
+          }}
+          setQueryString={setQueryString}
           sortableFields={[
             "nctId",
             "briefTitle",
@@ -151,22 +144,21 @@ export default function SearchPage() {
         />
       </div>
 
-      <div className="mt-4">
-        <h2 className="text-lg font-semibold mb-2">Display Columns</h2>
-        <ColumnSelector
-          columns={displayColumns}
-          onColumnsChange={setDisplayColumns}
-        />
-      </div>
-
       {results && (
         <SearchResultsTable
           data={results}
           queryString={queryString}
           setQueryString={setQueryString}
-          displayColumns={displayColumns
-            .filter((col) => col.enabled)
-            .map((col) => col.id)}
+          displayColumns={[
+            "selection",
+            "nctId",
+            "briefTitle",
+            "organization",
+            "status",
+            "conditions",
+            "startDate",
+            "completionDate",
+          ]}
         />
       )}
     </div>

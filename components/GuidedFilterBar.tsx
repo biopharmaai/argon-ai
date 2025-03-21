@@ -1,9 +1,9 @@
-// File: /components/GuidedFilterBar.tsx
 "use client";
 
 import * as React from "react";
 import { X } from "lucide-react";
 import { filterEnumMap } from "@/types/filterEnums"; // adjust path if needed
+import qs from "qs";
 
 // A filter token representing a single filter, e.g. { field: "overallStatus", value: "RECRUITING" }
 export interface FilterToken {
@@ -14,11 +14,15 @@ export interface FilterToken {
 interface GuidedFilterBarProps {
   filters: FilterToken[];
   onFiltersChange: (filters: FilterToken[]) => void;
+  queryString: string;
+  updateQueryString: (newQueryString: string) => void;
 }
 
 export default function GuidedFilterBar({
   filters,
   onFiltersChange,
+  queryString,
+  updateQueryString,
 }: GuidedFilterBarProps) {
   const [selectedField, setSelectedField] = React.useState<string>("");
   const [selectedValue, setSelectedValue] = React.useState<string>("");
@@ -26,40 +30,86 @@ export default function GuidedFilterBar({
   // Get list of filterable fields from filterEnumMap keys
   const fields = Object.keys(filterEnumMap);
 
-  // When field changes, clear the value
+  // Sync filter state with query string and ensure no duplicates
+  React.useEffect(() => {
+    const parsed = qs.parse(queryString);
+    const filterParams = parsed.filter || {}; // Extract filters from URL
+
+    const newFilters: FilterToken[] = [];
+    for (const [field, value] of Object.entries(filterParams)) {
+      if (typeof value === "string") {
+        newFilters.push({ field, value });
+      }
+    }
+
+    // Avoid unnecessary re-renders by checking if filters changed
+    if (JSON.stringify(newFilters) !== JSON.stringify(filters)) {
+      onFiltersChange(newFilters);
+    }
+  }, [queryString]);
+
   const handleFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const field = e.target.value;
-    setSelectedField(field);
+    setSelectedField(e.target.value);
     setSelectedValue("");
   };
 
-  // Add the filter token if both field and value are selected
   const addFilter = () => {
     if (!selectedField || !selectedValue) return;
+
     const newToken: FilterToken = {
       field: selectedField,
       value: selectedValue,
     };
-    // Prevent duplicates
-    if (
-      !filters.some(
-        (token) =>
-          token.field === selectedField && token.value === selectedValue,
-      )
-    ) {
-      onFiltersChange([...filters, newToken]);
+
+    // Ensure only one filter per field (overwrite existing)
+    const updatedFilters = filters.filter((f) => f.field !== selectedField);
+    updatedFilters.push(newToken);
+    onFiltersChange(updatedFilters);
+
+    // Update query string correctly **without duplicating existing filters**
+    const queryObject = qs.parse(queryString);
+    const updatedQuery = {
+      ...queryObject,
+    };
+
+    if (updatedFilters.length > 0) {
+      updatedQuery.filter = {};
+      updatedFilters.forEach((token) => {
+        updatedQuery.filter[token.field] = token.value;
+      });
+    } else {
+      delete updatedQuery.filter;
     }
+    
+    console.log("GuidedFilterBar - Adding filter:", updatedQuery);
+    updateQueryString(qs.stringify(updatedQuery));
+
     setSelectedField("");
     setSelectedValue("");
   };
 
-  const removeFilter = (index: number) => {
-    const updated = filters.filter((_, i) => i !== index);
-    onFiltersChange(updated);
+  const removeFilter = (field: string) => {
+    const updatedFilters = filters.filter((f) => f.field !== field);
+    onFiltersChange(updatedFilters);
+
+    // Ensure filter is properly removed from URL
+    const queryObject = qs.parse(queryString);
+    if (queryObject.filter) {
+      delete queryObject.filter[field];
+      if (Object.keys(queryObject.filter).length === 0) {
+        delete queryObject.filter; // Remove empty filter object
+      }
+    }
+    console.log("GuidedFilterBar - Removing filter:", queryObject);
+    updateQueryString(qs.stringify(queryObject));
   };
 
   const clearAll = () => {
     onFiltersChange([]);
+    const queryObject = qs.parse(queryString);
+    delete queryObject.filter; // Remove all filters
+    console.log("GuidedFilterBar - Clearing all filters:", queryObject);
+    updateQueryString(qs.stringify(queryObject));
   };
 
   return (
@@ -104,18 +154,19 @@ export default function GuidedFilterBar({
           Add Filter
         </button>
       </div>
+
       {/* Display current filter tokens */}
       <div className="flex flex-wrap gap-2">
-        {filters.map((token, index) => (
+        {filters.map((token) => (
           <div
-            key={index}
+            key={token.field}
             className="flex items-center bg-gray-200 rounded px-2 py-1"
           >
             <span className="text-sm">
               {token.field}: {token.value}
             </span>
             <button
-              onClick={() => removeFilter(index)}
+              onClick={() => removeFilter(token.field)}
               className="ml-1"
               title="Remove filter"
             >
@@ -124,6 +175,7 @@ export default function GuidedFilterBar({
           </div>
         ))}
       </div>
+
       {filters.length > 0 && (
         <button
           onClick={clearAll}

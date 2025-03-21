@@ -10,41 +10,30 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronUp, ChevronDown, X } from "lucide-react";
+import qs from "qs";
 
-/** Represents a single sort instruction, e.g. { field: "nctId", direction: "asc" } */
 export interface SortToken {
   field: string;
   direction: "asc" | "desc";
 }
 
-/** Props for the guided sort bar. */
 interface GuidedSortBarProps {
-  /** The current list of sort tokens, in priority order (top = highest priority). */
   sortTokens: SortToken[];
-
-  /** Callback when the user changes the sort tokens (by adding, removing, or reordering). */
   onSortTokensChange: (newTokens: SortToken[]) => void;
-
-  /** List of possible fields the user can sort by. */
   sortableFields: string[];
+  queryString: string;
+  setQueryString: (qs: string) => void;
 }
 
-/**
- * A single draggable item in the sort list.
- * Displays the field and direction, with a drag handle and remove button.
- */
 function SortableSortItem({
   token,
-  index,
   onRemove,
   onToggleDirection,
 }: {
   token: SortToken;
-  index: number;
   onRemove: () => void;
   onToggleDirection: () => void;
 }) {
-  // Use the field name as the unique ID for dnd-kit
   const {
     attributes,
     listeners,
@@ -67,12 +56,9 @@ function SortableSortItem({
       {...attributes}
       className="flex items-center border border-gray-300 rounded px-2 py-1 bg-white"
     >
-      {/* Drag handle */}
       <div {...listeners} className="mr-2 cursor-grab select-none">
         ☰
       </div>
-
-      {/* Field & Direction (click to toggle asc/desc) */}
       <div
         className="flex-1 flex items-center select-none"
         onClick={onToggleDirection}
@@ -84,8 +70,6 @@ function SortableSortItem({
           <ChevronDown className="h-4 w-4" />
         )}
       </div>
-
-      {/* Remove button */}
       <button onClick={onRemove} className="ml-2" title="Remove sort">
         <X className="h-4 w-4 text-gray-500 hover:text-red-600" />
       </button>
@@ -93,73 +77,89 @@ function SortableSortItem({
   );
 }
 
-/**
- * A guided approach to building a multi-field sort order:
- *  - user picks a field from a dropdown
- *  - user picks asc/desc
- *  - user adds the sort token to the list
- *  - the list is draggable (top = highest priority)
- *  - user can remove tokens individually or clear all
- */
 export default function GuidedSortBar({
   sortTokens,
   onSortTokensChange,
   sortableFields,
+  queryString,
+  setQueryString,
 }: GuidedSortBarProps) {
   const [selectedField, setSelectedField] = React.useState("");
   const [selectedDirection, setSelectedDirection] = React.useState<
     "asc" | "desc"
   >("asc");
 
-  /** Add the new sort token (if valid) */
+  const updateTokensAndQueryString = (newTokens: SortToken[]) => {
+    const parsed = qs.parse(queryString);
+    if (newTokens.length > 0) {
+      parsed.sort = newTokens.map((t) => `${t.field}:${t.direction}`).join(",");
+    } else {
+      delete parsed.sort;
+    }
+    console.log("GuidedSortBar - Updating sort tokens:", parsed);
+    setQueryString(qs.stringify(parsed));
+    onSortTokensChange(newTokens);
+  };
+
   const addSort = () => {
     if (!selectedField) return;
-    const newToken: SortToken = {
-      field: selectedField,
-      direction: selectedDirection,
-    };
-    // Avoid duplicates (by field name)
     if (!sortTokens.some((t) => t.field === selectedField)) {
-      onSortTokensChange([...sortTokens, newToken]);
+      updateTokensAndQueryString([
+        ...sortTokens,
+        { field: selectedField, direction: selectedDirection },
+      ]);
     }
     setSelectedField("");
     setSelectedDirection("asc");
   };
 
-  /** Remove a token by index */
-  const removeSort = (index: number) => {
-    const updated = sortTokens.filter((_, i) => i !== index);
-    onSortTokensChange(updated);
+  const removeSort = (field: string) => {
+    const updated = sortTokens.filter((t) => t.field !== field);
+    console.log("updated", updated);
+    updateTokensAndQueryString(updated);
   };
 
-  /** Clear all tokens */
-  const clearAll = () => {
-    onSortTokensChange([]);
+  const toggleDirection = (field: string) => {
+    const token = sortTokens.find((t) => t.field === field);
+    if (!token) return;
+    if (token.direction === "asc") {
+      updateTokensAndQueryString(
+        sortTokens.map((t) =>
+          t.field === field ? { ...t, direction: "desc" } : t,
+        ),
+      );
+    } else {
+      removeSort(field);
+    }
   };
 
-  /** Reorder tokens after a drag event */
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     const oldIndex = sortTokens.findIndex((t) => t.field === active.id);
     const newIndex = sortTokens.findIndex((t) => t.field === over.id);
     const newTokens = arrayMove(sortTokens, oldIndex, newIndex);
-    onSortTokensChange(newTokens);
+    updateTokensAndQueryString(newTokens);
   };
 
-  /** Toggle direction when user clicks on a token */
-  const toggleDirection = (field: string) => {
-    const newTokens = sortTokens.map((token) =>
-      token.field === field
-        ? { ...token, direction: token.direction === "asc" ? "desc" : "asc" }
-        : token,
-    );
-    onSortTokensChange(newTokens);
-  };
+  React.useEffect(() => {
+    const parsed = qs.parse(queryString);
+    const sortParam = (parsed.sort as string) || "";
+    const parsedTokens: SortToken[] = sortParam
+      .split(",")
+      .filter((token) => token.trim() !== "")
+      .map((tokenStr) => {
+        const [field, direction] = tokenStr.split(":");
+        return { field, direction: (direction as "asc" | "desc") || "asc" };
+      });
+
+    if (JSON.stringify(parsedTokens) !== JSON.stringify(sortTokens)) {
+      onSortTokensChange(parsedTokens);
+    }
+  }, [queryString]);
 
   return (
     <div className="flex flex-col space-y-4">
-      {/* Section to pick a new field & direction */}
       <div className="flex items-center space-x-2">
         <select
           value={selectedField}
@@ -192,7 +192,6 @@ export default function GuidedSortBar({
         </button>
       </div>
 
-      {/* Current list of sort tokens (draggable) */}
       {sortTokens.length > 0 && (
         <>
           <DndContext
@@ -200,25 +199,23 @@ export default function GuidedSortBar({
             onDragEnd={handleDragEnd}
           >
             <SortableContext
-              items={sortTokens.map((token) => token.field)}
+              items={sortTokens.map((t) => t.field)}
               strategy={verticalListSortingStrategy}
             >
               <div className="flex flex-col space-y-2">
-                {sortTokens.map((token, index) => (
+                {sortTokens.map((token) => (
                   <SortableSortItem
                     key={token.field}
                     token={token}
-                    index={index}
-                    onRemove={() => removeSort(index)}
+                    onRemove={() => removeSort(token.field)}
                     onToggleDirection={() => toggleDirection(token.field)}
                   />
                 ))}
               </div>
             </SortableContext>
           </DndContext>
-
           <button
-            onClick={clearAll}
+            onClick={() => updateTokensAndQueryString([])}
             className="text-sm text-blue-600 underline self-start"
           >
             Clear All Sorts
