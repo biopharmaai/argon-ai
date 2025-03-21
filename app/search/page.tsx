@@ -28,18 +28,18 @@ export default function SearchPage() {
 
   const [searchTerm, setSearchTerm] = useState(termFromUrl);
   const [limit, setLimit] = useState(limitFromUrl);
-  const [filterTokens, setFilterTokens] = useState<FilterToken[]>([]);
+  const [filterTokens, setFilterTokens] = useState<FilterToken>();
   const sortFromUrl = (currentQuery.sort as string) || "";
-  const initialSortTokens: SortToken[] = sortFromUrl
+  const initialSortTokens: SortToken = sortFromUrl
     .split(",")
     .filter(Boolean)
     .map((tokenStr) => {
       const [field, direction] = tokenStr.split(":");
       return { field, direction: (direction as "asc" | "desc") || "asc" };
     });
-  const [sortTokens, setSortTokens] = useState<SortToken[]>(initialSortTokens);
+  const [sortTokens, setSortTokens] = useState<SortToken>(initialSortTokens);
   const [queryString, setQueryString] = useState(qs.stringify(currentQuery));
-  const [results, setResults] = useState<ClinicalTrial[]>([]);
+  const [results, setResults] = useState<ClinicalTrial>();
 
   const hasMountedRef = useRef(false);
 
@@ -59,13 +59,13 @@ export default function SearchPage() {
       filterTokens.forEach((token) => {
         q.filter[token.field] = token.value;
       });
-    } else if ('filter' in q) {
+    } else if ("filter" in q) {
       delete q.filter;
     }
 
-    if (sortTokens.length > 0) {
-      q.sort = sortTokens.map((t) => `${t.field}:${t.direction}`).join(',');
-    } else if ('sort' in q) {
+    if (Array.isArray(sortTokens) && sortTokens.length > 0) {
+      q.sort = sortTokens.map((t) => `${t.field}:${t.direction}`).join(",");
+    } else if ("sort" in q) {
       delete q.sort;
     }
 
@@ -80,6 +80,7 @@ export default function SearchPage() {
     sortTokens,
     searchTerm,
     limit,
+    searchParams, // Added searchParams to the dependency array
   ]);
 
   // Push the query string to the URL and fetch results.
@@ -115,6 +116,10 @@ export default function SearchPage() {
     [searchParams],
   );
 
+  const handleSortTokensChange = useCallback((newSortTokens: SortToken) => {
+    setSortTokens(newSortTokens);
+  });
+
   return (
     <div className="w-full mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Search Page</h1>
@@ -137,13 +142,7 @@ export default function SearchPage() {
         <h2 className="text-lg font-semibold mb-2">Sort Order</h2>
         <GuidedSortBar
           sortTokens={sortTokens}
-          queryString={queryString}
-          onSortTokensChange={(parsedTokens) => {
-            setSortTokens(parsedTokens);
-            const parsed = qs.parse(queryString);
-            setQueryString(qs.stringify(parsed));
-          }}
-          setQueryString={setQueryString}
+          onSortTokensChange={handleSortTokensChange}
           sortableFields={[
             "nctId",
             "briefTitle",
@@ -158,8 +157,8 @@ export default function SearchPage() {
       {results && (
         <SearchResultsTable
           data={results}
-          queryString={queryString}
-          setQueryString={setQueryString}
+          sortTokens={sortTokens}
+          onSortChange={handleSortTokensChange} // Ensure this is passed correctly
           displayColumns={[
             "selection",
             "nctId",

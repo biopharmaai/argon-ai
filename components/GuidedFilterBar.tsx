@@ -87,7 +87,7 @@ export default function GuidedFilterBar({
     } else {
       delete updatedQuery.filter;
     }
-    
+
     console.log("GuidedFilterBar - Adding filter:", updatedQuery);
     updateQueryString(qs.stringify(updatedQuery));
 
@@ -164,26 +164,27 @@ export default function GuidedFilterBar({
 
       {/* Display current filter tokens */}
       <div className="flex flex-wrap gap-2">
-        {filters.map((token) => (
-          <div
-            key={token.field}
-            className="flex items-center bg-gray-200 rounded px-2 py-1"
-          >
-            <span className="text-sm">
-              {token.field}: {token.value}
-            </span>
-            <button
-              onClick={() => removeFilter(token.field)}
-              className="ml-1"
-              title="Remove filter"
+        {Array.isArray(filters) &&
+          filters.map((token) => (
+            <div
+              key={token.field}
+              className="flex items-center bg-gray-200 rounded px-2 py-1"
             >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        ))}
+              <span className="text-sm">
+                {token.field}: {token.value}
+              </span>
+              <button
+                onClick={() => removeFilter(token.field)}
+                className="ml-1"
+                title="Remove filter"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
       </div>
 
-      {filters.length > 0 && (
+      {Array.isArray(filters) && filters.length > 0 && (
         <button
           onClick={clearAll}
           className="text-sm text-blue-600 underline self-start"

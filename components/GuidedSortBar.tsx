@@ -18,11 +18,9 @@ export interface SortToken {
 }
 
 interface GuidedSortBarProps {
-  sortTokens: SortToken[];
-  onSortTokensChange: (newTokens: SortToken[]) => void;
-  sortableFields: string[];
-  queryString: string;
-  setQueryString: (qs: string) => void;
+  sortTokens: SortToken;
+  onSortTokensChange: (newTokens: SortToken) => void;
+  sortableFields: string;
 }
 
 function SortableSortItem({
@@ -81,57 +79,40 @@ export default function GuidedSortBar({
   sortTokens,
   onSortTokensChange,
   sortableFields,
-  queryString,
-  setQueryString,
-}: GuidedSortBarProps) {
+}: Omit<GuidedSortBarProps, "queryString" | "setQueryString">) {
   const [selectedField, setSelectedField] = React.useState("");
   const [selectedDirection, setSelectedDirection] = React.useState<
     "asc" | "desc"
   >("asc");
-  const hasMountedRef = React.useRef(false);
-
-  const updateTokensAndQueryString = (newTokens: SortToken[]) => {
-    const parsed = qs.parse(queryString);
-    if (newTokens.length > 0) {
-      parsed.sort = newTokens.map((t) => `${t.field}:${t.direction}`).join(",");
-    } else {
-      delete parsed.sort;
-    }
-    console.log("GuidedSortBar - Updating sort tokens:", parsed);
-    setQueryString(qs.stringify(parsed));
-    onSortTokensChange(newTokens);
-  };
 
   const addSort = () => {
     if (!selectedField) return;
-    if (!sortTokens.some((t) => t.field === selectedField)) {
-      updateTokensAndQueryString([
+    if (!sortTokens.some((token) => token.field === selectedField)) {
+      onSortTokensChange([
         ...sortTokens,
         { field: selectedField, direction: selectedDirection },
       ]);
     }
     setSelectedField("");
-    setSelectedDirection("asc");
+    setSelectedDirection("asc"); // Reset direction after adding
   };
 
   const removeSort = (field: string) => {
     const updated = sortTokens.filter((t) => t.field !== field);
-    console.log("updated", updated);
-    updateTokensAndQueryString(updated);
+    onSortTokensChange(updated);
   };
 
   const toggleDirection = (field: string) => {
-    const token = sortTokens.find((t) => t.field === field);
-    if (!token) return;
-    if (token.direction === "asc") {
-      updateTokensAndQueryString(
-        sortTokens.map((t) =>
-          t.field === field ? { ...t, direction: "desc" } : t,
-        ),
-      );
-    } else {
-      removeSort(field);
-    }
+    const updatedTokens = sortTokens.map((token) => {
+      if (token.field === field) {
+        return {
+          ...token,
+          direction: token.direction === "asc" ? "desc" : "asc",
+        };
+      }
+      return token;
+    });
+    onSortTokensChange(updatedTokens);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -140,30 +121,12 @@ export default function GuidedSortBar({
     const oldIndex = sortTokens.findIndex((t) => t.field === active.id);
     const newIndex = sortTokens.findIndex((t) => t.field === over.id);
     const newTokens = arrayMove(sortTokens, oldIndex, newIndex);
-    updateTokensAndQueryString(newTokens);
+    onSortTokensChange(newTokens);
   };
 
-  React.useEffect(() => {
-    const parsed = qs.parse(queryString);
-    const sortParam = (parsed.sort as string) || "";
-    const parsedTokens: SortToken[] = sortParam
-      .split(",")
-      .filter((token) => token.trim() !== "")
-      .map((tokenStr) => {
-        const [field, direction] = tokenStr.split(":");
-        return { field, direction: (direction as "asc" | "desc") || "asc" };
-      });
-
-    if (!hasMountedRef.current) {
-      hasMountedRef.current = true;
-      onSortTokensChange(parsedTokens); // Only apply once on first load
-      return;
-    }
-
-    if (JSON.stringify(parsedTokens) !== JSON.stringify(sortTokens)) {
-      onSortTokensChange(parsedTokens);
-    }
-  }, [queryString]);
+  const clearAllSorts = () => {
+    onSortTokensChange();
+  };
 
   return (
     <div className="flex flex-col space-y-4">
@@ -180,16 +143,20 @@ export default function GuidedSortBar({
             </option>
           ))}
         </select>
-        <select
-          value={selectedDirection}
-          onChange={(e) =>
-            setSelectedDirection(e.target.value as "asc" | "desc")
-          }
-          className="border border-gray-300 rounded px-2 py-1"
-        >
-          <option value="asc">asc</option>
-          <option value="desc">desc</option>
-        </select>
+
+        {selectedField && (
+          <select
+            value={selectedDirection}
+            onChange={(e) =>
+              setSelectedDirection(e.target.value as "asc" | "desc")
+            }
+            className="border border-gray-300 rounded px-2 py-1"
+          >
+            <option value="asc">asc</option>
+            <option value="desc">desc</option>
+          </select>
+        )}
+
         <button
           onClick={addSort}
           disabled={!selectedField}
@@ -199,7 +166,7 @@ export default function GuidedSortBar({
         </button>
       </div>
 
-      {sortTokens.length > 0 && (
+      {Array.isArray(sortTokens) && sortTokens.length > 0 && (
         <>
           <DndContext
             collisionDetection={closestCenter}
@@ -222,7 +189,7 @@ export default function GuidedSortBar({
             </SortableContext>
           </DndContext>
           <button
-            onClick={() => updateTokensAndQueryString([])}
+            onClick={clearAllSorts}
             className="text-sm text-blue-600 underline self-start"
           >
             Clear All Sorts
