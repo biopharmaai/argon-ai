@@ -28,7 +28,7 @@ export default function SearchPage() {
 
   const [searchTerm, setSearchTerm] = useState(termFromUrl);
   const [limit, setLimit] = useState(limitFromUrl);
-  const [filterTokens, setFilterTokens] = useState<FilterToken>();
+  const [filterTokens, setFilterTokens] = useState<FilterToken[]>([]); // Fixed: initialize as empty array
   const sortFromUrl = (currentQuery.sort as string) || "";
   const initialSortTokens: SortToken[] = sortFromUrl
     .split(",")
@@ -39,7 +39,7 @@ export default function SearchPage() {
     });
   const [sortTokens, setSortTokens] = useState<SortToken[]>(initialSortTokens);
   const [queryString, setQueryString] = useState(qs.stringify(currentQuery));
-  const [results, setResults] = useState<ClinicalTrial[]>();
+  const [results, setResults] = useState<ClinicalTrial[]>([]); // Fixed: initialize as empty array
 
   const hasMountedRef = useRef(false);
 
@@ -81,6 +81,7 @@ export default function SearchPage() {
     searchTerm,
     limit,
     searchParams, // Added searchParams to the dependency array
+    queryString, // Added queryString to check against new query string
   ]);
 
   // Push the query string to the URL and fetch results.
@@ -116,9 +117,9 @@ export default function SearchPage() {
     [searchParams],
   );
 
-  const handleSortTokensChange = useCallback((newSortTokens: SortToken) => {
+  const handleSortTokensChange = useCallback((newSortTokens: SortToken[]) => {
     setSortTokens(newSortTokens);
-  });
+  }, []);
 
   return (
     <div className="w-full mx-auto p-6">
@@ -159,7 +160,7 @@ export default function SearchPage() {
           data={results}
           sortTokens={sortTokens}
           setQueryString={setQueryString}
-          onSortChange={handleSortTokensChange} // Ensure this is passed correctly
+          onSortChange={handleSortTokensChange}
           displayColumns={[
             "selection",
             "nctId",

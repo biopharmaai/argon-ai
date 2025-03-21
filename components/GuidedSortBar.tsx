@@ -19,8 +19,8 @@ export interface SortToken {
 
 interface GuidedSortBarProps {
   sortTokens: SortToken[];
-  onSortTokensChange: (newTokens: SortToken) => void;
-  sortableFields: string;
+  onSortTokensChange: (newTokens: SortToken[]) => void; // Fixed: changed to SortToken[]
+  sortableFields: string[];
 }
 
 function SortableSortItem({
@@ -79,7 +79,7 @@ export default function GuidedSortBar({
   sortTokens,
   onSortTokensChange,
   sortableFields,
-}: Omit<GuidedSortBarProps, "queryString" | "setQueryString">) {
+}: GuidedSortBarProps) {
   const [selectedField, setSelectedField] = React.useState("");
   const [selectedDirection, setSelectedDirection] = React.useState<
     "asc" | "desc"
@@ -125,7 +125,7 @@ export default function GuidedSortBar({
   };
 
   const clearAllSorts = () => {
-    onSortTokensChange();
+    onSortTokensChange([]); // Fixed: passing empty array instead of undefined
   };
 
   return (

@@ -25,71 +25,68 @@ import {
 
 export type SearchResultsTableProps = {
   data: ClinicalTrial[];
-  queryString: string;
+  sortTokens: SortToken[];
+  onSortChange: (tokens: SortToken[]) => void;
   setQueryString: (newQS: string) => void;
   displayColumns: string[]; // Array of column IDs to display, in order.
 };
 
 export default function SearchResultsTable({
   data,
-  queryString,
+  sortTokens,
+  onSortChange,
   setQueryString,
   displayColumns,
 }: SearchResultsTableProps) {
   const columnHelper = createColumnHelper<ClinicalTrial>();
 
   const toggleSort = React.useCallback(
-    (field: string, queryStringValue: string) => {
-      const q = qs.parse(queryStringValue);
-      const currentSort = (q.sort as string) || "";
-      const currentItems = currentSort
-        ? currentSort.split(",").filter(Boolean)
-        : []; // Corrected line
-
-      const index = currentItems.findIndex(
-        (item) => item.split(":")[0] === field,
+    (field: string) => {
+      // Check if the field is already in the sort tokens
+      const existingIndex = sortTokens.findIndex(
+        (token) => token.field === field,
       );
+      let newSortTokens: SortToken[];
 
-      if (index === -1) {
+      if (existingIndex === -1) {
         // Field not present: add it as ascending
-        currentItems.push(`${field}:asc`);
+        newSortTokens = [...sortTokens, { field, direction: "asc" }];
       } else {
-        const [_, direction] = currentItems[index].split(":");
-        if (direction === "asc") {
-          currentItems[index] = `${field}:desc`;
-        } else if (direction === "desc") {
-          currentItems.splice(index, 1);
+        // Field exists: toggle direction or remove
+        const currentDirection = sortTokens[existingIndex].direction;
+        if (currentDirection === "asc") {
+          // Toggle to descending
+          newSortTokens = sortTokens.map((token) =>
+            token.field === field ? { ...token, direction: "desc" } : token,
+          );
+        } else {
+          // Remove from sort tokens
+          newSortTokens = sortTokens.filter((token) => token.field !== field);
         }
       }
 
-      if (currentItems.length > 0) {
-        q.sort = currentItems.join(",");
-      } else {
-        delete q.sort;
+      // Update sortTokens state via callback
+      onSortChange(newSortTokens);
+
+      // Update query string
+      const q = qs.parse("");
+      if (newSortTokens.length > 0) {
+        q.sort = newSortTokens
+          .map((t) => `${t.field}:${t.direction}`)
+          .join(",");
       }
 
       console.log("SearchResultsTable - Toggling sort:", q);
       setQueryString(qs.stringify(q));
     },
-    [setQueryString],
+    [sortTokens, onSortChange, setQueryString],
   );
 
   const renderSortableHeader = React.useCallback(
     (field: string, label: string) => {
-      const query = qs.parse(queryString);
-      const currentSort: string = (query.sort as string) || "";
-      const sortItems = currentSort
-        ? currentSort.split(",").filter(Boolean)
-        : [];
-
-      let sortDirection: "asc" | "desc" | null = null;
-      for (const item of sortItems) {
-        const [f, d] = item.split(":");
-        if (f === field) {
-          sortDirection = d === "desc" ? "desc" : "asc";
-          break;
-        }
-      }
+      // Find if the field exists in current sort tokens
+      const sortToken = sortTokens.find((token) => token.field === field);
+      const sortDirection = sortToken?.direction;
 
       let icon = null;
       if (sortDirection === "asc") {
@@ -101,14 +98,14 @@ export default function SearchResultsTable({
       return (
         <div
           className="flex items-center cursor-pointer select-none"
-          onClick={() => toggleSort(field, queryString)}
+          onClick={() => toggleSort(field)}
         >
           <span>{label}</span>
           {icon}
         </div>
       );
     },
-    [queryString, toggleSort],
+    [sortTokens, toggleSort],
   );
 
   const allColumns = useMemo(
