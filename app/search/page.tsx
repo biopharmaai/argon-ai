@@ -1,107 +1,93 @@
+// In /app/search/page.tsx
 "use client";
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import SearchBar from "@/components/SearchBar";
-import LimitDropdown from "@/components/LimitsDropdown";
-import { useSearchParams } from "next/navigation";
-import SearchResultsTable from "@/components/SearchResultsTable";
-import { useEffect } from "react";
+
+import { useState, useCallback, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import qs from "qs";
 import { ClinicalTrial } from "@/types/clinicalTrials";
+import SearchBar from "@/components/SearchBar";
+import LimitDropdown from "@/components/LimitDropdown";
+import SearchResultsTable from "@/components/SearchResultsTable";
+import GuidedFilterBar, { FilterToken } from "@/components/GuidedFilterBar";
 
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Parse initial query parameters
   const currentQuery = qs.parse(searchParams.toString());
   const termFromUrl = (currentQuery.term as string) || "";
   const limitFromUrl = Number((currentQuery.limit as string) || "10");
+
   const [searchTerm, setSearchTerm] = useState(termFromUrl);
   const [limit, setLimit] = useState(limitFromUrl);
-  const [queryString, setQueryString] = useState("");
+  const [filters, setFilters] = useState<FilterToken[]>([]);
+  const [queryString, setQueryString] = useState(qs.stringify(currentQuery));
   const [results, setResults] = useState<ClinicalTrial[]>([]);
 
+  // Update query string when filters change
   useEffect(() => {
     const currentQuery = qs.parse(searchParams.toString());
-    qs.parse(searchParams.toString());
-    const termFromUrl = (currentQuery.term as string) || "";
-    const limitFromUrl = Number((currentQuery.limit as string) || "10");
-    setLimit(Number(limitFromUrl));
-    setSearchTerm(termFromUrl);
+    filters.forEach((token) => {
+      currentQuery[`filter[${token.field}]`] = token.value;
+    });
+    currentQuery["page"] = 1;
     setQueryString(qs.stringify(currentQuery));
+  }, [filters, searchParams]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  // When query string updates, push new URL and fetch data
   useEffect(() => {
     router.push(`?${queryString}`);
-
     const getData = async () => {
       const response = await fetch(`/api/search?${queryString}`);
-      console.log("results returned", response);
-      const results = await response.json();
-      setResults(results.data);
+      const resultsData = await response.json();
+      setResults(resultsData.data);
     };
     getData();
   }, [queryString, router]);
-  // Memoize handleSearchChange to avoid recreating it on every render
+
   const handleSearchChange = useCallback(
     (term: string) => {
-      // Get the current query parameters as an object
-
       setSearchTerm(term);
       const currentQuery = qs.parse(searchParams.toString());
-      // Update the search term in the query object
-      const newQuery = { ...currentQuery, term: term, page: 1 }; // Reset page on new search
-      // Stringify the new query object using qs
-      const newQueryString = qs.stringify(newQuery);
-      // Update the URL
-      setQueryString(newQueryString);
-      // router.push(`?${newQueryString}`);
+      const newQuery = { ...currentQuery, term: term, page: 1 };
+      setQueryString(qs.stringify(newQuery));
     },
     [searchParams],
   );
 
   const onLimitChange = useCallback(
     (newLimit: number) => {
-      console.log("limit change", newLimit);
-      // Get the current query parameters as an object
       const currentQuery = qs.parse(searchParams.toString());
-      // Update the limit in the query object
-      const newQuery = { ...currentQuery, limit: newLimit, page: 1 }; // Optionally reset page
-      // Stringify the new query object using qs
-      const newQueryString = qs.stringify(newQuery);
-      // Update the URL
-      // router.push(`?${newQueryString}`);
-      setQueryString(newQueryString);
+      const newQuery = { ...currentQuery, limit: newLimit, page: 1 };
+      setQueryString(qs.stringify(newQuery));
     },
     [searchParams],
   );
 
-  // Initialize state from the query string on mount:
   useEffect(() => {
     const parsedParams = qs.parse(searchParams.toString());
-    const termFromUrl = (parsedParams.search as string) || "";
+    const termFromUrl = (parsedParams.term as string) || "";
     const limitFromUrl = (parsedParams.limit as string) || "10";
-    setLimit(Number(limitFromUrl));
     setSearchTerm(termFromUrl);
+    setLimit(Number(limitFromUrl));
   }, [searchParams]);
-
-  // console.log("results are ", results);
-  console.log("term", searchTerm);
-  console.log("limit", limit);
 
   return (
     <div className="w-full mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Search Page</h1>
       <SearchBar onChange={handleSearchChange} value={searchTerm} />
-      <LimitDropdown onChange={onLimitChange} value={limit} />
-      {/* Your search results and other UI would go here */}
+      <div className="mt-4">
+        <GuidedFilterBar filters={filters} onFiltersChange={setFilters} />
+      </div>
+      <div className="mt-4">
+        <LimitDropdown onChange={onLimitChange} value={limit} />
+      </div>
       {results && (
         <SearchResultsTable
           data={results}
-          setQueryString={setQueryString}
           queryString={queryString}
+          setQueryString={setQueryString}
         />
       )}
     </div>

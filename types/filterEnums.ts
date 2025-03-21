@@ -104,3 +104,21 @@ export enum DateType {
   Actual = "ACTUAL",
   Estimated = "ESTIMATED",
 }
+
+export const filterEnumMap = {
+  overallStatus: Object.values(OverallStatus),
+  studyType: Object.values(StudyType),
+  masking: Object.values(Masking),
+  responsiblePartyType: Object.values(ResponsiblePartyType),
+  organizationClass: Object.values(OrganizationClass),
+  allocation: Object.values(Allocation),
+  interventionModel: Object.values(InterventionModel),
+  primaryPurpose: Object.values(PrimaryPurpose),
+  studyPhase: Object.values(StudyPhase),
+  interventionType: Object.values(InterventionType),
+  ipdSharing: Object.values(IPDSharing),
+  standardAge: Object.values(StandardAge),
+  sex: Object.values(Sex),
+  samplingMethod: Object.values(SamplingMethod),
+  dateType: Object.values(DateType),
+};
