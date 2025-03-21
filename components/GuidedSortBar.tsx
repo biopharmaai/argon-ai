@@ -88,6 +88,7 @@ export default function GuidedSortBar({
   const [selectedDirection, setSelectedDirection] = React.useState<
     "asc" | "desc"
   >("asc");
+  const hasMountedRef = React.useRef(false);
 
   const updateTokensAndQueryString = (newTokens: SortToken[]) => {
     const parsed = qs.parse(queryString);
@@ -152,6 +153,12 @@ export default function GuidedSortBar({
         const [field, direction] = tokenStr.split(":");
         return { field, direction: (direction as "asc" | "desc") || "asc" };
       });
+
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      onSortTokensChange(parsedTokens); // Only apply once on first load
+      return;
+    }
 
     if (JSON.stringify(parsedTokens) !== JSON.stringify(sortTokens)) {
       onSortTokensChange(parsedTokens);

@@ -26,6 +26,7 @@ export default function GuidedFilterBar({
 }: GuidedFilterBarProps) {
   const [selectedField, setSelectedField] = React.useState<string>("");
   const [selectedValue, setSelectedValue] = React.useState<string>("");
+  const hasMountedRef = React.useRef(false);
 
   // Get list of filterable fields from filterEnumMap keys
   const fields = Object.keys(filterEnumMap);
@@ -33,13 +34,19 @@ export default function GuidedFilterBar({
   // Sync filter state with query string and ensure no duplicates
   React.useEffect(() => {
     const parsed = qs.parse(queryString);
-    const filterParams = parsed.filter || {}; // Extract filters from URL
+    const filterParams = parsed.filter || {};
 
     const newFilters: FilterToken[] = [];
     for (const [field, value] of Object.entries(filterParams)) {
       if (typeof value === "string") {
         newFilters.push({ field, value });
       }
+    }
+
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      onFiltersChange(newFilters); // Only apply once on first load
+      return;
     }
 
     // Avoid unnecessary re-renders by checking if filters changed

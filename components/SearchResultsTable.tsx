@@ -37,6 +37,8 @@ export default function SearchResultsTable({
 }: SearchResultsTableProps) {
   const columnHelper = createColumnHelper<ClinicalTrial>();
 
+  const hasMountedRef = React.useRef(false); // Added hasMountedRef
+
   /**
    * This function toggles the sort state for a given field in the query string.
    * It cycles through:

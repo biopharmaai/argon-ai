@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import qs from "qs";
 import { ClinicalTrial } from "@/types/clinicalTrials";
@@ -41,8 +41,15 @@ export default function SearchPage() {
   const [queryString, setQueryString] = useState(qs.stringify(currentQuery));
   const [results, setResults] = useState<ClinicalTrial[]>([]);
 
+  const hasMountedRef = useRef(false);
+
   // Rebuild the query string when filters, sort tokens, search term, limit, or columns change.
   useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return; // Skip initial sync on mount
+    }
+
     const q = qs.parse(searchParams.toString());
     q.term = searchTerm;
     q.limit = limit;
@@ -52,23 +59,27 @@ export default function SearchPage() {
       filterTokens.forEach((token) => {
         q.filter[token.field] = token.value;
       });
-    } else {
+    } else if ('filter' in q) {
       delete q.filter;
     }
+
     if (sortTokens.length > 0) {
-      q.sort = sortTokens.map((t) => `${t.field}:${t.direction}`).join(",");
-    } else {
+      q.sort = sortTokens.map((t) => `${t.field}:${t.direction}`).join(',');
+    } else if ('sort' in q) {
       delete q.sort;
     }
+
     q.page = 1;
-    console.log("SearchPage - Rebuilding query string from state:", q);
-    setQueryString(qs.stringify(q));
+    const newQS = qs.stringify(q);
+    if (newQS !== queryString) {
+      console.log("SearchPage - Rebuilding query string from state:", q);
+      setQueryString(newQS);
+    }
   }, [
     filterTokens,
     sortTokens,
     searchTerm,
     limit,
-    searchParams,
   ]);
 
   // Push the query string to the URL and fetch results.
