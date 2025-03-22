@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import * as React from "react";
 import { X } from "lucide-react";
 import { filterEnumMap } from "@/types/filterEnums"; // adjust path if needed
@@ -12,46 +13,47 @@ export interface FilterToken {
 }
 
 interface GuidedFilterBarProps {
-  filters: FilterToken[];
+  // filters: FilterToken[];
   onFiltersChange: (filters: FilterToken[]) => void;
   queryString: string;
-  updateQueryString: (newQueryString: string) => void;
+  // updateQueryString: (newQueryString: string) => void;
 }
 
 export default function GuidedFilterBar({
-  filters,
   onFiltersChange,
   queryString,
-  updateQueryString,
+  // updateQueryString,
 }: GuidedFilterBarProps) {
   const [selectedField, setSelectedField] = React.useState<string>("");
   const [selectedValue, setSelectedValue] = React.useState<string>("");
-  const hasMountedRef = React.useRef(false);
 
+  const [filterTokens, setFilterTokens] = useState<FilterToken[]>(() => {
+    const query = qs.parse(queryString, { ignoreQueryPrefix: true });
+
+    if (typeof query.filter === "object" && query.filter !== null) {
+      return Object.entries(query.filter).map(([field, value]) => ({
+        field,
+        value: String(value),
+      }));
+    }
+    return [];
+  });
   // Get list of filterable fields from filterEnumMap keys
   const fields = Object.keys(filterEnumMap);
 
-  // Sync filter state with query string and ensure no duplicates
-  React.useEffect(() => {
-    const parsed = qs.parse(queryString);
-    const filterParams = parsed.filter || {};
+  useEffect(() => {
+    const query = qs.parse(queryString, { ignoreQueryPrefix: true });
 
-    const newFilters: FilterToken[] = [];
-    for (const [field, value] of Object.entries(filterParams)) {
-      if (typeof value === "string") {
-        newFilters.push({ field, value });
-      }
-    }
-
-    if (!hasMountedRef.current) {
-      hasMountedRef.current = true;
-      onFiltersChange(newFilters); // Only apply once on first load
-      return;
-    }
-
-    // Avoid unnecessary re-renders by checking if filters changed
-    if (JSON.stringify(newFilters) !== JSON.stringify(filters)) {
-      onFiltersChange(newFilters);
+    if (typeof query.filter === "object" && query.filter !== null) {
+      const parsedFilters = Object.entries(query.filter).map(
+        ([field, value]) => ({
+          field,
+          value: String(value),
+        }),
+      );
+      setFilterTokens(parsedFilters);
+    } else {
+      setFilterTokens([]);
     }
   }, [queryString]);
 
@@ -69,9 +71,11 @@ export default function GuidedFilterBar({
     };
 
     // Ensure only one filter per field (overwrite existing)
-    const updatedFilters = filters.filter((f) => f.field !== selectedField);
+    const updatedFilters = filterTokens.filter(
+      (f) => f.field !== selectedField,
+    );
     updatedFilters.push(newToken);
-    onFiltersChange(updatedFilters);
+    // onFiltersChange(updatedFilters);
 
     // Update query string correctly **without duplicating existing filters**
     const queryObject = qs.parse(queryString);
@@ -82,6 +86,7 @@ export default function GuidedFilterBar({
     if (updatedFilters.length > 0) {
       updatedQuery.filter = {};
       updatedFilters.forEach((token) => {
+        if (!updatedQuery.filter) return;
         updatedQuery.filter[token.field] = token.value;
       });
     } else {
@@ -89,15 +94,15 @@ export default function GuidedFilterBar({
     }
 
     console.log("GuidedFilterBar - Adding filter:", updatedQuery);
-    updateQueryString(qs.stringify(updatedQuery));
+    onFiltersChange(updatedFilters);
+    // updateQueryString(qs.stringify(updatedQuery));
 
     setSelectedField("");
     setSelectedValue("");
   };
 
   const removeFilter = (field: string) => {
-    const updatedFilters = filters.filter((f) => f.field !== field);
-    onFiltersChange(updatedFilters);
+    const updatedFilters = filterTokens.filter((f) => f.field !== field);
 
     // Ensure filter is properly removed from URL
     const queryObject = qs.parse(queryString);
@@ -107,16 +112,17 @@ export default function GuidedFilterBar({
         delete queryObject.filter; // Remove empty filter object
       }
     }
-    console.log("GuidedFilterBar - Removing filter:", queryObject);
-    updateQueryString(qs.stringify(queryObject));
+    console.log("GuidedFilterBar - Removing filter:", updatedFilters);
+    onFiltersChange(updatedFilters);
+    // updateQueryString(qs.stringify(queryObject));
   };
 
   const clearAll = () => {
-    onFiltersChange([]);
     const queryObject = qs.parse(queryString);
     delete queryObject.filter; // Remove all filters
     console.log("GuidedFilterBar - Clearing all filters:", queryObject);
-    updateQueryString(qs.stringify(queryObject));
+    onFiltersChange([]);
+    // updateQueryString(qs.stringify(queryObject));
   };
 
   return (
@@ -126,7 +132,7 @@ export default function GuidedFilterBar({
         <select
           value={selectedField}
           onChange={handleFieldChange}
-          className="border border-gray-300 rounded px-2 py-1"
+          className="rounded border border-gray-300 px-2 py-1"
         >
           <option value="">Select field...</option>
           {fields.map((field) => (
@@ -139,7 +145,7 @@ export default function GuidedFilterBar({
           <select
             value={selectedValue}
             onChange={(e) => setSelectedValue(e.target.value)}
-            className="border border-gray-300 rounded px-2 py-1"
+            className="rounded border border-gray-300 px-2 py-1"
           >
             <option value="">Select value...</option>
             {(
@@ -156,7 +162,7 @@ export default function GuidedFilterBar({
         <button
           onClick={addFilter}
           disabled={!selectedField || !selectedValue}
-          className="bg-blue-600 text-white px-3 py-1 rounded disabled:opacity-50"
+          className="rounded bg-blue-600 px-3 py-1 text-white disabled:opacity-50"
         >
           Add Filter
         </button>
@@ -164,11 +170,11 @@ export default function GuidedFilterBar({
 
       {/* Display current filter tokens */}
       <div className="flex flex-wrap gap-2">
-        {Array.isArray(filters) &&
-          filters.map((token) => (
+        {Array.isArray(filterTokens) &&
+          filterTokens.map((token) => (
             <div
               key={token.field}
-              className="flex items-center bg-gray-200 rounded px-2 py-1"
+              className="flex items-center rounded bg-gray-200 px-2 py-1"
             >
               <span className="text-sm">
                 {token.field}: {token.value}
@@ -184,10 +190,10 @@ export default function GuidedFilterBar({
           ))}
       </div>
 
-      {Array.isArray(filters) && filters.length > 0 && (
+      {Array.isArray(filterTokens) && filterTokens.length > 0 && (
         <button
           onClick={clearAll}
-          className="text-sm text-blue-600 underline self-start"
+          className="self-start text-sm text-blue-600 underline"
         >
           Clear All Filters
         </button>

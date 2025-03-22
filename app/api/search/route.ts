@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ClinicalTrial } from "@/types/clinicalTrials";
+import { filterEnumMap } from "@/types/filterEnums";
 import _data from "../../../ctg-studies.json";
 import Fuse from "fuse.js";
 
@@ -92,28 +93,47 @@ export async function GET(req: Request) {
   // Apply explicit filters.
   // ---------------------------
   filteredData = filteredData.filter((trial) => {
-    let matchesFilters = true;
-    for (const [field, filterValue] of Object.entries(filters)) {
-      if (field === "overallStatus") {
-        if (
-          trial.protocolSection.statusModule.overallStatus.toLowerCase() !==
-          filterValue
-        ) {
-          matchesFilters = false;
+    return Object.entries(filters).every(([field, filterValue]) => {
+      const isEnumField = field in filterEnumMap;
+      let actualValue: string | undefined = "";
+
+      switch (field) {
+        case "overallStatus":
+          actualValue = trial.protocolSection.statusModule.overallStatus;
           break;
-        }
-      } else if (field === "studyType") {
-        if (
-          trial.protocolSection.designModule.studyType.toLowerCase() !==
-          filterValue
-        ) {
-          matchesFilters = false;
+        case "studyType":
+          actualValue = trial.protocolSection.designModule?.studyType;
           break;
-        }
+        case "nctId":
+          actualValue = trial.protocolSection.identificationModule.nctId;
+          break;
+        case "briefTitle":
+          actualValue = trial.protocolSection.identificationModule.briefTitle;
+          break;
+        case "organization":
+          actualValue =
+            trial.protocolSection.identificationModule.organization.fullName;
+          break;
+        case "startDate":
+          actualValue =
+            trial.protocolSection.statusModule.startDateStruct?.date;
+          break;
+        case "completionDate":
+          actualValue =
+            trial.protocolSection.statusModule.completionDateStruct?.date;
+          break;
+        default:
+          return true;
       }
-      // Add additional filter fields as needed.
-    }
-    return matchesFilters;
+
+      if (!actualValue) return false;
+
+      const normalizedActual = actualValue.toLowerCase();
+
+      return isEnumField
+        ? normalizedActual === filterValue
+        : normalizedActual.includes(filterValue);
+    });
   });
 
   // ---------------------------

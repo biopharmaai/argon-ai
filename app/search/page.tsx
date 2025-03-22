@@ -22,8 +22,8 @@ export default function SearchPage() {
   const currentQuery = qs.parse(searchParams.toString());
 
   const [results, setResults] = useState<ClinicalTrial[]>([]);
-  const [filterTokens, setFilterTokens] = useState<FilterToken[]>([]);
-  const [sortTokens, setSortTokens] = useState<SortToken[]>([]);
+  // const [filterTokens, setFilterTokens] = useState<FilterToken[]>([]);
+  // const [sortTokens, setSortTokens] = useState<SortToken[]>([]);
   const [searchTerm, setSearchTerm] = useState(
     (currentQuery.term as string) || "",
   );
@@ -46,24 +46,6 @@ export default function SearchPage() {
     setSearchTerm((query.term as string) || "");
     setLimit(Number(query.limit) || 10);
     setCurrentPage(Number(query.page) || 1);
-
-    if (typeof query.sort === "string") {
-      const parsedSort = query.sort.split(",").map((s) => {
-        const [field, dir] = s.split(":");
-        return { field, direction: (dir as "asc" | "desc") || "asc" };
-      });
-      setSortTokens(parsedSort);
-    }
-
-    if (typeof query.filter === "object" && query.filter !== null) {
-      const parsedFilters = Object.entries(query.filter).map(
-        ([field, value]) => ({
-          field,
-          value: String(value),
-        }),
-      );
-      setFilterTokens(parsedFilters);
-    }
 
     setQueryString(qs.stringify(query));
   }, [searchParams]);
@@ -122,6 +104,19 @@ export default function SearchPage() {
     setQueryString(qs.stringify(q));
   };
 
+  const onFiltersChange = (updatedFilters: FilterToken[]) => {
+    const q = qs.parse(searchParams.toString());
+    if (updatedFilters.length > 0) {
+      q.filter = updatedFilters.reduce(
+        (acc, { field, value }) => ({ ...acc, [field]: value }),
+        {},
+      );
+    } else {
+      delete q.filter;
+    }
+    setQueryString(qs.stringify(q));
+    router.push(`?${qs.stringify(q)}`);
+  };
   return (
     <div className="mx-auto w-full p-6">
       <h1 className="mb-4 text-2xl font-bold">Search Page</h1>
@@ -129,10 +124,8 @@ export default function SearchPage() {
 
       <div className="mt-4">
         <GuidedFilterBar
-          filters={filterTokens}
-          onFiltersChange={setFilterTokens}
+          onFiltersChange={onFiltersChange}
           queryString={queryString}
-          updateQueryString={setQueryString}
         />
       </div>
 
