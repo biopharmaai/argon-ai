@@ -1,10 +1,15 @@
-// SearchResultsTable.tsx
 "use client";
 
-import React, { useMemo, useEffect, useState, useCallback } from "react";
+import React, {
+  useMemo,
+  useEffect,
+  useState,
+  useCallback,
+  useTransition,
+} from "react";
 import qs from "qs";
 import Link from "next/link";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, Download } from "lucide-react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -21,8 +26,18 @@ import {
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { ClinicalTrial } from "@/types/clinicalTrials";
 import { SortToken } from "@/components/GuidedSortBar";
+import JSZip from "jszip";
 
 type Props = {
   data: ClinicalTrial[];
@@ -68,23 +83,29 @@ export default function SearchResultsTable({
     }
   }, [selectedIds]);
 
-  const handleToggleAllVisible = (checked: boolean) => {
-    if (checked) {
-      const updated = Array.from(new Set([...selectedIds, ...visibleIds]));
-      onSelectedIdsChange(updated);
-    } else {
-      const updated = selectedIds.filter((id) => !visibleIds.includes(id));
-      onSelectedIdsChange(updated);
-    }
-  };
+  const handleToggleAllVisible = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        const updated = Array.from(new Set([...selectedIds, ...visibleIds]));
+        onSelectedIdsChange(updated);
+      } else {
+        const updated = selectedIds.filter((id) => !visibleIds.includes(id));
+        onSelectedIdsChange(updated);
+      }
+    },
+    [selectedIds, visibleIds, onSelectedIdsChange],
+  );
 
-  const handleToggleRow = (id: string) => {
-    onSelectedIdsChange(
-      selectedIds.includes(id)
-        ? selectedIds.filter((nctId) => nctId !== id)
-        : [...selectedIds, id],
-    );
-  };
+  const handleToggleRow = useCallback(
+    (id: string) => {
+      onSelectedIdsChange(
+        selectedIds.includes(id)
+          ? selectedIds.filter((nctId) => nctId !== id)
+          : [...selectedIds, id],
+      );
+    },
+    [selectedIds, onSelectedIdsChange],
+  );
 
   // Sorting logic
   const [sortTokens, setSortTokens] = useState<SortToken[]>([]);
@@ -264,45 +285,139 @@ export default function SearchResultsTable({
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const selectedCount = selectedIds.length;
-  const visibleCount = visibleIds.length;
+  // Export modal state
+  const [open, setOpen] = useState(false);
+  const [format, setFormat] = useState<"csv" | "json">("csv");
+  const [zipEach, setZipEach] = useState(false);
+
+  const handleDownload = async () => {
+    const date = new Date().toISOString().split("T")[0];
+    const selectedTrials = data.filter((d) =>
+      selectedIds.includes(d.protocolSection.identificationModule.nctId),
+    );
+
+    if (zipEach) {
+      const zip = new JSZip();
+
+      for (const trial of selectedTrials) {
+        const nctId = trial.protocolSection.identificationModule.nctId;
+        const content =
+          format === "json"
+            ? JSON.stringify(trial, null, 2)
+            : toCsv([trial], displayColumns);
+        zip.file(`${nctId}.${format}`, content);
+      }
+
+      const blob = await zip.generateAsync({ type: "blob" });
+      triggerDownload(blob, `${date}-clinical-trials-${format}.zip`);
+    } else {
+      const content =
+        format === "json"
+          ? JSON.stringify(selectedTrials, null, 2)
+          : toCsv(selectedTrials, displayColumns);
+      const blob = new Blob([content], {
+        type:
+          format === "json" ? "application/json" : "text/csv;charset=utf-8;",
+      });
+      triggerDownload(blob, `${date}-clinical-trials.${format}`);
+    }
+
+    setOpen(false);
+  };
+
+  const toCsv = (rows: ClinicalTrial[], columns: string[]) => {
+    const header = columns.join(",");
+    const body = rows
+      .map((trial) =>
+        columns
+          .map((col) => {
+            const val =
+              col === "nctId"
+                ? trial.protocolSection.identificationModule.nctId
+                : col === "briefTitle"
+                  ? trial.protocolSection.identificationModule.briefTitle
+                  : col === "organization"
+                    ? trial.protocolSection.identificationModule.organization
+                        .fullName
+                    : col === "status"
+                      ? trial.protocolSection.statusModule.overallStatus
+                      : col === "conditions"
+                        ? trial.protocolSection.conditionsModule?.conditions?.join(
+                            "|",
+                          )
+                        : col === "startDate"
+                          ? trial.protocolSection.statusModule.startDateStruct
+                              ?.date
+                          : col === "completionDate"
+                            ? trial.protocolSection.statusModule
+                                .completionDateStruct?.date
+                            : "";
+            return `"${(val || "").replace(/"/g, '""')}"`;
+          })
+          .join(","),
+      )
+      .join("\n");
+    return `${header}\n${body}`;
+  };
+
+  const triggerDownload = (blob: Blob, filename: string) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="mt-6">
-      {selectedCount > 0 && (
-        <div className="text-muted-foreground mb-2 flex items-center justify-between rounded-md border px-4 py-2 text-sm">
-          {selectAllAcrossPages ? (
-            <>
+      <div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setOpen(true)}
+          disabled={selectedIds.length === 0}
+        >
+          <Download className="mr-2 h-4 w-4" />
+          Export
+        </Button>
+      </div>
+      <div className="mb-2 flex items-center justify-between">
+        {selectedIds.length > 0 && (
+          <div className="text-muted-foreground flex items-center text-sm">
+            {selectAllAcrossPages ? (
               <span>
-                {selectedCount.toLocaleString()} selected across{" "}
+                {selectedIds.length.toLocaleString()} selected across{" "}
                 {totalCount.toLocaleString()} results.
               </span>
+            ) : (
+              <span>
+                {`${Math.min(
+                  selectedIds.length,
+                  visibleIds.length,
+                )}–${totalCount.toLocaleString()} selected.`}
+              </span>
+            )}
+            <Button
+              variant="link"
+              className="ml-2 h-auto p-0 text-blue-600"
+              onClick={onClearSelection}
+            >
+              Clear selection
+            </Button>
+            {selectedIds.length === totalCount ? null : (
               <Button
                 variant="link"
-                className="h-auto p-0 text-blue-600"
-                onClick={onClearSelection}
+                className="ml-2 h-auto p-0 text-blue-600"
+                onClick={onSelectAllAcrossPages}
               >
-                Clear selection
+                Select all {totalCount.toLocaleString()} studies
               </Button>
-            </>
-          ) : (
-            <>
-              <span>
-                {`${Math.min(selectedCount, visibleCount)}–${totalCount.toLocaleString()} selected.`}
-              </span>
-              {totalCount > visibleCount && (
-                <Button
-                  variant="link"
-                  className="h-auto p-0 text-blue-600"
-                  onClick={onSelectAllAcrossPages}
-                >
-                  Select all {totalCount.toLocaleString()} studies
-                </Button>
-              )}
-            </>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </div>
+
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -332,6 +447,42 @@ export default function SearchResultsTable({
           ))}
         </TableBody>
       </Table>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Export Selected Studies</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <RadioGroup
+              value={format}
+              onValueChange={(val: "csv" | "json") => setFormat(val)}
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="csv" id="csv" />
+                <Label htmlFor="csv">CSV</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="json" id="json" />
+                <Label htmlFor="json">JSON</Label>
+              </div>
+            </RadioGroup>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="zipEach"
+                checked={zipEach}
+                onCheckedChange={(checked) => setZipEach(Boolean(checked))}
+              />
+              <Label htmlFor="zipEach">
+                Put each study into its own file and zip
+              </Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleDownload}>Download</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
