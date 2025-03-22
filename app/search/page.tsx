@@ -19,17 +19,13 @@ import { SortToken } from "@/components/GuidedSortBar";
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentQuery = qs.parse(searchParams.toString());
+  // const currentQuery = qs.parse(searchParams.toString());
 
   const [results, setResults] = useState<ClinicalTrial[]>([]);
-  const [searchTerm, setSearchTerm] = useState(
-    (currentQuery.term as string) || "",
-  );
-  // const [limit, setLimit] = useState(Number(currentQuery.limit) || 10);
-  const [totalPages, setTotalPages] = useState(1);
-  // const [currentPage, setCurrentPage] = useState(
-  //   Number(currentQuery.page) || 1,
+  // const [searchTerm, setSearchTerm] = useState(
+  //   (currentQuery.term as string) || "",
   // );
+  const [totalPages, setTotalPages] = useState(1);
 
   const [queryString, setQueryString] = useState(() => {
     const query = qs.parse(searchParams.toString());
@@ -38,12 +34,12 @@ export default function SearchPage() {
   });
 
   // Sync derived states from the actual URL query params
-  useEffect(() => {
-    const query = qs.parse(queryString);
+  // useEffect(() => {
+  //   const query = qs.parse(queryString);
 
-    setSearchTerm((query.term as string) || "");
-    // setCurrentPage(Number(query.page) || 1);
-  }, [queryString]);
+  //   setSearchTerm((query.term as string) || "");
+  //   // setCurrentPage(Number(query.page) || 1);
+  // }, [queryString]);
 
   // Fetch results when query string changes
   useEffect(() => {
@@ -120,7 +116,10 @@ export default function SearchPage() {
   return (
     <div className="mx-auto w-full p-6">
       <h1 className="mb-4 text-2xl font-bold">Search Page</h1>
-      <SearchBar onChange={handleSearchChange} value={searchTerm} />
+      <SearchBar
+        onSearchChange={handleSearchChange}
+        queryString={queryString}
+      />
 
       <div className="mt-4">
         <GuidedFilterBar
