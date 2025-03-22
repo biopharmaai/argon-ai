@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import * as React from "react";
 import { X } from "lucide-react";
 import { filterEnumMap } from "@/types/filterEnums"; // adjust path if needed
@@ -14,48 +14,43 @@ export interface FilterToken {
 
 interface GuidedFilterBarProps {
   // filters: FilterToken[];
-  onFiltersChange: (filters: FilterToken[]) => void;
+  onFiltersCommitted: (filters: FilterToken[]) => void;
   queryString: string;
   // updateQueryString: (newQueryString: string) => void;
 }
 
 export default function GuidedFilterBar({
-  onFiltersChange,
+  onFiltersCommitted,
   queryString,
   // updateQueryString,
 }: GuidedFilterBarProps) {
   const [selectedField, setSelectedField] = React.useState<string>("");
   const [selectedValue, setSelectedValue] = React.useState<string>("");
+  const baseQueryObject = useMemo(() => {
+    return qs.parse(queryString, { ignoreQueryPrefix: true });
+  }, [queryString]);
 
-  const [filterTokens, setFilterTokens] = useState<FilterToken[]>(() => {
-    const query = qs.parse(queryString, { ignoreQueryPrefix: true });
-
-    if (typeof query.filter === "object" && query.filter !== null) {
-      return Object.entries(query.filter).map(([field, value]) => ({
+  const filterTokens: FilterToken[] = React.useMemo(() => {
+    if (
+      typeof baseQueryObject.filter === "object" &&
+      baseQueryObject.filter !== null
+    ) {
+      return Object.entries(baseQueryObject.filter).map(([field, value]) => ({
         field,
         value: String(value),
       }));
     }
     return [];
-  });
+  }, [baseQueryObject]);
+
   // Get list of filterable fields from filterEnumMap keys
-  const fields = Object.keys(filterEnumMap);
-
-  useEffect(() => {
-    const query = qs.parse(queryString, { ignoreQueryPrefix: true });
-
-    if (typeof query.filter === "object" && query.filter !== null) {
-      const parsedFilters = Object.entries(query.filter).map(
-        ([field, value]) => ({
-          field,
-          value: String(value),
-        }),
-      );
-      setFilterTokens(parsedFilters);
-    } else {
-      setFilterTokens([]);
-    }
-  }, [queryString]);
+  // const fields = Object.keys(filterEnumMap);
+  const fields = React.useMemo(() => {
+    const usedFields = new Set(filterTokens.map((t) => t.field));
+    return Object.keys(filterEnumMap)
+      .filter((field) => !usedFields.has(field))
+      .sort((a, b) => a.localeCompare(b));
+  }, [filterTokens]);
 
   const handleFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedField(e.target.value);
@@ -78,7 +73,8 @@ export default function GuidedFilterBar({
     // onFiltersChange(updatedFilters);
 
     // Update query string correctly **without duplicating existing filters**
-    const queryObject = qs.parse(queryString);
+    // const queryObject = qs.parse(queryString);
+    const queryObject = { ...baseQueryObject };
     const updatedQuery = {
       ...queryObject,
     };
@@ -94,8 +90,7 @@ export default function GuidedFilterBar({
     }
 
     console.log("GuidedFilterBar - Adding filter:", updatedQuery);
-    onFiltersChange(updatedFilters);
-    // updateQueryString(qs.stringify(updatedQuery));
+    onFiltersCommitted(updatedFilters);
 
     setSelectedField("");
     setSelectedValue("");
@@ -105,7 +100,8 @@ export default function GuidedFilterBar({
     const updatedFilters = filterTokens.filter((f) => f.field !== field);
 
     // Ensure filter is properly removed from URL
-    const queryObject = qs.parse(queryString);
+    // const queryObject = qs.parse(queryString);
+    const queryObject = { ...baseQueryObject };
     if (queryObject.filter) {
       delete queryObject.filter[field];
       if (Object.keys(queryObject.filter).length === 0) {
@@ -113,15 +109,12 @@ export default function GuidedFilterBar({
       }
     }
     console.log("GuidedFilterBar - Removing filter:", updatedFilters);
-    onFiltersChange(updatedFilters);
+    onFiltersCommitted(updatedFilters);
     // updateQueryString(qs.stringify(queryObject));
   };
 
   const clearAll = () => {
-    const queryObject = qs.parse(queryString);
-    delete queryObject.filter; // Remove all filters
-    console.log("GuidedFilterBar - Clearing all filters:", queryObject);
-    onFiltersChange([]);
+    onFiltersCommitted([]);
     // updateQueryString(qs.stringify(queryObject));
   };
 

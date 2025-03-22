@@ -123,7 +123,7 @@ export default function SearchPage() {
 
       <div className="mt-4">
         <GuidedFilterBar
-          onFiltersChange={onFiltersChange}
+          onFiltersCommitted={onFiltersChange}
           queryString={queryString}
         />
       </div>
