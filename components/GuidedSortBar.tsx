@@ -1,5 +1,7 @@
 "use client";
+import qs from "qs";
 
+import { useEffect, useState } from "react";
 import * as React from "react";
 import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
 import {
@@ -14,12 +16,6 @@ import { ChevronUp, ChevronDown, X } from "lucide-react";
 export interface SortToken {
   field: string;
   direction: "asc" | "desc";
-}
-
-interface GuidedSortBarProps {
-  sortTokens: SortToken[];
-  onSortTokensChange: (newTokens: SortToken[]) => void; // Fixed: changed to SortToken[]
-  sortableFields: string[];
 }
 
 function SortableSortItem({
@@ -74,8 +70,13 @@ function SortableSortItem({
   );
 }
 
+interface GuidedSortBarProps {
+  querystring: string;
+  onSortTokensChange: (newTokens: SortToken[]) => void; // Fixed: changed to SortToken[]
+  sortableFields: string[];
+}
 export default function GuidedSortBar({
-  sortTokens,
+  querystring,
   onSortTokensChange,
   sortableFields,
 }: GuidedSortBarProps) {
@@ -83,6 +84,29 @@ export default function GuidedSortBar({
   const [selectedDirection, setSelectedDirection] = React.useState<
     "asc" | "desc"
   >("asc");
+
+  const [sortTokens, setSortTokens] = useState<SortToken[]>(() => {
+    const query = qs.parse(querystring, { ignoreQueryPrefix: true });
+    if (typeof query.sort === "string") {
+      return query.sort.split(",").map((s) => {
+        const [field, dir] = s.split(":");
+        return { field, direction: (dir as "asc" | "desc") || "asc" };
+      });
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    const query = qs.parse(querystring, { ignoreQueryPrefix: true });
+
+    if (typeof query.sort === "string") {
+      const parsedSort = query.sort.split(",").map((s) => {
+        const [field, dir] = s.split(":");
+        return { field, direction: (dir as "asc" | "desc") || "asc" };
+      });
+      setSortTokens(parsedSort);
+    }
+  }, [querystring]);
 
   const addSort = () => {
     if (!selectedField) return;
@@ -106,7 +130,10 @@ export default function GuidedSortBar({
       if (token.field === field) {
         return {
           ...token,
-          direction: token.direction === "asc" ? "desc" : "asc",
+          direction:
+            token.direction === "asc"
+              ? "desc"
+              : ("asc" as SortToken["direction"]),
         };
       }
       return token;

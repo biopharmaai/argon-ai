@@ -109,6 +109,7 @@ export default function SearchPage() {
       } else {
         delete q.sort;
       }
+      // todo: investigate q.paage if required
       q.page = (1).toString();
       setQueryString(qs.stringify(q));
     },
@@ -142,7 +143,7 @@ export default function SearchPage() {
       <div className="mt-4">
         <h2 className="mb-2 text-lg font-semibold">Sort Order</h2>
         <GuidedSortBar
-          sortTokens={sortTokens}
+          querystring={queryString}
           onSortTokensChange={handleSortTokensChange}
           sortableFields={[
             "nctId",
@@ -163,9 +164,8 @@ export default function SearchPage() {
 
       <SearchResultsTable
         data={results}
-        sortTokens={sortTokens}
-        setQueryString={setQueryString}
-        onSortChange={handleSortTokensChange}
+        querystring={queryString}
+        onSortTokensChange={handleSortTokensChange}
         displayColumns={[
           "selection",
           "nctId",

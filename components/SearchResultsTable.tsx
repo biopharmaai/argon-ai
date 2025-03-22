@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import qs from "qs";
 import {
   useReactTable,
@@ -24,20 +24,41 @@ import {
 
 export type SearchResultsTableProps = {
   data: ClinicalTrial[];
-  sortTokens?: SortToken[];
-  onSortChange: (tokens: SortToken[]) => void;
-  setQueryString: (newQS: string) => void;
+  querystring: string;
+  onSortTokensChange: (newTokens: SortToken[]) => void; // Fixed: changed to SortToken[]
   displayColumns: string[];
 };
 
 export default function SearchResultsTable({
   data,
-  sortTokens = [],
-  onSortChange,
-  setQueryString,
+  querystring,
+  onSortTokensChange,
   displayColumns,
 }: SearchResultsTableProps) {
   const columnHelper = createColumnHelper<ClinicalTrial>();
+
+  const [sortTokens, setSortTokens] = useState<SortToken[]>(() => {
+    const query = qs.parse(querystring, { ignoreQueryPrefix: true });
+    if (typeof query.sort === "string") {
+      return query.sort.split(",").map((s) => {
+        const [field, dir] = s.split(":");
+        return { field, direction: (dir as "asc" | "desc") || "asc" };
+      });
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    const query = qs.parse(querystring, { ignoreQueryPrefix: true });
+
+    if (typeof query.sort === "string") {
+      const parsedSort = query.sort.split(",").map((s) => {
+        const [field, dir] = s.split(":");
+        return { field, direction: (dir as "asc" | "desc") || "asc" };
+      });
+      setSortTokens(parsedSort);
+    }
+  }, [querystring]);
 
   const toggleSort = React.useCallback(
     (field: string) => {
@@ -62,7 +83,7 @@ export default function SearchResultsTable({
         }
       }
 
-      onSortChange(newSortTokens);
+      onSortTokensChange(newSortTokens);
 
       const q = qs.parse("");
       if (newSortTokens.length > 0) {
@@ -70,11 +91,8 @@ export default function SearchResultsTable({
           .map((t) => `${t.field}:${t.direction}`)
           .join(",");
       }
-
-      console.log("SearchResultsTable - Toggling sort:", q);
-      setQueryString(qs.stringify(q));
     },
-    [sortTokens, onSortChange, setQueryString],
+    [sortTokens, onSortTokensChange],
   );
 
   const renderSortableHeader = React.useCallback(
@@ -198,7 +216,7 @@ export default function SearchResultsTable({
         },
       ),
     ],
-    [columnHelper, renderSortableHeader, sortTokens],
+    [columnHelper, renderSortableHeader],
   );
 
   const columns = useMemo(() => {
