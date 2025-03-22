@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import qs from "qs";
 import { filterEnumMap } from "@/types/filterEnums";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,

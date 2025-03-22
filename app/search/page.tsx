@@ -10,56 +10,64 @@ import LimitDropdown from "@/components/LimitDropdown";
 import SearchResultsTable from "@/components/SearchResultsTable";
 import GuidedFilterBar, { FilterToken } from "@/components/GuidedFilterBar";
 import Pagination from "@/components/Pagination";
+import { SortToken } from "@/components/GuidedSortBar";
 
 const GuidedSortBar = dynamic(() => import("@/components/GuidedSortBar"), {
   ssr: false,
 });
-import { SortToken } from "@/components/GuidedSortBar";
 
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // const currentQuery = qs.parse(searchParams.toString());
 
   const [results, setResults] = useState<ClinicalTrial[]>([]);
-  // const [searchTerm, setSearchTerm] = useState(
-  //   (currentQuery.term as string) || "",
-  // );
+  const [totalResults, setTotalResults] = useState<null | number>(null);
   const [totalPages, setTotalPages] = useState(1);
-
   const [queryString, setQueryString] = useState(() => {
     const query = qs.parse(searchParams.toString());
-    if (!query.page) query.page = (1).toString();
+    if (!query.page) query.page = "1";
     return qs.stringify(query);
   });
 
-  // Sync derived states from the actual URL query params
-  // useEffect(() => {
-  //   const query = qs.parse(queryString);
+  // Selection State
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectAllAcrossPages, setSelectAllAcrossPages] = useState(false);
 
-  //   setSearchTerm((query.term as string) || "");
-  //   // setCurrentPage(Number(query.page) || 1);
-  // }, [queryString]);
-
-  // Fetch results when query string changes
+  // Fetch paginated search results
   useEffect(() => {
     router.push(`?${queryString}`);
     const getData = async () => {
       const res = await fetch(`/api/search?${queryString}`);
       const json = await res.json();
       setResults(json.data);
+      setTotalResults(json.totalCount);
       setTotalPages(json.totalPages);
     };
     getData();
   }, [queryString, router]);
 
-  // Handlers to update search term and limit
+  const fetchAllMatchingIds = useCallback(async () => {
+    const res = await fetch(`/api/search/ids?${queryString}`);
+    const json = await res.json();
+    if (json.success) {
+      setSelectedIds(json.nctIds);
+      setSelectAllAcrossPages(true);
+    }
+  }, [queryString]);
+
+  const clearSelection = () => {
+    setSelectedIds([]);
+    setSelectAllAcrossPages(false);
+  };
+
+  // Search, Filter, and Sort Handlers
   const handleSearchChange = useCallback(
     (term: string) => {
       const q = qs.parse(queryString);
       q.term = term;
-      q.page = (1).toString();
+      q.page = "1";
       setQueryString(qs.stringify(q));
+      clearSelection();
     },
     [queryString],
   );
@@ -68,8 +76,9 @@ export default function SearchPage() {
     (newLimit: number) => {
       const q = qs.parse(queryString);
       q.limit = newLimit.toString();
-      q.page = (1).toString();
+      q.page = "1";
       setQueryString(qs.stringify(q));
+      clearSelection();
     },
     [queryString],
   );
@@ -82,9 +91,9 @@ export default function SearchPage() {
       } else {
         delete q.sort;
       }
-      // todo: investigate q.paage if required
-      q.page = (1).toString();
+      q.page = "1";
       setQueryString(qs.stringify(q));
+      clearSelection();
     },
     [queryString],
   );
@@ -110,12 +119,15 @@ export default function SearchPage() {
         delete q.filter;
       }
       setQueryString(qs.stringify(q));
+      clearSelection();
     },
     [queryString],
   );
+
   return (
     <div className="mx-auto w-full p-6">
       <h1 className="mb-4 text-2xl font-bold">Search Page</h1>
+
       <SearchBar
         onSearchChange={handleSearchChange}
         queryString={queryString}
@@ -153,7 +165,6 @@ export default function SearchPage() {
 
       <Pagination
         queryString={queryString}
-        // currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
@@ -161,6 +172,12 @@ export default function SearchPage() {
       <SearchResultsTable
         data={results}
         querystring={queryString}
+        totalCount={totalResults ?? 0}
+        selectedIds={selectedIds}
+        onSelectedIdsChange={setSelectedIds}
+        selectAllAcrossPages={selectAllAcrossPages}
+        onSelectAllAcrossPages={fetchAllMatchingIds}
+        onClearSelection={clearSelection}
         onSortTokensChange={handleSortTokensChange}
         displayColumns={[
           "selection",

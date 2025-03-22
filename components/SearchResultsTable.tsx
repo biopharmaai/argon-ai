@@ -1,18 +1,16 @@
+// SearchResultsTable.tsx
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useEffect, useState, useCallback } from "react";
 import qs from "qs";
+import Link from "next/link";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
   createColumnHelper,
 } from "@tanstack/react-table";
-import Link from "next/link";
-import { ChevronUp, ChevronDown } from "lucide-react";
-import { SortToken } from "@/components/GuidedSortBar";
-import type { ClinicalTrial } from "@/types/clinicalTrials";
-
 import {
   Table,
   TableHeader,
@@ -21,100 +19,125 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { ClinicalTrial } from "@/types/clinicalTrials";
+import { SortToken } from "@/components/GuidedSortBar";
 
-export type SearchResultsTableProps = {
+type Props = {
   data: ClinicalTrial[];
   querystring: string;
-  onSortTokensChange: (newTokens: SortToken[]) => void; // Fixed: changed to SortToken[]
+  totalCount: number;
   displayColumns: string[];
+  selectedIds: string[];
+  onSelectedIdsChange: (ids: string[]) => void;
+  selectAllAcrossPages: boolean;
+  onSelectAllAcrossPages: () => void;
+  onClearSelection: () => void;
+  onSortTokensChange: (tokens: SortToken[]) => void;
 };
+
+const columnHelper = createColumnHelper<ClinicalTrial>();
 
 export default function SearchResultsTable({
   data,
   querystring,
-  onSortTokensChange,
+  totalCount,
   displayColumns,
-}: SearchResultsTableProps) {
-  const columnHelper = createColumnHelper<ClinicalTrial>();
+  selectedIds,
+  onSelectedIdsChange,
+  selectAllAcrossPages,
+  onSelectAllAcrossPages,
+  onClearSelection,
+  onSortTokensChange,
+}: Props) {
+  const visibleIds = useMemo(
+    () => data.map((d) => d.protocolSection.identificationModule.nctId),
+    [data],
+  );
 
-  const [sortTokens, setSortTokens] = useState<SortToken[]>(() => {
-    const query = qs.parse(querystring, { ignoreQueryPrefix: true });
-    if (typeof query.sort === "string") {
-      return query.sort.split(",").map((s) => {
-        const [field, dir] = s.split(":");
-        return { field, direction: (dir as "asc" | "desc") || "asc" };
-      });
+  const allVisibleSelected = visibleIds.every((id) => selectedIds.includes(id));
+  const someVisibleSelected = visibleIds.some((id) => selectedIds.includes(id));
+
+  // Persist selection to localStorage
+  useEffect(() => {
+    if (selectedIds.length > 0) {
+      localStorage.setItem("selectedNctIds", JSON.stringify(selectedIds));
+    } else {
+      localStorage.removeItem("selectedNctIds");
     }
-    return [];
-  });
+  }, [selectedIds]);
 
+  const handleToggleAllVisible = (checked: boolean) => {
+    if (checked) {
+      const updated = Array.from(new Set([...selectedIds, ...visibleIds]));
+      onSelectedIdsChange(updated);
+    } else {
+      const updated = selectedIds.filter((id) => !visibleIds.includes(id));
+      onSelectedIdsChange(updated);
+    }
+  };
+
+  const handleToggleRow = (id: string) => {
+    onSelectedIdsChange(
+      selectedIds.includes(id)
+        ? selectedIds.filter((nctId) => nctId !== id)
+        : [...selectedIds, id],
+    );
+  };
+
+  // Sorting logic
+  const [sortTokens, setSortTokens] = useState<SortToken[]>([]);
   useEffect(() => {
     const query = qs.parse(querystring, { ignoreQueryPrefix: true });
-
     if (typeof query.sort === "string") {
-      const parsedSort = query.sort.split(",").map((s) => {
+      const parsed = query.sort.split(",").map((s) => {
         const [field, dir] = s.split(":");
-        return { field, direction: (dir as "asc" | "desc") || "asc" };
+        return { field, direction: dir as "asc" | "desc" };
       });
-      setSortTokens(parsedSort);
+      setSortTokens(parsed);
     }
   }, [querystring]);
 
-  const toggleSort = React.useCallback(
+  const toggleSort = useCallback(
     (field: string) => {
-      const existingIndex = sortTokens.findIndex(
-        (token) => token.field === field,
-      );
+      const existing = sortTokens.find((t) => t.field === field);
+      let newTokens = [...sortTokens];
 
-      let newSortTokens: SortToken[];
-
-      if (existingIndex === -1) {
-        newSortTokens = [...sortTokens, { field, direction: "asc" }];
+      if (!existing) {
+        newTokens.push({ field, direction: "asc" });
       } else {
-        const currentDirection = sortTokens[existingIndex].direction;
-        if (currentDirection === "asc") {
-          newSortTokens = sortTokens.map((token) =>
-            token.field === field ? { ...token, direction: "desc" } : token,
-          );
-        } else {
-          newSortTokens = sortTokens.map((token) =>
-            token.field === field ? { ...token, direction: "asc" } : token,
-          );
-        }
+        newTokens = newTokens.map((t) =>
+          t.field === field
+            ? {
+                ...t,
+                direction: t.direction === "asc" ? "desc" : "asc",
+              }
+            : t,
+        );
       }
 
-      onSortTokensChange(newSortTokens);
-
-      const q = qs.parse("");
-      if (newSortTokens.length > 0) {
-        q.sort = newSortTokens
-          .map((t) => `${t.field}:${t.direction}`)
-          .join(",");
-      }
+      onSortTokensChange(newTokens);
     },
     [sortTokens, onSortTokensChange],
   );
 
-  const renderSortableHeader = React.useCallback(
+  const renderSortableHeader = useCallback(
     (field: string, label: string) => {
-      const sortToken = Array.isArray(sortTokens)
-        ? sortTokens.find((token) => token.field === field)
-        : null;
-      const sortDirection = sortToken?.direction;
-
-      let icon = null;
-      if (sortDirection === "asc") {
-        icon = <ChevronUp className="ml-1 h-4 w-4" />;
-      } else if (sortDirection === "desc") {
-        icon = <ChevronDown className="ml-1 h-4 w-4" />;
-      }
+      const token = sortTokens.find((t) => t.field === field);
+      const icon =
+        token?.direction === "asc" ? (
+          <ChevronUp className="ml-1 h-4 w-4" />
+        ) : token?.direction === "desc" ? (
+          <ChevronDown className="ml-1 h-4 w-4" />
+        ) : null;
 
       return (
         <div
-          className="flex cursor-pointer items-center select-none"
           onClick={() => toggleSort(field)}
+          className="flex cursor-pointer items-center select-none"
         >
-          <span>{label}</span>
+          {label}
           {icon}
         </div>
       );
@@ -122,144 +145,193 @@ export default function SearchResultsTable({
     [sortTokens, toggleSort],
   );
 
-  const allColumns = useMemo(
-    () => [
-      columnHelper.display({
-        id: "selection",
-        header: () => (
-          <div className="flex items-center">
-            <input type="checkbox" className="mr-2" />
-            <span>#</span>
-          </div>
-        ),
-        cell: ({ row }) => (
-          <div className="flex items-center">
-            <input type="checkbox" className="mr-2" />
-            <span>{row.index + 1}</span>
-          </div>
-        ),
-      }),
-      columnHelper.accessor(
-        (row) => row.protocolSection.identificationModule.nctId,
-        {
-          id: "nctId",
-          header: () => renderSortableHeader("nctId", "NCT ID"),
-          cell: (info) => {
-            const nctId = info.getValue();
+  const allColumns = useMemo(() => {
+    const cols = [];
+
+    if (displayColumns.includes("selection")) {
+      cols.push(
+        columnHelper.display({
+          id: "selection",
+          header: () => (
+            <Checkbox
+              checked={allVisibleSelected}
+              onCheckedChange={(checked) =>
+                handleToggleAllVisible(Boolean(checked))
+              }
+              ref={(el) => {
+                if (el)
+                  el.indeterminate = someVisibleSelected && !allVisibleSelected;
+              }}
+              aria-label="Select all studies on this page"
+            />
+          ),
+          cell: ({ row }) => {
+            const nctId =
+              row.original.protocolSection.identificationModule.nctId;
             return (
-              <Link
-                href={`/clinical-trials/${nctId}`}
-                className="text-blue-600 hover:underline"
-              >
-                {nctId}
-              </Link>
+              <Checkbox
+                checked={selectedIds.includes(nctId)}
+                onCheckedChange={() => handleToggleRow(nctId)}
+                aria-label={`Select study ${nctId}`}
+              />
             );
           },
-        },
-      ),
-      columnHelper.accessor(
-        (row) => row.protocolSection.identificationModule.briefTitle,
-        {
-          id: "briefTitle",
-          header: () => renderSortableHeader("briefTitle", "Title"),
-          cell: (info) => (
-            <div className="max-w-[200px] truncate" title={info.getValue()}>
-              {info.getValue()}
-            </div>
-          ),
-        },
-      ),
-      columnHelper.accessor(
-        (row) => row.protocolSection.identificationModule.organization.fullName,
-        {
-          id: "organization",
-          header: () =>
-            renderSortableHeader("organization", "Sponsor / Organization"),
-          cell: (info) => info.getValue(),
-        },
-      ),
-      columnHelper.accessor(
-        (row) => row.protocolSection.statusModule.overallStatus,
-        {
-          id: "status",
-          header: () => renderSortableHeader("status", "Status"),
-          cell: (info) => info.getValue(),
-        },
-      ),
-      columnHelper.accessor(
-        (row) => row.protocolSection.conditionsModule?.conditions,
-        {
-          id: "conditions",
-          header: () => renderSortableHeader("conditions", "Conditions"),
-          cell: (info) => {
-            const conditionsArr = info.getValue() as string[];
-            const conditions = conditionsArr ? conditionsArr.join(", ") : "";
-            return <div className="max-w-2xl truncate">{conditions}</div>;
-          },
-        },
-      ),
-      columnHelper.accessor(
-        (row) => row.protocolSection.statusModule.startDateStruct?.date,
-        {
-          id: "startDate",
-          header: () => renderSortableHeader("startDate", "Start Date"),
-          cell: (info) => info.getValue(),
-        },
-      ),
-      columnHelper.accessor(
-        (row) => row.protocolSection.statusModule.completionDateStruct?.date,
-        {
-          id: "completionDate",
-          header: () =>
-            renderSortableHeader("completionDate", "Completion Date"),
-          cell: (info) => info.getValue(),
-        },
-      ),
-    ],
-    [columnHelper, renderSortableHeader],
-  );
+        }),
+      );
+    }
 
-  const columns = useMemo(() => {
-    return allColumns.filter((col) => displayColumns.includes(col.id));
-  }, [allColumns, displayColumns]);
+    const colDefs = [
+      {
+        id: "nctId",
+        label: "NCT ID",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.identificationModule.nctId,
+        cell: (val: string) => (
+          <Link
+            href={`/clinical-trials/${val}`}
+            className="text-blue-600 hover:underline"
+          >
+            {val}
+          </Link>
+        ),
+      },
+      {
+        id: "briefTitle",
+        label: "Title",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.identificationModule.briefTitle,
+      },
+      {
+        id: "organization",
+        label: "Sponsor / Organization",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.identificationModule.organization.fullName,
+      },
+      {
+        id: "status",
+        label: "Status",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.statusModule.overallStatus,
+      },
+      {
+        id: "conditions",
+        label: "Conditions",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.conditionsModule?.conditions?.join(", ") || "",
+      },
+      {
+        id: "startDate",
+        label: "Start Date",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.statusModule.startDateStruct?.date,
+      },
+      {
+        id: "completionDate",
+        label: "Completion Date",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.statusModule.completionDateStruct?.date,
+      },
+    ];
+
+    colDefs.forEach(({ id, label, accessor, cell }) => {
+      if (displayColumns.includes(id)) {
+        cols.push(
+          columnHelper.accessor(accessor, {
+            id,
+            header: () => renderSortableHeader(id, label),
+            cell: cell
+              ? ({ getValue }) => cell(getValue() || "")
+              : ({ getValue }) => getValue() || "-",
+          }),
+        );
+      }
+    });
+
+    return cols;
+  }, [
+    displayColumns,
+    selectedIds,
+    allVisibleSelected,
+    someVisibleSelected,
+    handleToggleAllVisible,
+    handleToggleRow,
+    renderSortableHeader,
+  ]);
 
   const table = useReactTable({
     data,
-    columns,
+    columns: allColumns,
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const selectedCount = selectedIds.length;
+  const visibleCount = visibleIds.length;
+
   return (
-    <Table>
-      <TableHeader>
-        {table.getHeaderGroups().map((headerGroup) => (
-          <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => (
-              <TableHead key={header.id}>
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
-              </TableHead>
-            ))}
-          </TableRow>
-        ))}
-      </TableHeader>
-      <TableBody>
-        {table.getRowModel().rows.map((row) => (
-          <TableRow key={row.id}>
-            {row.getVisibleCells().map((cell) => (
-              <TableCell key={cell.id}>
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </TableCell>
-            ))}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <div className="mt-6">
+      {selectedCount > 0 && (
+        <div className="text-muted-foreground mb-2 flex items-center justify-between rounded-md border px-4 py-2 text-sm">
+          {selectAllAcrossPages ? (
+            <>
+              <span>
+                {selectedCount.toLocaleString()} selected across{" "}
+                {totalCount.toLocaleString()} results.
+              </span>
+              <Button
+                variant="link"
+                className="h-auto p-0 text-blue-600"
+                onClick={onClearSelection}
+              >
+                Clear selection
+              </Button>
+            </>
+          ) : (
+            <>
+              <span>
+                {`${Math.min(selectedCount, visibleCount)}–${totalCount.toLocaleString()} selected.`}
+              </span>
+              {totalCount > visibleCount && (
+                <Button
+                  variant="link"
+                  className="h-auto p-0 text-blue-600"
+                  onClick={onSelectAllAcrossPages}
+                >
+                  Select all {totalCount.toLocaleString()} studies
+                </Button>
+              )}
+            </>
+          )}
+        </div>
+      )}
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows.map((row) => (
+            <TableRow key={row.id}>
+              {row.getVisibleCells().map((cell) => (
+                <TableCell key={cell.id}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
-
-SearchResultsTable.displayName = "SearchResultsTable";
