@@ -71,12 +71,12 @@ function SortableSortItem({
 }
 
 interface GuidedSortBarProps {
-  querystring: string;
+  queryString: string;
   onSortTokensChange: (newTokens: SortToken[]) => void; // Fixed: changed to SortToken[]
   sortableFields: string[];
 }
 export default function GuidedSortBar({
-  querystring,
+  queryString: queryString,
   onSortTokensChange,
   sortableFields,
 }: GuidedSortBarProps) {
@@ -85,8 +85,8 @@ export default function GuidedSortBar({
     "asc" | "desc"
   >("asc");
 
-  const [sortTokens, setSortTokens] = useState<SortToken[]>(() => {
-    const query = qs.parse(querystring, { ignoreQueryPrefix: true });
+  const sortTokens = React.useMemo(() => {
+    const query = qs.parse(queryString, { ignoreQueryPrefix: true });
     if (typeof query.sort === "string") {
       return query.sort.split(",").map((s) => {
         const [field, dir] = s.split(":");
@@ -94,19 +94,12 @@ export default function GuidedSortBar({
       });
     }
     return [];
-  });
+  }, [queryString]);
 
-  useEffect(() => {
-    const query = qs.parse(querystring, { ignoreQueryPrefix: true });
-
-    if (typeof query.sort === "string") {
-      const parsedSort = query.sort.split(",").map((s) => {
-        const [field, dir] = s.split(":");
-        return { field, direction: (dir as "asc" | "desc") || "asc" };
-      });
-      setSortTokens(parsedSort);
-    }
-  }, [querystring]);
+  const availableFields = React.useMemo(() => {
+    const used = new Set(sortTokens.map((t) => t.field));
+    return sortableFields.filter((f) => !used.has(f));
+  }, [sortableFields, sortTokens]);
 
   const addSort = () => {
     if (!selectedField) return;
@@ -163,11 +156,16 @@ export default function GuidedSortBar({
           className="rounded border border-gray-300 px-2 py-1"
         >
           <option value="">Select field...</option>
-          {sortableFields.map((field) => (
+          {availableFields.map((field) => (
             <option key={field} value={field}>
               {field}
             </option>
           ))}
+          {/* {sortableFields.map((field) => (
+            <option key={field} value={field}>
+              {field}
+            </option>
+          ))} */}
         </select>
 
         {selectedField && (

@@ -1,20 +1,28 @@
 "use client";
 
+import qs from "qs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import React from "react";
+import React, { useMemo } from "react";
 
+import { Button } from "@/components/ui/button";
 type PaginationProps = {
-  currentPage: number;
+  queryString: string;
   totalPages: number;
   onPageChange: (newPage: number) => void;
 };
 
 export default function Pagination({
-  currentPage,
+  queryString,
   totalPages,
   onPageChange,
 }: PaginationProps) {
-  const getVisiblePages = () => {
+  const currentPage = React.useMemo(() => {
+    const query = qs.parse(queryString, { ignoreQueryPrefix: true });
+    const pageParam = query.page;
+    return typeof pageParam === "string" ? Number(pageParam) || 1 : 1;
+  }, [queryString]);
+
+  const visiblePages = useMemo(() => {
     if (totalPages <= 1) return [];
 
     if (currentPage === 1) {
@@ -28,43 +36,37 @@ export default function Pagination({
     return [currentPage - 1, currentPage, currentPage + 1].filter(
       (p) => p >= 1 && p <= totalPages,
     );
-  };
-
-  const visiblePages = getVisiblePages();
-
+  }, [currentPage, totalPages]);
   return (
     <div className="my-4 flex items-center justify-center space-x-2">
-      <button
+      <Button
+        variant="outline"
+        size="icon"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="rounded border p-2 hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-        aria-label="Previous Page"
       >
         <ChevronLeft className="h-4 w-4" />
-      </button>
+      </Button>
 
       {visiblePages.map((page) => (
-        <button
+        <Button
           key={page}
+          variant={page === currentPage ? "default" : "outline"}
           onClick={() => onPageChange(page)}
-          className={`rounded border px-3 py-1 ${
-            page === currentPage
-              ? "bg-blue-600 font-bold text-white"
-              : "bg-white text-gray-800 hover:cursor-pointer hover:bg-gray-100"
-          }`}
+          className="px-3"
         >
           {page}
-        </button>
+        </Button>
       ))}
 
-      <button
+      <Button
+        variant="outline"
+        size="icon"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="rounded border p-2 hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-        aria-label="Next Page"
       >
         <ChevronRight className="h-4 w-4" />
-      </button>
+      </Button>
     </div>
   );
 }

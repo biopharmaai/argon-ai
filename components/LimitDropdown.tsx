@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import qs from "qs";
 import {
   Select,
@@ -16,13 +16,17 @@ interface LimitDropdownProps {
 }
 
 const options = [10, 25, 50, 100];
+const DEFAULT_LIMIT = "10";
 
 export default function LimitDropdown({
-  queryString,
   onLimitsChange,
+  queryString,
 }: LimitDropdownProps) {
-  const query = qs.parse(queryString, { ignoreQueryPrefix: true });
-  const selected = (query.limit as string) || "10";
+  const query = useMemo(
+    () => qs.parse(queryString, { ignoreQueryPrefix: true }),
+    [queryString],
+  );
+  const selected = (query.limit as string) || DEFAULT_LIMIT;
 
   const selectOption = useCallback(
     (option: string) => {

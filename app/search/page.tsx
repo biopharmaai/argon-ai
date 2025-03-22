@@ -22,16 +22,14 @@ export default function SearchPage() {
   const currentQuery = qs.parse(searchParams.toString());
 
   const [results, setResults] = useState<ClinicalTrial[]>([]);
-  // const [filterTokens, setFilterTokens] = useState<FilterToken[]>([]);
-  // const [sortTokens, setSortTokens] = useState<SortToken[]>([]);
   const [searchTerm, setSearchTerm] = useState(
     (currentQuery.term as string) || "",
   );
   // const [limit, setLimit] = useState(Number(currentQuery.limit) || 10);
   const [totalPages, setTotalPages] = useState(1);
-  const [currentPage, setCurrentPage] = useState(
-    Number(currentQuery.page) || 1,
-  );
+  // const [currentPage, setCurrentPage] = useState(
+  //   Number(currentQuery.page) || 1,
+  // );
 
   const [queryString, setQueryString] = useState(() => {
     const query = qs.parse(searchParams.toString());
@@ -41,13 +39,11 @@ export default function SearchPage() {
 
   // Sync derived states from the actual URL query params
   useEffect(() => {
-    const query = qs.parse(searchParams.toString());
+    const query = qs.parse(queryString);
 
     setSearchTerm((query.term as string) || "");
-    setCurrentPage(Number(query.page) || 1);
-
-    setQueryString(qs.stringify(query));
-  }, [searchParams]);
+    // setCurrentPage(Number(query.page) || 1);
+  }, [queryString]);
 
   // Fetch results when query string changes
   useEffect(() => {
@@ -59,32 +55,32 @@ export default function SearchPage() {
       setTotalPages(json.totalPages);
     };
     getData();
-  }, [queryString]);
+  }, [queryString, router]);
 
   // Handlers to update search term and limit
   const handleSearchChange = useCallback(
     (term: string) => {
-      const q = qs.parse(searchParams.toString());
+      const q = qs.parse(queryString);
       q.term = term;
       q.page = (1).toString();
       setQueryString(qs.stringify(q));
     },
-    [searchParams],
+    [queryString],
   );
 
   const onLimitChange = useCallback(
     (newLimit: number) => {
-      const q = qs.parse(searchParams.toString());
+      const q = qs.parse(queryString);
       q.limit = newLimit.toString();
       q.page = (1).toString();
       setQueryString(qs.stringify(q));
     },
-    [searchParams],
+    [queryString],
   );
 
   const handleSortTokensChange = useCallback(
     (tokens: SortToken[]) => {
-      const q = qs.parse(searchParams.toString());
+      const q = qs.parse(queryString);
       if (tokens.length > 0) {
         q.sort = tokens.map((t) => `${t.field}:${t.direction}`).join(",");
       } else {
@@ -94,28 +90,33 @@ export default function SearchPage() {
       q.page = (1).toString();
       setQueryString(qs.stringify(q));
     },
-    [searchParams],
+    [queryString],
   );
 
-  const handlePageChange = (newPage: number) => {
-    const q = qs.parse(searchParams.toString());
-    q.page = newPage.toString();
-    setQueryString(qs.stringify(q));
-  };
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      const q = qs.parse(queryString);
+      q.page = newPage.toString();
+      setQueryString(qs.stringify(q));
+    },
+    [queryString],
+  );
 
-  const onFiltersChange = (updatedFilters: FilterToken[]) => {
-    const q = qs.parse(searchParams.toString());
-    if (updatedFilters.length > 0) {
-      q.filter = updatedFilters.reduce(
-        (acc, { field, value }) => ({ ...acc, [field]: value }),
-        {},
-      );
-    } else {
-      delete q.filter;
-    }
-    setQueryString(qs.stringify(q));
-    router.push(`?${qs.stringify(q)}`);
-  };
+  const onFiltersChange = useCallback(
+    (updatedFilters: FilterToken[]) => {
+      const q = qs.parse(queryString);
+      if (updatedFilters.length > 0) {
+        q.filter = updatedFilters.reduce(
+          (acc, { field, value }) => ({ ...acc, [field]: value }),
+          {},
+        );
+      } else {
+        delete q.filter;
+      }
+      setQueryString(qs.stringify(q));
+    },
+    [queryString],
+  );
   return (
     <div className="mx-auto w-full p-6">
       <h1 className="mb-4 text-2xl font-bold">Search Page</h1>
@@ -138,7 +139,7 @@ export default function SearchPage() {
       <div className="mt-4">
         <h2 className="mb-2 text-lg font-semibold">Sort Order</h2>
         <GuidedSortBar
-          querystring={queryString}
+          queryString={queryString}
           onSortTokensChange={handleSortTokensChange}
           sortableFields={[
             "nctId",
@@ -152,7 +153,8 @@ export default function SearchPage() {
       </div>
 
       <Pagination
-        currentPage={currentPage}
+        queryString={queryString}
+        // currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
