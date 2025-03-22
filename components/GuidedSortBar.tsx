@@ -98,7 +98,7 @@ export default function GuidedSortBar({
 
   const removeSort = (field: string) => {
     const updated = sortTokens.filter((t) => t.field !== field);
-    onSortTokensChange(updated);
+    onSortTokensChange(updated); // Ensures last item is removed
   };
 
   const toggleDirection = (field: string) => {

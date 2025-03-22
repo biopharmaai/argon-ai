@@ -56,7 +56,9 @@ export default function SearchResultsTable({
             token.field === field ? { ...token, direction: "desc" } : token,
           );
         } else {
-          newSortTokens = sortTokens.filter((token) => token.field !== field);
+          newSortTokens = sortTokens.map((token) =>
+            token.field === field ? { ...token, direction: "asc" } : token,
+          );
         }
       }
 
@@ -91,7 +93,7 @@ export default function SearchResultsTable({
 
       return (
         <div
-          className="flex items-center cursor-pointer select-none"
+          className="flex cursor-pointer items-center select-none"
           onClick={() => toggleSort(field)}
         >
           <span>{label}</span>
