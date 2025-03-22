@@ -1,36 +1,42 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import * as React from "react";
+import { useMemo, useState } from "react";
 import { X } from "lucide-react";
-import { filterEnumMap } from "@/types/filterEnums"; // adjust path if needed
 import qs from "qs";
+import { filterEnumMap } from "@/types/filterEnums";
 
-// A filter token representing a single filter, e.g. { field: "overallStatus", value: "RECRUITING" }
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 export interface FilterToken {
   field: string;
   value: string;
 }
 
 interface GuidedFilterBarProps {
-  // filters: FilterToken[];
   onFiltersCommitted: (filters: FilterToken[]) => void;
   queryString: string;
-  // updateQueryString: (newQueryString: string) => void;
 }
 
 export default function GuidedFilterBar({
   onFiltersCommitted,
   queryString,
-  // updateQueryString,
 }: GuidedFilterBarProps) {
-  const [selectedField, setSelectedField] = React.useState<string>("");
-  const [selectedValue, setSelectedValue] = React.useState<string>("");
-  const baseQueryObject = useMemo(() => {
-    return qs.parse(queryString, { ignoreQueryPrefix: true });
-  }, [queryString]);
+  const [selectedField, setSelectedField] = useState("");
+  const [selectedValue, setSelectedValue] = useState("");
 
-  const filterTokens: FilterToken[] = React.useMemo(() => {
+  const baseQueryObject = useMemo(
+    () => qs.parse(queryString, { ignoreQueryPrefix: true }),
+    [queryString],
+  );
+
+  const filterTokens: FilterToken[] = useMemo(() => {
     if (
       typeof baseQueryObject.filter === "object" &&
       baseQueryObject.filter !== null
@@ -43,19 +49,12 @@ export default function GuidedFilterBar({
     return [];
   }, [baseQueryObject]);
 
-  // Get list of filterable fields from filterEnumMap keys
-  // const fields = Object.keys(filterEnumMap);
-  const fields = React.useMemo(() => {
+  const fields = useMemo(() => {
     const usedFields = new Set(filterTokens.map((t) => t.field));
     return Object.keys(filterEnumMap)
       .filter((field) => !usedFields.has(field))
       .sort((a, b) => a.localeCompare(b));
   }, [filterTokens]);
-
-  const handleFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedField(e.target.value);
-    setSelectedValue("");
-  };
 
   const addFilter = () => {
     if (!selectedField || !selectedValue) return;
@@ -64,132 +63,115 @@ export default function GuidedFilterBar({
       field: selectedField,
       value: selectedValue,
     };
-
-    // Ensure only one filter per field (overwrite existing)
     const updatedFilters = filterTokens.filter(
       (f) => f.field !== selectedField,
     );
     updatedFilters.push(newToken);
-    // onFiltersChange(updatedFilters);
 
-    // Update query string correctly **without duplicating existing filters**
-    // const queryObject = qs.parse(queryString);
-    const queryObject = { ...baseQueryObject };
-    const updatedQuery = {
-      ...queryObject,
-    };
+    const updatedQuery = { ...baseQueryObject };
+    updatedQuery.filter = {};
+    updatedFilters.forEach((token) => {
+      updatedQuery.filter[token.field] = token.value;
+    });
 
-    if (updatedFilters.length > 0) {
-      updatedQuery.filter = {};
-      updatedFilters.forEach((token) => {
-        if (!updatedQuery.filter) return;
-        updatedQuery.filter[token.field] = token.value;
-      });
-    } else {
-      delete updatedQuery.filter;
-    }
-
-    console.log("GuidedFilterBar - Adding filter:", updatedQuery);
     onFiltersCommitted(updatedFilters);
-
     setSelectedField("");
     setSelectedValue("");
   };
 
   const removeFilter = (field: string) => {
     const updatedFilters = filterTokens.filter((f) => f.field !== field);
-
-    // Ensure filter is properly removed from URL
-    // const queryObject = qs.parse(queryString);
-    const queryObject = { ...baseQueryObject };
-    if (queryObject.filter) {
-      delete queryObject.filter[field];
-      if (Object.keys(queryObject.filter).length === 0) {
-        delete queryObject.filter; // Remove empty filter object
-      }
-    }
-    console.log("GuidedFilterBar - Removing filter:", updatedFilters);
     onFiltersCommitted(updatedFilters);
-    // updateQueryString(qs.stringify(queryObject));
   };
 
   const clearAll = () => {
     onFiltersCommitted([]);
-    // updateQueryString(qs.stringify(queryObject));
   };
 
   return (
-    <div className="flex flex-col space-y-2">
-      {/* Section to add a new filter */}
-      <div className="flex items-center space-x-2">
-        <select
+    <div className="flex flex-col space-y-3">
+      {/* Add filter section */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Select
           value={selectedField}
-          onChange={handleFieldChange}
-          className="rounded border border-gray-300 px-2 py-1"
+          onValueChange={(val) => {
+            setSelectedField(val);
+            setSelectedValue("");
+          }}
         >
-          <option value="">Select field...</option>
-          {fields.map((field) => (
-            <option key={field} value={field}>
-              {field}
-            </option>
-          ))}
-        </select>
-        {selectedField && (
-          <select
-            value={selectedValue}
-            onChange={(e) => setSelectedValue(e.target.value)}
-            className="rounded border border-gray-300 px-2 py-1"
-          >
-            <option value="">Select value...</option>
-            {(
-              filterEnumMap[
-                selectedField as keyof typeof filterEnumMap
-              ] as string[]
-            ).map((val) => (
-              <option key={val} value={val}>
-                {val}
-              </option>
+          <SelectTrigger className="w-48" aria-label="Select filter field">
+            <SelectValue placeholder="Select field..." />
+          </SelectTrigger>
+          <SelectContent>
+            {fields.map((field) => (
+              <SelectItem key={field} value={field}>
+                {field}
+              </SelectItem>
             ))}
-          </select>
+          </SelectContent>
+        </Select>
+
+        {selectedField && (
+          <Select
+            value={selectedValue}
+            onValueChange={(val) => setSelectedValue(val)}
+          >
+            <SelectTrigger className="w-48" aria-label="Select filter value">
+              <SelectValue placeholder="Select value..." />
+            </SelectTrigger>
+            <SelectContent>
+              {(
+                filterEnumMap[
+                  selectedField as keyof typeof filterEnumMap
+                ] as string[]
+              ).map((val) => (
+                <SelectItem key={val} value={val}>
+                  {val}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
-        <button
+
+        <Button
           onClick={addFilter}
           disabled={!selectedField || !selectedValue}
-          className="rounded bg-blue-600 px-3 py-1 text-white disabled:opacity-50"
+          aria-label="Add filter"
         >
           Add Filter
-        </button>
+        </Button>
       </div>
 
-      {/* Display current filter tokens */}
+      {/* Filter chips */}
       <div className="flex flex-wrap gap-2">
-        {Array.isArray(filterTokens) &&
-          filterTokens.map((token) => (
-            <div
-              key={token.field}
-              className="flex items-center rounded bg-gray-200 px-2 py-1"
+        {filterTokens.map((token) => (
+          <div
+            key={token.field}
+            className="bg-muted flex items-center rounded px-3 py-1 text-sm"
+          >
+            {token.field}: {token.value}
+            <button
+              onClick={() => removeFilter(token.field)}
+              className="ml-2"
+              aria-label={`Remove filter for ${token.field}`}
             >
-              <span className="text-sm">
-                {token.field}: {token.value}
-              </span>
-              <button
-                onClick={() => removeFilter(token.field)}
-                className="ml-1"
-                title="Remove filter"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
       </div>
 
-      {Array.isArray(filterTokens) && filterTokens.length > 0 && (
-        <button
+      {/* Clear all */}
+      {filterTokens.length > 0 && (
+        <Button
+          variant="link"
+          size="sm"
           onClick={clearAll}
-          className="self-start text-sm text-blue-600 underline"
+          className="self-start p-0 text-blue-600"
+          aria-label="Clear all filters"
         >
           Clear All Filters
-        </button>
+        </Button>
       )}
     </div>
   );

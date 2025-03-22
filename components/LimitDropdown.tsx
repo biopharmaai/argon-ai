@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface LimitDropdownProps {
   queryString: string;
@@ -37,19 +38,29 @@ export default function LimitDropdown({
 
   return (
     <div className="flex items-center space-x-2">
+      <Label htmlFor="limit-select" className="whitespace-nowrap">
+        Studies per page
+      </Label>
       <Select value={selected} onValueChange={selectOption}>
-        <SelectTrigger>
+        <SelectTrigger
+          id="limit-select"
+          aria-label="Results per page"
+          className="w-[100px]"
+        >
           <SelectValue placeholder="Select limit" />
         </SelectTrigger>
-        <SelectContent className="bg-white">
+        <SelectContent>
           {options.map((option) => (
-            <SelectItem key={option} value={option.toString()}>
+            <SelectItem
+              key={option}
+              value={option.toString()}
+              aria-label={`Show ${option} results per page`}
+            >
               {option}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      <span>studies per page</span>
     </div>
   );
 }

@@ -1,8 +1,14 @@
 "use client";
-import qs from "qs";
 
-import { useEffect, useState } from "react";
-import * as React from "react";
+import qs from "qs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -12,6 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronUp, ChevronDown, X } from "lucide-react";
+import React from "react";
 
 export interface SortToken {
   field: string;
@@ -55,6 +62,8 @@ function SortableSortItem({
       <div
         className="flex flex-1 items-center select-none"
         onClick={onToggleDirection}
+        role="button"
+        aria-label={`Toggle sort direction for ${token.field}`}
       >
         <span className="mr-1">{token.field}</span>
         {token.direction === "asc" ? (
@@ -63,20 +72,26 @@ function SortableSortItem({
           <ChevronDown className="h-4 w-4" />
         )}
       </div>
-      <button onClick={onRemove} className="ml-2" title="Remove sort">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onRemove}
+        aria-label={`Remove sort for ${token.field}`}
+      >
         <X className="h-4 w-4 text-gray-500 hover:text-red-600" />
-      </button>
+      </Button>
     </div>
   );
 }
 
 interface GuidedSortBarProps {
   queryString: string;
-  onSortTokensChange: (newTokens: SortToken[]) => void; // Fixed: changed to SortToken[]
+  onSortTokensChange: (newTokens: SortToken[]) => void;
   sortableFields: string[];
 }
+
 export default function GuidedSortBar({
-  queryString: queryString,
+  queryString,
   onSortTokensChange,
   sortableFields,
 }: GuidedSortBarProps) {
@@ -110,28 +125,24 @@ export default function GuidedSortBar({
       ]);
     }
     setSelectedField("");
-    setSelectedDirection("asc"); // Reset direction after adding
+    setSelectedDirection("asc");
   };
 
   const removeSort = (field: string) => {
     const updated = sortTokens.filter((t) => t.field !== field);
-    onSortTokensChange(updated); // Ensures last item is removed
+    onSortTokensChange(updated);
   };
 
   const toggleDirection = (field: string) => {
-    const updatedTokens = sortTokens.map((token) => {
-      if (token.field === field) {
-        return {
-          ...token,
-          direction:
-            token.direction === "asc"
-              ? "desc"
-              : ("asc" as SortToken["direction"]),
-        };
-      }
-      return token;
-    });
-    onSortTokensChange(updatedTokens);
+    const updated = sortTokens.map((token) =>
+      token.field === field
+        ? {
+            ...token,
+            direction: token.direction === "asc" ? "desc" : "asc",
+          }
+        : token,
+    );
+    onSortTokensChange(updated);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -139,58 +150,55 @@ export default function GuidedSortBar({
     if (!over || active.id === over.id) return;
     const oldIndex = sortTokens.findIndex((t) => t.field === active.id);
     const newIndex = sortTokens.findIndex((t) => t.field === over.id);
-    const newTokens = arrayMove(sortTokens, oldIndex, newIndex);
-    onSortTokensChange(newTokens);
+    const reordered = arrayMove(sortTokens, oldIndex, newIndex);
+    onSortTokensChange(reordered);
   };
 
   const clearAllSorts = () => {
-    onSortTokensChange([]); // Fixed: passing empty array instead of undefined
+    onSortTokensChange([]);
   };
 
   return (
     <div className="flex flex-col space-y-4">
       <div className="flex items-center space-x-2">
-        <select
-          value={selectedField}
-          onChange={(e) => setSelectedField(e.target.value)}
-          className="rounded border border-gray-300 px-2 py-1"
-        >
-          <option value="">Select field...</option>
-          {availableFields.map((field) => (
-            <option key={field} value={field}>
-              {field}
-            </option>
-          ))}
-          {/* {sortableFields.map((field) => (
-            <option key={field} value={field}>
-              {field}
-            </option>
-          ))} */}
-        </select>
+        <Select value={selectedField} onValueChange={setSelectedField}>
+          <SelectTrigger className="w-48" aria-label="Select field to sort">
+            <SelectValue placeholder="Select field..." />
+          </SelectTrigger>
+          <SelectContent>
+            {availableFields.map((field) => (
+              <SelectItem key={field} value={field}>
+                {field}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {selectedField && (
-          <select
+          <Select
             value={selectedDirection}
-            onChange={(e) =>
-              setSelectedDirection(e.target.value as "asc" | "desc")
-            }
-            className="rounded border border-gray-300 px-2 py-1"
+            onValueChange={(v) => setSelectedDirection(v as "asc" | "desc")}
           >
-            <option value="asc">asc</option>
-            <option value="desc">desc</option>
-          </select>
+            <SelectTrigger className="w-24" aria-label="Select sort direction">
+              <SelectValue placeholder="asc/desc" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">asc</SelectItem>
+              <SelectItem value="desc">desc</SelectItem>
+            </SelectContent>
+          </Select>
         )}
 
-        <button
+        <Button
           onClick={addSort}
           disabled={!selectedField}
-          className="rounded bg-blue-600 px-3 py-1 text-white disabled:opacity-50"
+          aria-label="Add sort field"
         >
           Add Sort
-        </button>
+        </Button>
       </div>
 
-      {Array.isArray(sortTokens) && sortTokens.length > 0 && (
+      {sortTokens.length > 0 && (
         <>
           <DndContext
             collisionDetection={closestCenter}
@@ -212,12 +220,15 @@ export default function GuidedSortBar({
               </div>
             </SortableContext>
           </DndContext>
-          <button
+
+          <Button
+            variant="link"
             onClick={clearAllSorts}
-            className="self-start text-sm text-blue-600 underline"
+            className="self-start text-sm"
+            aria-label="Clear all sort fields"
           >
             Clear All Sorts
-          </button>
+          </Button>
         </>
       )}
     </div>

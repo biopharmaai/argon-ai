@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { Transition } from "@headlessui/react";
-import { Search as SearchIcon } from "lucide-react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { debounce } from "lodash";
+import { Search as SearchIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface SearchBarProps {
   onChange: (term: string) => void;
@@ -13,50 +14,43 @@ interface SearchBarProps {
 export default function SearchBar({ onChange, value = "" }: SearchBarProps) {
   const [searchTerm, setSearchTerm] = useState(value);
 
-  // Create a debounced function using useMemo
-  const debouncedSetSearchTerm = useMemo(
-    () =>
-      debounce((newTerm: string) => {
-        onChange(newTerm);
-      }, 500),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
+  const debouncedChange = useMemo(() => debounce(onChange, 500), [onChange]);
 
-  // Clean up the debounced function on unmount
   useEffect(() => {
     return () => {
-      // console.error("cleaning up");
-      debouncedSetSearchTerm.cancel();
+      debouncedChange.cancel();
     };
-  }, [debouncedSetSearchTerm]);
+  }, [debouncedChange]);
 
-  // Update the debounced state on input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    debouncedSetSearchTerm(e.target.value);
-  };
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value;
+      setSearchTerm(val);
+      debouncedChange(val);
+    },
+    [debouncedChange],
+  );
 
   return (
-    <Transition
-      appear={true}
-      show={true}
-      enter="transition-opacity duration-500"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-    >
+    <div className="flex flex-col space-y-1">
+      <Label htmlFor="search-input" className="sr-only">
+        Search studies
+      </Label>
       <div className="relative">
-        <input
+        <SearchIcon
+          className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2"
+          aria-hidden="true"
+        />
+        <Input
+          id="search-input"
           type="text"
           value={searchTerm}
-          onChange={handleInputChange}
-          placeholder="Search..."
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+          onChange={handleChange}
+          placeholder="Search studies..."
+          className="pl-9"
+          aria-label="Search studies"
         />
-        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          <SearchIcon className="h-5 w-5 text-gray-400" />
-        </div>
       </div>
-    </Transition>
+    </div>
   );
 }
