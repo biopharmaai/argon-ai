@@ -209,7 +209,7 @@ export default function SearchResultsTable({
           row.protocolSection.identificationModule.nctId,
         cell: (val: string) => (
           <Link
-            href={`/clinical-trials/${val}`}
+            href={`/study/${val}`}
             className="text-blue-600 hover:underline"
           >
             {val}
@@ -309,7 +309,7 @@ export default function SearchResultsTable({
       }
 
       const blob = await zip.generateAsync({ type: "blob" });
-      triggerDownload(blob, `${date}-clinical-trials-${format}.zip`);
+      triggerDownload(blob, `${date}-study-${format}.zip`);
     } else {
       const content =
         format === "json"
@@ -319,7 +319,7 @@ export default function SearchResultsTable({
         type:
           format === "json" ? "application/json" : "text/csv;charset=utf-8;",
       });
-      triggerDownload(blob, `${date}-clinical-trials.${format}`);
+      triggerDownload(blob, `${date}-study.${format}`);
     }
 
     setOpen(false);
