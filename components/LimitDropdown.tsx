@@ -1,8 +1,7 @@
 "use client";
 
-import * as React from "react";
-// Remove any extra ChevronDown import if you don't need a custom icon
-// import { ChevronDown } from "lucide-react";
+import { useCallback } from "react";
+import qs from "qs";
 import {
   Select,
   SelectContent,
@@ -12,36 +11,32 @@ import {
 } from "@/components/ui/select";
 
 interface LimitDropdownProps {
-  value: number;
-  onChange: (limit: number) => void;
+  queryString: string;
+  onLimitsChange: (limit: number) => void;
 }
 
 const options = [10, 25, 50, 100];
 
-export default function LimitDropdown({ value, onChange }: LimitDropdownProps) {
-  // We'll store the selected value as a string because the Select component works with strings.
-  const [selected, setSelected] = React.useState<string>(value.toString());
+export default function LimitDropdown({
+  queryString,
+  onLimitsChange,
+}: LimitDropdownProps) {
+  const query = qs.parse(queryString, { ignoreQueryPrefix: true });
+  const selected = (query.limit as string) || "10";
 
-  const selectOption = React.useCallback(
+  const selectOption = useCallback(
     (option: string) => {
-      setSelected(option);
-      onChange(Number(option));
+      onLimitsChange(Number(option));
     },
-    [setSelected, onChange],
+    [onLimitsChange],
   );
 
-  // When the selection changes, notify the parent.
-  React.useEffect(() => {
-    onChange(Number(selected));
-  }, [selected, onChange]);
-
   return (
-    <div className="flex space-x-2 items-center">
+    <div className="flex items-center space-x-2">
       <Select value={selected} onValueChange={selectOption}>
         <SelectTrigger>
           <SelectValue placeholder="Select limit" />
         </SelectTrigger>
-        {/* The SelectContent is given a solid white background */}
         <SelectContent className="bg-white">
           {options.map((option) => (
             <SelectItem key={option} value={option.toString()}>

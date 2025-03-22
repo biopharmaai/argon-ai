@@ -27,7 +27,7 @@ export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState(
     (currentQuery.term as string) || "",
   );
-  const [limit, setLimit] = useState(Number(currentQuery.limit) || 10);
+  // const [limit, setLimit] = useState(Number(currentQuery.limit) || 10);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(
     Number(currentQuery.page) || 1,
@@ -44,7 +44,6 @@ export default function SearchPage() {
     const query = qs.parse(searchParams.toString());
 
     setSearchTerm((query.term as string) || "");
-    setLimit(Number(query.limit) || 10);
     setCurrentPage(Number(query.page) || 1);
 
     setQueryString(qs.stringify(query));
@@ -130,7 +129,10 @@ export default function SearchPage() {
       </div>
 
       <div className="mt-4">
-        <LimitDropdown onChange={onLimitChange} value={limit} />
+        <LimitDropdown
+          queryString={queryString}
+          onLimitsChange={onLimitChange}
+        />
       </div>
 
       <div className="mt-4">
