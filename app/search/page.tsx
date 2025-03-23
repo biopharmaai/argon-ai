@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { SortToken } from "@/components/GuidedSortBar";
-
+import { columnsDefinitions } from "@/components/SearchResultsTable";
 const GuidedFilterBar = dynamic(() => import("@/components/GuidedFilterBar"), {
   ssr: false,
 });
@@ -30,6 +30,15 @@ const GuidedSortBar = dynamic(() => import("@/components/GuidedSortBar"), {
   ssr: false,
 });
 
+const defaultColumnsVisiblility = {
+  nctId: true,
+  briefTitle: true,
+  organization: true,
+  status: true,
+  conditions: true,
+  startDate: true,
+  completionDate: true,
+};
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -41,6 +50,33 @@ export default function SearchPage() {
     const query = qs.parse(searchParams.toString());
     if (!query.page) query.page = "1";
     return qs.stringify(query);
+  });
+
+  const [columnConfig, setColumnConfig] = useState<ColumnConfig[]>(() => {
+    const query = qs.parse(searchParams.toString());
+    if (!query.fields) {
+      return columnsDefinitions;
+    }
+    if (typeof query.fields !== "string") {
+      return columnsDefinitions.map<ColumnConfig>(({ id, label, ...rest }) => {
+        return {
+          id,
+          label,
+          enabled:
+            defaultColumnsVisiblility[
+              id as keyof typeof defaultColumnsVisiblility
+            ],
+        };
+      });
+    } else {
+      const fieldIds = query.fields.split(",");
+      return columnsDefinitions.map((col) => {
+        return {
+          ...col,
+          enabled: fieldIds.includes(col.id),
+        };
+      });
+    }
   });
 
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
@@ -139,29 +175,6 @@ export default function SearchPage() {
     },
     [queryString],
   );
-  const [columnConfig, setColumnConfig] = useState([
-    { id: "nctId", label: "NCT ID", enabled: true },
-    { id: "briefTitle", label: "Title", enabled: true },
-    { id: "organization", label: "Sponsor / Organization", enabled: true },
-    { id: "status", label: "Status", enabled: true },
-    { id: "conditions", label: "Conditions", enabled: true },
-    { id: "startDate", label: "Start Date", enabled: true },
-    { id: "completionDate", label: "Completion Date", enabled: true },
-    { id: "officialTitle", label: "Official Title", enabled: false },
-    { id: "briefSummary", label: "Brief Summary", enabled: false },
-    { id: "leadSponsor", label: "Lead Sponsor", enabled: false },
-    {
-      id: "primaryOutcomeMeasure",
-      label: "Primary Outcome Measure",
-      enabled: false,
-    },
-    { id: "enrollmentCount", label: "Enrollment Count", enabled: false },
-    { id: "studyType", label: "Study Type", enabled: false },
-    { id: "sex", label: "Sex", enabled: false },
-    { id: "minimumAge", label: "Minimum Age", enabled: false },
-    { id: "maximumAge", label: "Maximum Age", enabled: false },
-    { id: "locations", label: "Locations", enabled: false },
-  ]);
 
   const handleFieldSelectionChange = useCallback(
     (columns: ColumnConfig[]) => {
@@ -178,7 +191,7 @@ export default function SearchPage() {
 
       // q.page = "1";
       setQueryString(qs.stringify(q));
-      setColumnConfig(columns); // update local state to reflect changes
+      setColumnConfig(columns);
     },
     [queryString, setQueryString, setColumnConfig],
   );

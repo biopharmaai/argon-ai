@@ -48,6 +48,118 @@ type Props = {
 
 const columnHelper = createColumnHelper<ClinicalTrial>();
 
+export const columnsDefinitions = [
+  {
+    id: "nctId",
+    label: "NCT ID",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.identificationModule.nctId,
+    cell: (val: string) => (
+      <Link href={`/study/${val}`} className="text-blue-600 hover:underline">
+        {val}
+      </Link>
+    ),
+  },
+  {
+    id: "briefTitle",
+    label: "Title",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.identificationModule.briefTitle,
+  },
+  {
+    id: "organization",
+    label: "Sponsor / Organization",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.identificationModule.organization.fullName,
+  },
+  {
+    id: "status",
+    label: "Status",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.statusModule.overallStatus,
+  },
+  {
+    id: "conditions",
+    label: "Conditions",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.conditionsModule?.conditions?.join(", ") || "",
+  },
+  {
+    id: "startDate",
+    label: "Start Date",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.statusModule.startDateStruct?.date,
+  },
+  {
+    id: "completionDate",
+    label: "Completion Date",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.statusModule.completionDateStruct?.date,
+  },
+  {
+    id: "officialTitle",
+    label: "Official Title",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.identificationModule.officialTitle || "",
+  },
+  {
+    id: "briefSummary",
+    label: "Brief Summary",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.descriptionModule.briefSummary || "",
+  },
+  {
+    id: "leadSponsor",
+    label: "Lead Sponsor",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.sponsorCollaboratorsModule.leadSponsor.name || "",
+  },
+  {
+    id: "primaryOutcomeMeasure",
+    label: "Primary Outcome Measure",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.outcomesModule.primaryOutcomes?.[0]?.measure || "",
+  },
+  {
+    id: "enrollmentCount",
+    label: "Enrollment Count",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.designModule.enrollmentInfo?.count || "",
+  },
+  {
+    id: "studyType",
+    label: "Study Type",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.designModule.studyType || "",
+  },
+  {
+    id: "sex",
+    label: "Sex",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.eligibilityModule.sex || "",
+  },
+  {
+    id: "minimumAge",
+    label: "Minimum Age",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.eligibilityModule.minimumAge || "",
+  },
+  {
+    id: "maximumAge",
+    label: "Maximum Age",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.eligibilityModule.maximumAge || "",
+  },
+  {
+    id: "locations",
+    label: "Locations",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.contactsLocationsModule.locations
+        ?.map((loc) => loc.facility)
+        .join(", ") || "",
+  },
+];
+
 export default function SearchResultsTable({
   data,
   querystring,
@@ -198,123 +310,7 @@ export default function SearchResultsTable({
       );
     }
 
-    const colDefs = [
-      {
-        id: "nctId",
-        label: "NCT ID",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.identificationModule.nctId,
-        cell: (val: string) => (
-          <Link
-            href={`/study/${val}`}
-            className="text-blue-600 hover:underline"
-          >
-            {val}
-          </Link>
-        ),
-      },
-      {
-        id: "briefTitle",
-        label: "Title",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.identificationModule.briefTitle,
-      },
-      {
-        id: "organization",
-        label: "Sponsor / Organization",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.identificationModule.organization.fullName,
-      },
-      {
-        id: "status",
-        label: "Status",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.statusModule.overallStatus,
-      },
-      {
-        id: "conditions",
-        label: "Conditions",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.conditionsModule?.conditions?.join(", ") || "",
-      },
-      {
-        id: "startDate",
-        label: "Start Date",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.statusModule.startDateStruct?.date,
-      },
-      {
-        id: "completionDate",
-        label: "Completion Date",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.statusModule.completionDateStruct?.date,
-      },
-      {
-        id: "officialTitle",
-        label: "Official Title",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.identificationModule.officialTitle || "",
-      },
-      {
-        id: "briefSummary",
-        label: "Brief Summary",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.descriptionModule.briefSummary || "",
-      },
-      {
-        id: "leadSponsor",
-        label: "Lead Sponsor",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.sponsorCollaboratorsModule.leadSponsor.name || "",
-      },
-      {
-        id: "primaryOutcomeMeasure",
-        label: "Primary Outcome Measure",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.outcomesModule.primaryOutcomes?.[0]?.measure ||
-          "",
-      },
-      {
-        id: "enrollmentCount",
-        label: "Enrollment Count",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.designModule.enrollmentInfo?.count || "",
-      },
-      {
-        id: "studyType",
-        label: "Study Type",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.designModule.studyType || "",
-      },
-      {
-        id: "sex",
-        label: "Sex",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.eligibilityModule.sex || "",
-      },
-      {
-        id: "minimumAge",
-        label: "Minimum Age",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.eligibilityModule.minimumAge || "",
-      },
-      {
-        id: "maximumAge",
-        label: "Maximum Age",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.eligibilityModule.maximumAge || "",
-      },
-      {
-        id: "locations",
-        label: "Locations",
-        accessor: (row: ClinicalTrial) =>
-          row.protocolSection.contactsLocationsModule.locations
-            ?.map((loc) => loc.facility)
-            .join(", ") || "",
-      },
-    ];
-
-    colDefs.forEach(({ id, label, accessor, cell }) => {
+    columnsDefinitions.forEach(({ id, label, accessor, cell }) => {
       if (displayColumns.includes(id)) {
         cols.push(
           columnHelper.accessor(accessor, {
