@@ -298,6 +298,7 @@ export default function SearchResultsTable({
                 }
               }}
               aria-label="Select all studies on this page"
+              className="bg-white"
             />
           ),
           cell: ({ row }) => {
@@ -308,6 +309,7 @@ export default function SearchResultsTable({
                 checked={selectedIds.includes(nctId)}
                 onCheckedChange={() => handleToggleRow(nctId)}
                 aria-label={`Select study ${nctId}`}
+                className="bg-white"
               />
             );
           },
@@ -435,20 +437,20 @@ export default function SearchResultsTable({
 
   return (
     <div className="mt-6">
-      <div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setOpen(true)}
-          disabled={selectedIds.length === 0}
-        >
-          <Download className="mr-2 h-4 w-4" />
-          Export
-        </Button>
-      </div>
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 flex min-h-[2rem] items-center justify-between gap-4">
+        <div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setOpen(true)}
+            disabled={selectedIds.length === 0}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+        </div>
         {selectedIds.length > 0 && (
-          <div className="text-muted-foreground flex items-center text-sm">
+          <div className="text-muted-foreground flex flex-wrap items-center justify-end gap-2 text-sm">
             {selectAllAcrossPages ? (
               <span>
                 {selectedIds.length.toLocaleString()} selected across{" "}
@@ -464,15 +466,15 @@ export default function SearchResultsTable({
             )}
             <Button
               variant="link"
-              className="ml-2 h-auto p-0 text-blue-600"
+              className="h-auto p-0 text-blue-600"
               onClick={onClearSelection}
             >
               Clear selection
             </Button>
-            {selectedIds.length === totalCount ? null : (
+            {selectedIds.length !== totalCount && (
               <Button
                 variant="link"
-                className="ml-2 h-auto p-0 text-blue-600"
+                className="h-auto p-0 text-blue-600"
                 onClick={onSelectAllAcrossPages}
               >
                 Select all {totalCount.toLocaleString()} studies
@@ -534,16 +536,18 @@ export default function SearchResultsTable({
                 <Label htmlFor="json">JSON</Label>
               </div>
             </RadioGroup>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="zipEach"
-                checked={zipEach}
-                onCheckedChange={(checked) => setZipEach(Boolean(checked))}
-              />
-              <Label htmlFor="zipEach">
-                Put each study into its own file and zip
-              </Label>
-            </div>
+            {selectedIds.length > 1 && (
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="zipEach"
+                  checked={zipEach}
+                  onCheckedChange={(checked) => setZipEach(Boolean(checked))}
+                />
+                <Label htmlFor="zipEach">
+                  Put each study into its own file and zip
+                </Label>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button onClick={handleDownload}>Download</Button>

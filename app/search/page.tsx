@@ -221,49 +221,50 @@ export default function SearchPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <div className="mx-auto w-full flex-1 p-6">
-        <SearchBar
-          className="max-w-1/2 bg-white"
-          onSearchChange={handleSearchChange}
-          queryString={queryString}
-        />
-        <Sheet open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
-          <SheetTitle></SheetTitle>
-
-          <SheetTrigger asChild>
-            <Button variant="outline">Advanced</Button>
-          </SheetTrigger>
-          <SheetContent
-            side="right"
-            className="w-[400px] overflow-auto sm:w-[500px]"
-          >
-            <SheetHeader className="mb-4 text-lg font-semibold">
-              Advanced Search
-            </SheetHeader>
-            <div className="space-y-6">
-              <ColumnSelector
-                columns={columnConfig}
-                queryString={queryString}
-                onColumnsChange={handleFieldSelectionChange}
-              />
-              <GuidedFilterBar
-                onFiltersCommitted={onFiltersChange}
-                queryString={queryString}
-              />
-              <GuidedSortBar
-                queryString={queryString}
-                onSortTokensChange={handleSortTokensChange}
-                sortableFields={[
-                  "nctId",
-                  "briefTitle",
-                  "organization",
-                  "status",
-                  "startDate",
-                  "completionDate",
-                ]}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <SearchBar
+            className="flex-1 bg-white"
+            onSearchChange={handleSearchChange}
+            queryString={queryString}
+          />
+          <Sheet open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
+            <SheetTitle></SheetTitle>
+            <SheetTrigger asChild>
+              <Button variant="outline">Advanced</Button>
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              className="w-[400px] overflow-auto sm:w-[500px]"
+            >
+              <SheetHeader className="mb-4 text-lg font-semibold">
+                Advanced Search
+              </SheetHeader>
+              <div className="space-y-6">
+                <ColumnSelector
+                  columns={columnConfig}
+                  queryString={queryString}
+                  onColumnsChange={handleFieldSelectionChange}
+                />
+                <GuidedFilterBar
+                  onFiltersCommitted={onFiltersChange}
+                  queryString={queryString}
+                />
+                <GuidedSortBar
+                  queryString={queryString}
+                  onSortTokensChange={handleSortTokensChange}
+                  sortableFields={[
+                    "nctId",
+                    "briefTitle",
+                    "organization",
+                    "status",
+                    "startDate",
+                    "completionDate",
+                  ]}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
 
         <SearchResultsTable
           data={results}

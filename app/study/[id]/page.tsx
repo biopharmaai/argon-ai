@@ -1,51 +1,83 @@
 "use client";
 
 import { notFound, useParams } from "next/navigation";
-import { ClinicalTrial } from "@/types/clinicalTrials";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-// import { useParams } from "next/navigation";
+import { ClinicalTrial } from "@/types/clinicalTrials";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 async function getClinicalTrial(nctId: string): Promise<ClinicalTrial | null> {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/study/${nctId}`,
-  );
+  const res = await fetch(`/api/study/${nctId}`);
   if (!res.ok) return null;
   const json = await res.json();
   return json.trial as ClinicalTrial;
 }
 
 export default function ClinicalTrialPage() {
-  const params = useParams<{ nctId: string }>();
-  console.log("params", params);
-
+  const params = useParams<{ id: string }>();
   const [trial, setTrial] = useState<ClinicalTrial | null>(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    getClinicalTrial(params.nctId).then((data) => {
-      console.log("getting data", data);
-      setTrial(data);
-    });
-  }, [params.nctId]);
-  // const trial = await getClinicalTrial(params.nctId);
+    if (!params.id) return;
+    getClinicalTrial(params.id)
+      .then((data) => {
+        setTrial(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching clinical trial:", err);
+        setLoading(false);
+      });
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="space-y-6 p-6">
+        <Skeleton className="h-8 w-1/3" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+      </div>
+    );
+  }
+
   if (!trial) return notFound();
 
-  const idMod = trial.protocolSection.identificationModule;
-  const statusMod = trial.protocolSection.statusModule;
-  const description = trial.protocolSection.descriptionModule.briefSummary;
-  const design = trial.protocolSection.designModule;
-  const eligibility = trial.protocolSection.eligibilityModule;
-  const locations = trial.protocolSection.contactsLocationsModule.locations;
-  const outcomes = trial.protocolSection.outcomesModule.primaryOutcomes;
+  const {
+    identificationModule: idMod,
+    statusModule: statusMod,
+    descriptionModule: descMod,
+    designModule: design,
+    eligibilityModule: eligibility,
+    contactsLocationsModule,
+    outcomesModule,
+  } = trial.protocolSection;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="mx-auto max-w-5xl space-y-6 p-6">
       <Card>
         <CardHeader>
           <CardTitle>{idMod.briefTitle}</CardTitle>
-          <p className="text-muted-foreground text-sm">NCT ID: {idMod.nctId}</p>
+          <CardDescription className="text-sm text-muted-foreground">
+            Sponsor: {idMod.organization.fullName}
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm">Sponsor: {idMod.organization.fullName}</p>
+        <CardContent className="space-y-1 text-sm">
+          <p>
+            <span className="font-medium">NCT ID:</span> {idMod.nctId}
+          </p>
+          {idMod.officialTitle && (
+            <p>
+              <span className="font-medium">Official Title:</span>{" "}
+              {idMod.officialTitle}
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -53,44 +85,55 @@ export default function ClinicalTrialPage() {
         <CardHeader>
           <CardTitle>Status</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm">{statusMod.overallStatus}</p>
-          <p className="text-muted-foreground text-sm">
-            Start Date: {statusMod.startDateStruct?.date}
+        <CardContent className="grid grid-cols-1 gap-1 text-sm sm:grid-cols-2">
+          <p>
+            <span className="font-medium">Overall Status:</span>{" "}
+            {statusMod.overallStatus}
           </p>
-          <p className="text-muted-foreground text-sm">
-            Completion Date: {statusMod.completionDateStruct?.date || "—"}
+          <p>
+            <span className="font-medium">Start Date:</span>{" "}
+            {statusMod.startDateStruct?.date || "—"}
+          </p>
+          <p>
+            <span className="font-medium">Completion Date:</span>{" "}
+            {statusMod.completionDateStruct?.date || "—"}
           </p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Brief Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm leading-relaxed whitespace-pre-line">
-            {description}
-          </p>
-        </CardContent>
-      </Card>
+      {descMod.briefSummary && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Brief Summary</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm whitespace-pre-line">
+            {descMod.briefSummary}
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
           <CardTitle>Design</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm">Type: {design.studyType}</p>
-          <p className="text-sm">
-            Enrollment: {design.enrollmentInfo.count} (
-            {design.enrollmentInfo.type})
+        <CardContent className="space-y-1 text-sm">
+          <p>
+            <span className="font-medium">Study Type:</span> {design.studyType}
           </p>
-          {design.phases && (
-            <p className="text-sm">Phases: {design.phases.join(", ")}</p>
+          <p>
+            <span className="font-medium">Enrollment:</span>{" "}
+            {design.enrollmentInfo.count} ({design.enrollmentInfo.type})
+          </p>
+          {design.phases && design.phases.length > 0 && (
+            <p>
+              <span className="font-medium">Phases:</span>{" "}
+              {design.phases.join(", ")}
+            </p>
           )}
           {design.designInfo?.primaryPurpose && (
-            <p className="text-sm">
-              Primary Purpose: {design.designInfo.primaryPurpose}
+            <p>
+              <span className="font-medium">Primary Purpose:</span>{" "}
+              {design.designInfo.primaryPurpose}
             </p>
           )}
         </CardContent>
@@ -100,25 +143,31 @@ export default function ClinicalTrialPage() {
         <CardHeader>
           <CardTitle>Eligibility</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm">Sex: {eligibility.sex}</p>
-          <p className="text-sm">
-            Ages: {eligibility.minimumAge} – {eligibility.maximumAge || "N/A"}
+        <CardContent className="space-y-1 text-sm">
+          <p>
+            <span className="font-medium">Sex:</span> {eligibility.sex}
           </p>
-          <p className="mt-2 text-sm whitespace-pre-line">
-            {eligibility.eligibilityCriteria}
+          <p>
+            <span className="font-medium">Ages:</span> {eligibility.minimumAge} –{" "}
+            {eligibility.maximumAge || "N/A"}
           </p>
+          {eligibility.eligibilityCriteria && (
+            <div className="mt-2 whitespace-pre-line">
+              <span className="font-medium">Criteria:</span>{" "}
+              {eligibility.eligibilityCriteria}
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {locations?.length > 0 && (
+      {contactsLocationsModule?.locations?.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Locations</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="list-disc space-y-1 pl-5 text-sm">
-              {locations.map((loc, i) => (
+              {contactsLocationsModule.locations.map((loc, i) => (
                 <li key={i}>
                   {loc.facility} – {loc.city}, {loc.state}, {loc.country}
                 </li>
@@ -128,14 +177,14 @@ export default function ClinicalTrialPage() {
         </Card>
       )}
 
-      {outcomes?.length > 0 && (
+      {outcomesModule.primaryOutcomes?.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Primary Outcomes</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="list-disc space-y-2 pl-5 text-sm">
-              {outcomes.map((out, i) => (
+              {outcomesModule.primaryOutcomes.map((out, i) => (
                 <li key={i}>
                   <p className="font-medium">{out.measure}</p>
                   {out.timeFrame && (
