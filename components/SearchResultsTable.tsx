@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  useMemo,
-  useEffect,
-  useState,
-  useCallback,
-  useTransition,
-} from "react";
+import React, { useMemo, useEffect, useState, useCallback } from "react";
 import qs from "qs";
 import Link from "next/link";
 import { ChevronUp, ChevronDown, Download } from "lucide-react";
@@ -180,8 +174,9 @@ export default function SearchResultsTable({
                 handleToggleAllVisible(Boolean(checked))
               }
               ref={(el) => {
-                if (el)
+                if (el instanceof HTMLInputElement) {
                   el.indeterminate = someVisibleSelected && !allVisibleSelected;
+                }
               }}
               aria-label="Select all studies on this page"
             />
