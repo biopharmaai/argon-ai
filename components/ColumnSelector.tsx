@@ -87,25 +87,23 @@ export default function ColumnSelector({
 
   useEffect(() => {
     const query = qs.parse(queryString);
-    const defaultFields = [
-      "nctId",
-      "briefTitle",
-      "organization",
-      "status",
-      "conditions",
-      "startDate",
-      "completionDate",
-    ];
+    // const defaultFields = [
+    //   "nctId",
+    //   "briefTitle",
+    //   "organization",
+    //   "status",
+    //   "conditions",
+    //   "startDate",
+    //   "completionDate",
+    // ];
 
-    // If query.fields is missing, but we detect a default is already set (e.g. SearchResultsTable just wrote it), do nothing.
-    if (typeof query.fields !== "string") return;
+    let fieldIds: string[] = [];
 
-    // Prevent redundant overwrite if query.fields are already default
-    const fieldIds = query.fields.split(",");
-    const isDefault =
-      fieldIds.length === defaultFields.length &&
-      defaultFields.every((id, i) => fieldIds[i] === id);
-    if (isDefault) return;
+    if (typeof query.fields === "string") {
+      fieldIds = query.fields.split(",");
+      // } else if (typeof query.term === "string" && query.term.trim() !== "") {
+      //   fieldIds = defaultFields;
+    }
 
     const updatedColumns = fieldIds
       .map((id) => {

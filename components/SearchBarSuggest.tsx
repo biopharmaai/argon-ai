@@ -7,6 +7,7 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
+import qs from "qs";
 import { debounce } from "lodash";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -93,7 +94,20 @@ export default function SearchBarSuggest() {
 
   const handleSubmit = (value: string) => {
     if (!value) return;
-    router.push(`/search?term=${encodeURIComponent(value)}`);
+    const defaultFields = [
+      "nctId",
+      "briefTitle",
+      "organization",
+      "status",
+      "conditions",
+      "startDate",
+      "completionDate",
+    ];
+    const query = qs.stringify({
+      term: value,
+      fields: defaultFields.join(","),
+    });
+    router.push(`/search?${query}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

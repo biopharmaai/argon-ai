@@ -49,6 +49,7 @@ export default function SearchPage() {
   const [queryString, setQueryString] = useState(() => {
     const query = qs.parse(searchParams.toString());
     if (!query.page) query.page = "1";
+
     return qs.stringify(query);
   });
   useEffect(() => {
@@ -123,6 +124,21 @@ export default function SearchPage() {
     (term: string) => {
       const q = qs.parse(queryString);
       q.term = term;
+      const defaultFields = [
+        "nctId",
+        "briefTitle",
+        "organization",
+        "status",
+        "conditions",
+        "startDate",
+        "completionDate",
+      ];
+      const hasSearch = term.trim() !== "";
+      const hasFields = typeof q.fields === "string";
+
+      if (hasSearch && !hasFields) {
+        q.fields = defaultFields.join(",");
+      }
       q.page = "1";
       setQueryString(qs.stringify(q));
       clearSelection();

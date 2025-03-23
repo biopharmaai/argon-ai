@@ -47,15 +47,15 @@ type Props = {
 };
 
 const columnHelper = createColumnHelper<ClinicalTrial>();
-const defaultFields = [
-  "nctId",
-  "briefTitle",
-  "organization",
-  "status",
-  "conditions",
-  "startDate",
-  "completionDate",
-];
+// const defaultFields = [
+//   "nctId",
+//   "briefTitle",
+//   "organization",
+//   "status",
+//   "conditions",
+//   "startDate",
+//   "completionDate",
+// ];
 export const columnsDefinitions = [
   {
     id: "nctId",
