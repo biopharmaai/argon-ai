@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -32,7 +33,6 @@ import { Label } from "@/components/ui/label";
 import { ClinicalTrial } from "@/types/clinicalTrials";
 import { SortToken } from "@/components/GuidedSortBar";
 import JSZip from "jszip";
-import type { ColumnConfig } from "@/components/ColumnSelector";
 
 type Props = {
   data: ClinicalTrial[];
@@ -47,15 +47,6 @@ type Props = {
 };
 
 const columnHelper = createColumnHelper<ClinicalTrial>();
-// const defaultFields = [
-//   "nctId",
-//   "briefTitle",
-//   "organization",
-//   "status",
-//   "conditions",
-//   "startDate",
-//   "completionDate",
-// ];
 export const columnsDefinitions = [
   {
     id: "nctId",
@@ -525,6 +516,9 @@ export default function SearchResultsTable({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Export Selected Studies</DialogTitle>
+            <DialogDescription>
+              Choose your export format and whether to zip the results.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <RadioGroup

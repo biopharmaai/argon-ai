@@ -226,11 +226,6 @@ export default function SearchPage() {
           onSearchChange={handleSearchChange}
           queryString={queryString}
         />
-        <ColumnSelector
-          columns={columnConfig}
-          queryString={queryString}
-          onColumnsChange={handleFieldSelectionChange}
-        />
         <Sheet open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
           <SheetTitle></SheetTitle>
 
@@ -245,6 +240,11 @@ export default function SearchPage() {
               Advanced Search
             </SheetHeader>
             <div className="space-y-6">
+              <ColumnSelector
+                columns={columnConfig}
+                queryString={queryString}
+                onColumnsChange={handleFieldSelectionChange}
+              />
               <GuidedFilterBar
                 onFiltersCommitted={onFiltersChange}
                 queryString={queryString}

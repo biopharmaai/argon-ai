@@ -84,25 +84,17 @@ export default function ColumnSelector({
   onColumnsChange,
 }: ColumnSelectorProps) {
   const [selectedField, setSelectedField] = React.useState("");
+  const [hasNoFields, setHasNoFields] = React.useState(false);
 
   useEffect(() => {
     const query = qs.parse(queryString);
-    // const defaultFields = [
-    //   "nctId",
-    //   "briefTitle",
-    //   "organization",
-    //   "status",
-    //   "conditions",
-    //   "startDate",
-    //   "completionDate",
-    // ];
-
     let fieldIds: string[] = [];
 
     if (typeof query.fields === "string") {
       fieldIds = query.fields.split(",");
-      // } else if (typeof query.term === "string" && query.term.trim() !== "") {
-      //   fieldIds = defaultFields;
+      setHasNoFields(false);
+    } else {
+      setHasNoFields(true);
     }
 
     const updatedColumns = fieldIds
@@ -146,6 +138,31 @@ export default function ColumnSelector({
   return (
     <div className="w-full space-y-4 rounded-md border bg-white p-4 shadow-sm">
       <h2 className="text-lg font-semibold">Selected Fields</h2>
+
+      {hasNoFields && (
+        <Button
+          variant="outline"
+          onClick={() => {
+            const defaultFields = [
+              "nctId",
+              "briefTitle",
+              "organization",
+              "status",
+              "conditions",
+              "startDate",
+              "completionDate",
+            ];
+            const updated = columns.map((col) =>
+              defaultFields.includes(col.id)
+                ? { ...col, enabled: true }
+                : { ...col, enabled: false },
+            );
+            onColumnsChange(updated);
+          }}
+        >
+          Use Default Fields
+        </Button>
+      )}
 
       <div className="flex flex-wrap items-center gap-4">
         <Select
