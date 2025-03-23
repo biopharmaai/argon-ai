@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { useEffect } from "react";
+import qs from "qs";
 import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -20,6 +22,7 @@ export interface ColumnConfig {
 interface ColumnSelectorProps {
   columns: ColumnConfig[];
   onColumnsChange: (columns: ColumnConfig[]) => void;
+  queryString: string;
 }
 
 function SortableColumnItem({
@@ -70,9 +73,38 @@ function SortableColumnItem({
 }
 
 export default function ColumnSelector({
+  queryString,
   columns,
   onColumnsChange,
 }: ColumnSelectorProps) {
+  useEffect(() => {
+    const query = qs.parse(queryString);
+    if (typeof query.fields === "string") {
+      const fieldIds = query.fields.split(",");
+      const updatedColumns = fieldIds
+        .map((id) => {
+          const match = columns.find((col) => col.id === id);
+          return match ? { ...match, enabled: true } : null;
+        })
+        .filter(Boolean) as ColumnConfig[];
+
+      const disabledColumns = columns
+        .filter((col) => !fieldIds.includes(col.id))
+        .map((col) => ({ ...col, enabled: false }));
+
+      const next = [...updatedColumns, ...disabledColumns];
+
+      // Only call onColumnsChange if the column state is different
+      const isEqual = next.every((col, i) => {
+        return col.id === columns[i]?.id && col.enabled === columns[i]?.enabled;
+      });
+
+      if (!isEqual) {
+        onColumnsChange(next);
+      }
+    }
+  }, [queryString]);
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {

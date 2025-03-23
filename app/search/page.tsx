@@ -11,6 +11,7 @@ import SearchResultsTable from "@/components/SearchResultsTable";
 import Pagination from "@/components/Pagination";
 import { FilterToken } from "@/components/GuidedFilterBar";
 import ColumnSelector from "@/components/ColumnSelector";
+import type { ColumnConfig } from "@/components/ColumnSelector";
 import {
   Sheet,
   SheetContent,
@@ -161,6 +162,27 @@ export default function SearchPage() {
     { id: "maximumAge", label: "Maximum Age", enabled: false },
     { id: "locations", label: "Locations", enabled: false },
   ]);
+
+  const handleFieldSelectionChange = useCallback(
+    (columns: ColumnConfig[]) => {
+      const q = qs.parse(queryString);
+      const enabledFields = columns
+        .filter((col) => col.enabled)
+        .map((col) => col.id);
+
+      if (enabledFields.length > 0) {
+        q.fields = enabledFields.join(",");
+      } else {
+        delete q.fields;
+      }
+
+      // q.page = "1";
+      setQueryString(qs.stringify(q));
+      setColumnConfig(columns); // update local state to reflect changes
+    },
+    [queryString, setQueryString, setColumnConfig],
+  );
+
   const displayColumns = useMemo(
     () => [
       "selection",
@@ -179,7 +201,8 @@ export default function SearchPage() {
         />
         <ColumnSelector
           columns={columnConfig}
-          onColumnsChange={setColumnConfig}
+          queryString={queryString}
+          onColumnsChange={handleFieldSelectionChange}
         />
         <Sheet open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
           <SheetTitle></SheetTitle>
