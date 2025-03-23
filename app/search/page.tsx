@@ -146,6 +146,20 @@ export default function SearchPage() {
     { id: "conditions", label: "Conditions", enabled: true },
     { id: "startDate", label: "Start Date", enabled: true },
     { id: "completionDate", label: "Completion Date", enabled: true },
+    { id: "officialTitle", label: "Official Title", enabled: false },
+    { id: "briefSummary", label: "Brief Summary", enabled: false },
+    { id: "leadSponsor", label: "Lead Sponsor", enabled: false },
+    {
+      id: "primaryOutcomeMeasure",
+      label: "Primary Outcome Measure",
+      enabled: false,
+    },
+    { id: "enrollmentCount", label: "Enrollment Count", enabled: false },
+    { id: "studyType", label: "Study Type", enabled: false },
+    { id: "sex", label: "Sex", enabled: false },
+    { id: "minimumAge", label: "Minimum Age", enabled: false },
+    { id: "maximumAge", label: "Maximum Age", enabled: false },
+    { id: "locations", label: "Locations", enabled: false },
   ]);
   const displayColumns = useMemo(
     () => [

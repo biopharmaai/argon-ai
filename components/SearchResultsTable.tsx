@@ -249,6 +249,69 @@ export default function SearchResultsTable({
         accessor: (row: ClinicalTrial) =>
           row.protocolSection.statusModule.completionDateStruct?.date,
       },
+      {
+        id: "officialTitle",
+        label: "Official Title",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.identificationModule.officialTitle || "",
+      },
+      {
+        id: "briefSummary",
+        label: "Brief Summary",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.descriptionModule.briefSummary || "",
+      },
+      {
+        id: "leadSponsor",
+        label: "Lead Sponsor",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.sponsorCollaboratorsModule.leadSponsor.name || "",
+      },
+      {
+        id: "primaryOutcomeMeasure",
+        label: "Primary Outcome Measure",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.outcomesModule.primaryOutcomes?.[0]?.measure ||
+          "",
+      },
+      {
+        id: "enrollmentCount",
+        label: "Enrollment Count",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.designModule.enrollmentInfo?.count || "",
+      },
+      {
+        id: "studyType",
+        label: "Study Type",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.designModule.studyType || "",
+      },
+      {
+        id: "sex",
+        label: "Sex",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.eligibilityModule.sex || "",
+      },
+      {
+        id: "minimumAge",
+        label: "Minimum Age",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.eligibilityModule.minimumAge || "",
+      },
+      {
+        id: "maximumAge",
+        label: "Maximum Age",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.eligibilityModule.maximumAge || "",
+      },
+      {
+        id: "locations",
+        label: "Locations",
+        accessor: (row: ClinicalTrial) =>
+          row.protocolSection.contactsLocationsModule.locations
+            ?.map((loc) => loc.facility)
+            .join(", ") || "",
+      },
     ];
 
     colDefs.forEach(({ id, label, accessor, cell }) => {
@@ -258,7 +321,7 @@ export default function SearchResultsTable({
             id,
             header: () => renderSortableHeader(id, label),
             cell: cell
-              ? ({ getValue }) => cell(getValue() || "")
+              ? ({ getValue }) => cell(String(getValue()) || "")
               : ({ getValue }) => getValue() || "-",
           }),
         );
