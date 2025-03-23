@@ -32,12 +32,12 @@ import { Label } from "@/components/ui/label";
 import { ClinicalTrial } from "@/types/clinicalTrials";
 import { SortToken } from "@/components/GuidedSortBar";
 import JSZip from "jszip";
+import type { ColumnConfig } from "@/components/ColumnSelector";
 
 type Props = {
   data: ClinicalTrial[];
   querystring: string;
   totalCount: number;
-  displayColumns: string[];
   selectedIds: string[];
   onSelectedIdsChange: (ids: string[]) => void;
   selectAllAcrossPages: boolean;
@@ -47,7 +47,15 @@ type Props = {
 };
 
 const columnHelper = createColumnHelper<ClinicalTrial>();
-
+const defaultFields = [
+  "nctId",
+  "briefTitle",
+  "organization",
+  "status",
+  "conditions",
+  "startDate",
+  "completionDate",
+];
 export const columnsDefinitions = [
   {
     id: "nctId",
@@ -164,7 +172,6 @@ export default function SearchResultsTable({
   data,
   querystring,
   totalCount,
-  displayColumns,
   selectedIds,
   onSelectedIdsChange,
   selectAllAcrossPages,
@@ -176,6 +183,13 @@ export default function SearchResultsTable({
     () => data.map((d) => d.protocolSection.identificationModule.nctId),
     [data],
   );
+  const displayColumns = useMemo(() => {
+    const query = qs.parse(querystring, { ignoreQueryPrefix: true });
+    return [
+      "selection",
+      ...(typeof query.fields === "string" ? query.fields.split(",") : []),
+    ];
+  }, [querystring]);
 
   const allVisibleSelected = visibleIds.every((id) => selectedIds.includes(id));
   const someVisibleSelected = visibleIds.some((id) => selectedIds.includes(id));
@@ -310,8 +324,11 @@ export default function SearchResultsTable({
       );
     }
 
-    columnsDefinitions.forEach(({ id, label, accessor, cell }) => {
-      if (displayColumns.includes(id)) {
+    displayColumns.forEach((id) => {
+      if (id === "selection") return;
+      const def = columnsDefinitions.find((col) => col.id === id);
+      if (def) {
+        const { label, accessor, cell } = def;
         cols.push(
           columnHelper.accessor(accessor, {
             id,

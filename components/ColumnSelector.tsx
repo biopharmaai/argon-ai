@@ -87,31 +87,47 @@ export default function ColumnSelector({
 
   useEffect(() => {
     const query = qs.parse(queryString);
-    if (typeof query.fields === "string") {
-      const fieldIds = query.fields.split(",");
-      const updatedColumns = fieldIds
-        .map((id) => {
-          const match = columns.find((col) => col.id === id);
-          return match ? { ...match, enabled: true } : null;
-        })
-        .filter(Boolean) as ColumnConfig[];
+    const defaultFields = [
+      "nctId",
+      "briefTitle",
+      "organization",
+      "status",
+      "conditions",
+      "startDate",
+      "completionDate",
+    ];
 
-      const disabledColumns = columns
-        .filter((col) => !fieldIds.includes(col.id))
-        .map((col) => ({ ...col, enabled: false }));
+    // If query.fields is missing, but we detect a default is already set (e.g. SearchResultsTable just wrote it), do nothing.
+    if (typeof query.fields !== "string") return;
 
-      const next = [...updatedColumns, ...disabledColumns];
+    // Prevent redundant overwrite if query.fields are already default
+    const fieldIds = query.fields.split(",");
+    const isDefault =
+      fieldIds.length === defaultFields.length &&
+      defaultFields.every((id, i) => fieldIds[i] === id);
+    if (isDefault) return;
 
-      const isEqual = next.every((col, i) => {
-        return col.id === columns[i]?.id && col.enabled === columns[i]?.enabled;
-      });
+    const updatedColumns = fieldIds
+      .map((id) => {
+        const match = columns.find((col) => col.id === id);
+        return match ? { ...match, enabled: true } : null;
+      })
+      .filter(Boolean) as ColumnConfig[];
 
-      if (!isEqual) {
-        onColumnsChange(next);
-      }
+    const disabledColumns = columns
+      .filter((col) => !fieldIds.includes(col.id))
+      .map((col) => ({ ...col, enabled: false }));
+
+    const next = [...updatedColumns, ...disabledColumns];
+
+    const isEqual = next.every((col, i) => {
+      return col.id === columns[i]?.id && col.enabled === columns[i]?.enabled;
+    });
+
+    if (!isEqual) {
+      onColumnsChange(next);
     }
   }, [queryString]);
-
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {

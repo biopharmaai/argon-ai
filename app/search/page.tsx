@@ -51,6 +51,12 @@ export default function SearchPage() {
     if (!query.page) query.page = "1";
     return qs.stringify(query);
   });
+  useEffect(() => {
+    const query = qs.parse(searchParams.toString());
+    if (!query.page) query.page = "1";
+    const stringified = qs.stringify(query);
+    setQueryString(stringified);
+  }, [searchParams]);
 
   const [columnConfig, setColumnConfig] = useState<ColumnConfig[]>(() => {
     const query = qs.parse(searchParams.toString());
@@ -143,7 +149,7 @@ export default function SearchPage() {
       } else {
         delete q.sort;
       }
-      q.page = "1";
+      // q.page = "1";
       setQueryString(qs.stringify(q));
       clearSelection();
     },
@@ -194,14 +200,6 @@ export default function SearchPage() {
       setColumnConfig(columns);
     },
     [queryString, setQueryString, setColumnConfig],
-  );
-
-  const displayColumns = useMemo(
-    () => [
-      "selection",
-      ...columnConfig.filter((col) => col.enabled).map((col) => col.id),
-    ],
-    [columnConfig],
   );
 
   return (
@@ -261,7 +259,6 @@ export default function SearchPage() {
           onSelectAllAcrossPages={fetchAllMatchingIds}
           onClearSelection={clearSelection}
           onSortTokensChange={handleSortTokensChange}
-          displayColumns={displayColumns}
         />
       </div>
 
