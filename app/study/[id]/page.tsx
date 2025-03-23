@@ -11,6 +11,16 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 async function getClinicalTrial(nctId: string): Promise<ClinicalTrial | null> {
   const res = await fetch(`/api/study/${nctId}`);
@@ -23,6 +33,9 @@ export default function ClinicalTrialPage() {
   const params = useParams<{ id: string }>();
   const [trial, setTrial] = useState<ClinicalTrial | null>(null);
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [format, setFormat] = useState<"csv" | "json">("csv");
+  const [zipEach, setZipEach] = useState(false);
 
   useEffect(() => {
     if (!params.id) return;
@@ -36,6 +49,33 @@ export default function ClinicalTrialPage() {
         setLoading(false);
       });
   }, [params.id]);
+
+  const handleDownload = () => {
+    if (!trial) return;
+    let data;
+    let fileType;
+    let fileName;
+    if (format === "json") {
+      data = JSON.stringify(trial, null, 2);
+      fileType = "application/json";
+      fileName = "clinical_trial.json";
+    } else {
+      data = `NCT ID,Brief Title,Official Title,Sponsor,Overall Status,Start Date,Completion Date\n`;
+      data += `"${trial.protocolSection.identificationModule.nctId}","${trial.protocolSection.identificationModule.briefTitle}","${trial.protocolSection.identificationModule.officialTitle || ""}","${trial.protocolSection.identificationModule.organization.fullName}","${trial.protocolSection.statusModule.overallStatus}","${trial.protocolSection.statusModule.startDateStruct?.date || ""}","${trial.protocolSection.statusModule.completionDateStruct?.date || ""}"\n`;
+      fileType = "text/csv";
+      fileName = "clinical_trial.csv";
+    }
+    const blob = new Blob([data], { type: fileType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setOpen(false);
+  };
 
   if (loading) {
     return (
@@ -61,10 +101,41 @@ export default function ClinicalTrialPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-6">
+      <div>
+        <Button variant="outline" onClick={() => setOpen(true)}>
+          Export Clinical Study
+        </Button>
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Export Clinical Study</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <RadioGroup
+              value={format}
+              onValueChange={(val: "csv" | "json") => setFormat(val)}
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="csv" id="csv" />
+                <Label htmlFor="csv">CSV</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="json" id="json" />
+                <Label htmlFor="json">JSON</Label>
+              </div>
+            </RadioGroup>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleDownload}>Download</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Card>
         <CardHeader>
           <CardTitle>{idMod.briefTitle}</CardTitle>
-          <CardDescription className="text-sm text-muted-foreground">
+          <CardDescription className="text-muted-foreground text-sm">
             Sponsor: {idMod.organization.fullName}
           </CardDescription>
         </CardHeader>
@@ -148,8 +219,8 @@ export default function ClinicalTrialPage() {
             <span className="font-medium">Sex:</span> {eligibility.sex}
           </p>
           <p>
-            <span className="font-medium">Ages:</span> {eligibility.minimumAge} –{" "}
-            {eligibility.maximumAge || "N/A"}
+            <span className="font-medium">Ages:</span> {eligibility.minimumAge}{" "}
+            – {eligibility.maximumAge || "N/A"}
           </p>
           {eligibility.eligibilityCriteria && (
             <div className="mt-2 whitespace-pre-line">
