@@ -25,12 +25,12 @@ export default function RootLayout({
               aria-label="Argon-Ai Logo"
               className="flex items-center"
             >
-              <Logo className="h-32 w-32" />
+              <Logo className="h-12 w-26" />
             </Link>
             <div></div>
           </nav>
         </header>
-        <main className="min-h-screen bg-gray-100">{children}</main>
+        <main className="bg-gray-100">{children}</main>
       </body>
     </html>
   );

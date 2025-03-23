@@ -124,7 +124,26 @@ export default function SearchBarSuggest() {
         }}
         className="flex w-full items-center px-4 py-6 sm:py-4"
       >
-        <Input
+        <div className="relative w-full">
+          <Input
+            type="text"
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            className="w-full pr-10" // leave space for icon
+          />
+          <Button
+            type="submit"
+            size="icon"
+            variant="ghost"
+            className="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 p-0"
+            onClick={() => handleSubmit(term)}
+          >
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </div>
+        {/* <Input
           type="text"
           name="q"
           placeholder={placeholder}
@@ -139,7 +158,7 @@ export default function SearchBarSuggest() {
           variant="ghost"
         >
           <ArrowRight className="h-4 w-4" />
-        </Button>
+        </Button> */}
       </form>
       {suggestions.length > 0 && (
         <div

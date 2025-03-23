@@ -1,17 +1,8 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { ArrowRight } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import SearchBarSuggest from "./SearchBarSuggest";
 
 export default function HeroSearchSection() {
-  const router = useRouter();
-
   return (
-    <section className="flex flex-col items-center justify-center px-6 pt-32 text-center">
+    <section className="flex h-screen flex-col items-center justify-center px-6 text-center">
       <h1 className="text-muted-foreground text-4xl font-semibold sm:text-5xl">
         <span className="block font-medium text-[#1B4DED]">
           Trusted AI Knowledge
