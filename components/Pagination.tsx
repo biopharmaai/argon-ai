@@ -37,7 +37,7 @@ export default function Pagination({
     );
   }, [currentPage, totalPages]);
 
-  return (
+  return totalPages <= 1 ? null : (
     <div className="my-4 flex items-center justify-center space-x-2">
       <Button
         variant="outline"

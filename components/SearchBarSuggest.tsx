@@ -1,15 +1,25 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
+import { debounce } from "lodash";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { ClinicalTrial } from "@/types/clinicalTrials";
-import _data from "@/ctg-studies.json";
 import { cn } from "@/lib/utils";
 
-const data = _data as ClinicalTrial[];
+const placeholders = [
+  "AUTOMATE COMPETITIVE INTELLIGENCE...",
+  "WHAT ABSTRACTS ARE BEING PUBLISHED...",
+  "HOW ARE COMPANIES POSITIONING THEIR DRUGS...",
+  "WHAT DO DOCTORS CONSIDER WHEN PRESCRIBING...",
+];
 
 export default function SearchBarSuggest() {
   const router = useRouter();
@@ -18,17 +28,12 @@ export default function SearchBarSuggest() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
-  const placeholders = [
-    "AUTOMATE COMPETITIVE INTELLIGENCE...",
-    "WHAT ABSTRACTS ARE BEING PUBLISHED...",
-    "HOW ARE COMPANIES POSITIONING THEIR DRUGS...",
-    "WHAT DO DOCTORS CONSIDER WHEN PRESCRIBING...",
-  ];
   const [placeholder, setPlaceholder] = useState("");
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Typing animation
   useEffect(() => {
     const current = placeholders[phraseIndex];
     const timeout = setTimeout(
@@ -52,33 +57,39 @@ export default function SearchBarSuggest() {
     );
 
     return () => clearTimeout(timeout);
-  }, [charIndex, isDeleting, phraseIndex, placeholders]);
+  }, [charIndex, isDeleting, phraseIndex]);
 
-  const allKeywords = Array.from(
-    new Set(
-      data.flatMap((trial) => [
-        ...(trial.protocolSection.conditionsModule?.conditions ?? []),
-        ...(trial.protocolSection.conditionsModule?.keywords ?? []),
-      ]),
-    ),
-  );
-
-  useEffect(() => {
-    if (!term) {
+  // Fetch suggestions from backend
+  const fetchSuggestions = useCallback(async (input: string) => {
+    if (!input) {
       setSuggestions([]);
       return;
     }
 
-    const lower = term.toLowerCase();
-    const filtered = allKeywords
-      .filter((kw) => kw.toLowerCase().includes(lower))
-      .sort((a, b) => a.localeCompare(b)) // Alphabetical sorting
-      .slice(0, 8);
+    try {
+      const res = await fetch(
+        `/api/keywords?term=${encodeURIComponent(input)}`,
+      );
+      const json = await res.json();
+      setSuggestions(json.suggestions || []);
+      setHighlightedIndex(-1);
+    } catch (err) {
+      console.error("Error fetching suggestions:", err);
+      setSuggestions([]);
+    }
+  }, []);
 
-    setSuggestions(filtered);
-    setHighlightedIndex(-1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [term]);
+  const debouncedFetchSuggestions = useMemo(
+    () => debounce(fetchSuggestions, 300),
+    [fetchSuggestions],
+  );
+
+  useEffect(() => {
+    debouncedFetchSuggestions(term);
+    return () => {
+      debouncedFetchSuggestions.cancel();
+    };
+  }, [term, debouncedFetchSuggestions]);
 
   const handleSubmit = (value: string) => {
     if (!value) return;
@@ -128,7 +139,7 @@ export default function SearchBarSuggest() {
             onChange={(e) => setTerm(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className="w-full pr-10" // leave space for icon
+            className="w-full pr-10"
           />
           <Button
             type="submit"
@@ -140,22 +151,6 @@ export default function SearchBarSuggest() {
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
-        {/* <Input
-          type="text"
-          name="q"
-          placeholder={placeholder}
-          value={term}
-          onChange={(e) => setTerm(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="w-full border-none px-2 font-mono text-lg tracking-tight focus:ring-0 focus:outline-none"
-        />
-        <Button
-          type="submit"
-          className="ml-2 h-9 w-9 rounded-md bg-white hover:bg-gray-100"
-          variant="ghost"
-        >
-          <ArrowRight className="h-4 w-4" />
-        </Button> */}
       </form>
       {suggestions.length > 0 && (
         <div

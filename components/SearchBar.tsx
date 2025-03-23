@@ -4,15 +4,18 @@ import qs from "qs";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { debounce } from "lodash";
 import { Search as SearchIcon, X as ClearIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface SearchBarProps {
+  className?: string;
   queryString: string;
   onSearchChange: (term: string) => void;
 }
 
 export default function SearchBar({
+  className,
   queryString,
   onSearchChange,
 }: SearchBarProps) {
@@ -25,7 +28,7 @@ export default function SearchBar({
   const [searchTerm, setSearchTerm] = useState(value);
 
   const debouncedChange = useMemo(
-    () => debounce(onSearchChange, 250),
+    () => debounce(onSearchChange, 300),
     [onSearchChange],
   );
 
@@ -50,7 +53,7 @@ export default function SearchBar({
   };
 
   return (
-    <div className="flex flex-col space-y-1">
+    <div className={cn("flex flex-col space-y-1", className)}>
       <Label htmlFor="search-input" className="sr-only">
         Search studies
       </Label>

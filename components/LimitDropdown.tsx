@@ -37,15 +37,15 @@ export default function LimitDropdown({
   );
 
   return (
-    <div className="flex items-center space-x-2">
-      <Label htmlFor="limit-select" className="whitespace-nowrap">
+    <div className="text-muted-foreground flex items-center space-x-2 text-sm">
+      <Label htmlFor="limit-select" className="font-medium whitespace-nowrap">
         Studies per page
       </Label>
       <Select value={selected} onValueChange={selectOption}>
         <SelectTrigger
           id="limit-select"
           aria-label="Results per page"
-          className="w-[100px]"
+          className="h-9 w-[100px] text-sm"
         >
           <SelectValue placeholder="Select limit" />
         </SelectTrigger>

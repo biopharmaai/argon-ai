@@ -130,6 +130,7 @@ export default function SearchPage() {
         <h1 className="mb-4 text-2xl font-bold">Search Page</h1>
 
         <SearchBar
+          className="max-w-1/2 bg-white"
           onSearchChange={handleSearchChange}
           queryString={queryString}
         />
@@ -181,14 +182,14 @@ export default function SearchPage() {
       </div>
 
       <div className="sticky bottom-0 z-10 flex items-center justify-between border-t bg-white px-6 py-3">
+        <LimitDropdown
+          queryString={queryString}
+          onLimitsChange={onLimitChange}
+        />
         <Pagination
           queryString={queryString}
           totalPages={totalPages}
           onPageChange={handlePageChange}
-        />
-        <LimitDropdown
-          queryString={queryString}
-          onLimitsChange={onLimitChange}
         />
       </div>
     </div>
