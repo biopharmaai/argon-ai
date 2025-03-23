@@ -73,13 +73,19 @@ export async function GET(req: Request) {
   const fuseOptions = {
     keys: [
       "protocolSection.identificationModule.briefTitle",
+      "protocolSection.identificationModule.officialTitle", // Additional field for disease details
+      "protocolSection.descriptionModule.briefSummary", // Additional field for extended details
       "protocolSection.conditionsModule.conditions",
       "protocolSection.conditionsModule.keywords",
+      "protocolSection.armsInterventionsModule.armGroups.label",
+      "protocolSection.armsInterventionsModule.armGroups.description",
+      "protocolSection.armsInterventionsModule.armGroups.interventionNames",
+      "protocolSection.armsInterventionsModule.interventions.name", // Field for drug names
+      "protocolSection.armsInterventionsModule.interventions.description", // Field for drug descriptions
     ],
     threshold: 0.4,
     includeScore: true,
   };
-
   let filteredData: ClinicalTrial[] = [];
   if (term) {
     const fuse = new Fuse(data, fuseOptions);
