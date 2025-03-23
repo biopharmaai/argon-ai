@@ -142,22 +142,23 @@ export default function GuidedFilterBar({
 
       {filterTokens.length > 0 && (
         <div className="space-y-2">
-          <div className="flex flex-wrap gap-2">
-            {filterTokens.map((token) => (
-              <div
-                key={token.field}
-                className="flex items-center gap-2 rounded-md bg-muted px-3 py-1 text-sm"
-              >
+          {filterTokens.map((token) => (
+            <div
+              key={token.field}
+              className="flex items-center justify-between rounded border border-gray-300 bg-white px-3 py-2 shadow-sm"
+            >
+              <div className="flex-1 font-medium select-none">
                 {token.field}: {token.value}
-                <button
-                  onClick={() => removeFilter(token.field)}
-                  className="text-gray-600 hover:text-red-500"
-                >
-                  <X className="h-4 w-4" />
-                </button>
               </div>
-            ))}
-          </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => removeFilter(token.field)}
+              >
+                <X className="h-4 w-4 text-gray-500 hover:text-red-600" />
+              </Button>
+            </div>
+          ))}
           <Button
             variant="link"
             size="sm"
