@@ -106,7 +106,16 @@ export default function SearchPage() {
   }, [queryString, router]);
 
   const fetchAllMatchingIds = useCallback(async () => {
-    const res = await fetch(`/api/search/ids?${queryString}`);
+    // Parse the current query string into an object.
+    const queryObj = qs.parse(queryString, { ignoreQueryPrefix: true });
+    // Ensure fullResults is true so that the endpoint returns all matching IDs.
+    queryObj.fullResults = "true";
+    // Remove pagination parameters so we get the full result set.
+    delete queryObj.page;
+    delete queryObj.limit;
+    // Re-stringify the query.
+    const newQuery = qs.stringify(queryObj);
+    const res = await fetch(`/api/search?${newQuery}`);
     const json = await res.json();
     if (json.success) {
       setSelectedIds(json.nctIds);
@@ -165,7 +174,6 @@ export default function SearchPage() {
       } else {
         delete q.sort;
       }
-      // q.page = "1";
       setQueryString(qs.stringify(q));
       clearSelection();
     },
@@ -211,11 +219,10 @@ export default function SearchPage() {
         delete q.fields;
       }
 
-      // q.page = "1";
       setQueryString(qs.stringify(q));
       setColumnConfig(columns);
     },
-    [queryString, setQueryString, setColumnConfig],
+    [queryString],
   );
 
   return (

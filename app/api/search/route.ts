@@ -170,6 +170,19 @@ export async function GET(req: Request) {
   const startIndex = (page - 1) * limit;
   const pagedData = filteredData.slice(startIndex, startIndex + limit);
 
+  // If fullResults=true is present, return full matching IDs (ignoring pagination)
+  if (searchParams.get("fullResults") === "true") {
+    const nctIds = filteredData.map(
+      (trial) => trial.protocolSection.identificationModule.nctId,
+    );
+    return NextResponse.json({
+      success: true,
+      nctIds,
+      totalCount,
+      totalPages,
+    });
+  }
+
   return NextResponse.json({
     success: true,
     data: pagedData,
