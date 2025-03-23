@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import qs from "qs";
 import { ClinicalTrial } from "@/types/clinicalTrials";
@@ -10,6 +10,16 @@ import LimitDropdown from "@/components/LimitDropdown";
 import SearchResultsTable from "@/components/SearchResultsTable";
 import Pagination from "@/components/Pagination";
 import { FilterToken } from "@/components/GuidedFilterBar";
+import ColumnSelector from "@/components/ColumnSelector";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+  SheetHeader,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { SortToken } from "@/components/GuidedSortBar";
 
 const GuidedFilterBar = dynamic(() => import("@/components/GuidedFilterBar"), {
   ssr: false,
@@ -31,6 +41,8 @@ export default function SearchPage() {
     if (!query.page) query.page = "1";
     return qs.stringify(query);
   });
+
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
   // Selection State
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -126,38 +138,68 @@ export default function SearchPage() {
     },
     [queryString],
   );
+  const [columnConfig, setColumnConfig] = useState([
+    { id: "nctId", label: "NCT ID", enabled: true },
+    { id: "briefTitle", label: "Title", enabled: true },
+    { id: "organization", label: "Sponsor / Organization", enabled: true },
+    { id: "status", label: "Status", enabled: true },
+    { id: "conditions", label: "Conditions", enabled: true },
+    { id: "startDate", label: "Start Date", enabled: true },
+    { id: "completionDate", label: "Completion Date", enabled: true },
+  ]);
+  const displayColumns = useMemo(
+    () => [
+      "selection",
+      ...columnConfig.filter((col) => col.enabled).map((col) => col.id),
+    ],
+    [columnConfig],
+  );
 
   return (
     <div className="flex min-h-screen flex-col">
       <div className="mx-auto w-full flex-1 p-6">
-        <h1 className="mb-4 text-2xl font-bold">Search Page</h1>
-
         <SearchBar
           className="max-w-1/2 bg-white"
           onSearchChange={handleSearchChange}
           queryString={queryString}
         />
-        <div className="mt-4 flex items-center">
-          <GuidedFilterBar
-            onFiltersCommitted={onFiltersChange}
-            queryString={queryString}
-          />
-        </div>
+        <ColumnSelector
+          columns={columnConfig}
+          onColumnsChange={setColumnConfig}
+        />
+        <Sheet open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
+          <SheetTitle></SheetTitle>
 
-        <div className="mt-4 flex items-center">
-          <GuidedSortBar
-            queryString={queryString}
-            onSortTokensChange={handleSortTokensChange}
-            sortableFields={[
-              "nctId",
-              "briefTitle",
-              "organization",
-              "status",
-              "startDate",
-              "completionDate",
-            ]}
-          />
-        </div>
+          <SheetTrigger asChild>
+            <Button variant="outline">Advanced</Button>
+          </SheetTrigger>
+          <SheetContent
+            side="right"
+            className="w-[400px] overflow-auto sm:w-[500px]"
+          >
+            <SheetHeader className="mb-4 text-lg font-semibold">
+              Advanced Search
+            </SheetHeader>
+            <div className="space-y-6">
+              <GuidedFilterBar
+                onFiltersCommitted={onFiltersChange}
+                queryString={queryString}
+              />
+              <GuidedSortBar
+                queryString={queryString}
+                onSortTokensChange={handleSortTokensChange}
+                sortableFields={[
+                  "nctId",
+                  "briefTitle",
+                  "organization",
+                  "status",
+                  "startDate",
+                  "completionDate",
+                ]}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
 
         <SearchResultsTable
           data={results}
@@ -169,16 +211,7 @@ export default function SearchPage() {
           onSelectAllAcrossPages={fetchAllMatchingIds}
           onClearSelection={clearSelection}
           onSortTokensChange={handleSortTokensChange}
-          displayColumns={[
-            "selection",
-            "nctId",
-            "briefTitle",
-            "organization",
-            "status",
-            "conditions",
-            "startDate",
-            "completionDate",
-          ]}
+          displayColumns={displayColumns}
         />
       </div>
 

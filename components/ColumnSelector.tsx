@@ -49,7 +49,7 @@ function SortableColumnItem({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className="flex items-center border border-gray-300 rounded px-2 py-1 bg-white"
+      className="flex items-center rounded border border-gray-300 bg-white px-2 py-1"
     >
       <div {...listeners} className="mr-2 cursor-grab select-none">
         ☰
