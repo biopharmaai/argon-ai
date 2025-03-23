@@ -117,7 +117,7 @@ export default function ColumnSelector({
     if (!isEqual) {
       onColumnsChange(next);
     }
-  }, [queryString]);
+  }, [queryString, columns, onColumnsChange]);
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {

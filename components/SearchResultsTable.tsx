@@ -174,6 +174,10 @@ export default function SearchResultsTable({
     () => data.map((d) => d.protocolSection.identificationModule.nctId),
     [data],
   );
+  const visibleSelectedCount = useMemo(
+    () => visibleIds.filter((id) => selectedIds.includes(id)).length,
+    [visibleIds, selectedIds],
+  );
   const displayColumns = useMemo(() => {
     const query = qs.parse(querystring, { ignoreQueryPrefix: true });
     return [
@@ -458,10 +462,7 @@ export default function SearchResultsTable({
               </span>
             ) : (
               <span>
-                {`${Math.min(
-                  selectedIds.length,
-                  visibleIds.length,
-                )}–${totalCount.toLocaleString()} selected.`}
+                {`${visibleSelectedCount.toLocaleString()}–${totalCount.toLocaleString()} selected.`}
               </span>
             )}
             <Button

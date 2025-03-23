@@ -35,7 +35,6 @@ export default function ClinicalTrialPage() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [format, setFormat] = useState<"csv" | "json">("csv");
-  const [zipEach, setZipEach] = useState(false);
 
   useEffect(() => {
     if (!params.id) return;

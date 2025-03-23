@@ -63,13 +63,16 @@ export async function GET(req: Request) {
   const fuseOptions = {
     keys: [
       "protocolSection.identificationModule.briefTitle",
+      "protocolSection.identificationModule.officialTitle", // Added
       "protocolSection.conditionsModule.conditions",
       "protocolSection.conditionsModule.keywords",
+      "protocolSection.descriptionModule.briefSummary", // Added
+      "protocolSection.armsInterventionsModule.armGroups.label", // Optionally, if applicable
+      "protocolSection.armsInterventionsModule.armGroups.description", // Optionally, if applicable
     ],
     threshold: 0.4,
     includeScore: true,
   };
-
   let filteredData: ClinicalTrial[] = [];
   if (term) {
     const fuse = new Fuse(data, fuseOptions);

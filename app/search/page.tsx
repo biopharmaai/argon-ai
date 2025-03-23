@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import qs from "qs";
 import { ClinicalTrial } from "@/types/clinicalTrials";
@@ -65,7 +65,7 @@ export default function SearchPage() {
       return columnsDefinitions;
     }
     if (typeof query.fields !== "string") {
-      return columnsDefinitions.map<ColumnConfig>(({ id, label, ...rest }) => {
+      return columnsDefinitions.map<ColumnConfig>(({ id, label }) => {
         return {
           id,
           label,

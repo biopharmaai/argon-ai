@@ -1,6 +1,7 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
+import type { KeyboardEvent } from "react";
 import { X } from "lucide-react";
 import { filterEnumMap } from "@/types/filterEnums"; // Adjust the path as needed
 
@@ -20,7 +21,7 @@ export default function FilterBar({
   onFiltersChange,
 }: FilterBarProps) {
   // The input text, expecting a pattern "field: value"
-  const [input, setInput] = React.useState("");
+  const [input, setInput] = useState("");
 
   // Validate the field by checking if it exists in filterEnumMap keys
   const isValidField = (field: string): boolean => {
@@ -28,7 +29,7 @@ export default function FilterBar({
   };
 
   // When the user presses Enter, try to parse and add a token if valid.
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       // Split the input into field and value
       const [fieldPart, ...valueParts] = input.split(":");
@@ -80,14 +81,14 @@ export default function FilterBar({
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder='Type filter as "field: value" (e.g., overallStatus: Recruiting)'
-        className="border border-gray-300 rounded px-2 py-1 w-full"
+        className="w-full rounded border border-gray-300 px-2 py-1"
       />
       {/* Display Active Filter Tokens */}
       <div className="flex flex-wrap gap-2">
         {filters.map((token, index) => (
           <div
             key={index}
-            className="flex items-center bg-gray-200 rounded px-2 py-1"
+            className="flex items-center rounded bg-gray-200 px-2 py-1"
           >
             <span className="text-sm">
               {token.field}: {token.value}
@@ -107,7 +108,7 @@ export default function FilterBar({
       {filters.length > 0 && (
         <button
           onClick={clearFilters}
-          className="text-sm text-blue-600 underline self-start"
+          className="self-start text-sm text-blue-600 underline"
         >
           Clear All Filters
         </button>
