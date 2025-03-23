@@ -125,71 +125,72 @@ export default function SearchPage() {
   );
 
   return (
-    <div className="mx-auto w-full p-6">
-      <h1 className="mb-4 text-2xl font-bold">Search Page</h1>
+    <div className="flex min-h-screen flex-col">
+      <div className="mx-auto w-full flex-1 p-6">
+        <h1 className="mb-4 text-2xl font-bold">Search Page</h1>
 
-      <SearchBar
-        onSearchChange={handleSearchChange}
-        queryString={queryString}
-      />
-
-      <div className="mt-4">
-        <GuidedFilterBar
-          onFiltersCommitted={onFiltersChange}
+        <SearchBar
+          onSearchChange={handleSearchChange}
           queryString={queryString}
         />
-      </div>
 
-      <div className="mt-4">
-        <LimitDropdown
-          queryString={queryString}
-          onLimitsChange={onLimitChange}
-        />
-      </div>
+        <div className="mt-4">
+          <GuidedFilterBar
+            onFiltersCommitted={onFiltersChange}
+            queryString={queryString}
+          />
+        </div>
 
-      <div className="mt-4">
-        <h2 className="mb-2 text-lg font-semibold">Sort Order</h2>
-        <GuidedSortBar
-          queryString={queryString}
+        <div className="mt-4">
+          <h2 className="mb-2 text-lg font-semibold">Sort Order</h2>
+          <GuidedSortBar
+            queryString={queryString}
+            onSortTokensChange={handleSortTokensChange}
+            sortableFields={[
+              "nctId",
+              "briefTitle",
+              "organization",
+              "status",
+              "startDate",
+              "completionDate",
+            ]}
+          />
+        </div>
+
+        <SearchResultsTable
+          data={results}
+          querystring={queryString}
+          totalCount={totalResults ?? 0}
+          selectedIds={selectedIds}
+          onSelectedIdsChange={setSelectedIds}
+          selectAllAcrossPages={selectAllAcrossPages}
+          onSelectAllAcrossPages={fetchAllMatchingIds}
+          onClearSelection={clearSelection}
           onSortTokensChange={handleSortTokensChange}
-          sortableFields={[
+          displayColumns={[
+            "selection",
             "nctId",
             "briefTitle",
             "organization",
             "status",
+            "conditions",
             "startDate",
             "completionDate",
           ]}
         />
       </div>
 
-      <Pagination
-        queryString={queryString}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
-
-      <SearchResultsTable
-        data={results}
-        querystring={queryString}
-        totalCount={totalResults ?? 0}
-        selectedIds={selectedIds}
-        onSelectedIdsChange={setSelectedIds}
-        selectAllAcrossPages={selectAllAcrossPages}
-        onSelectAllAcrossPages={fetchAllMatchingIds}
-        onClearSelection={clearSelection}
-        onSortTokensChange={handleSortTokensChange}
-        displayColumns={[
-          "selection",
-          "nctId",
-          "briefTitle",
-          "organization",
-          "status",
-          "conditions",
-          "startDate",
-          "completionDate",
-        ]}
-      />
+      <div className="sticky bottom-0 z-10 flex items-center justify-between border-t bg-white px-6 py-3">
+        <Pagination
+          queryString={queryString}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+        <LimitDropdown
+          queryString={queryString}
+          onLimitsChange={onLimitChange}
+        />
+      </div>
     </div>
   );
 }

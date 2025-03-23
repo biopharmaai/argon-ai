@@ -17,7 +17,6 @@ export default function SearchBarSuggest() {
   const [term, setTerm] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [isFocused, setIsFocused] = useState(false);
 
   const placeholders = [
     "AUTOMATE COMPETITIVE INTELLIGENCE...",
@@ -53,7 +52,7 @@ export default function SearchBarSuggest() {
     );
 
     return () => clearTimeout(timeout);
-  }, [charIndex, isDeleting, phraseIndex]);
+  }, [charIndex, isDeleting, phraseIndex, placeholders]);
 
   const allKeywords = Array.from(
     new Set(
@@ -71,9 +70,6 @@ export default function SearchBarSuggest() {
     }
 
     const lower = term.toLowerCase();
-    // const filtered = allKeywords
-    //   .filter((kw) => kw.toLowerCase().includes(lower))
-    //   .slice(0, 8);
     const filtered = allKeywords
       .filter((kw) => kw.toLowerCase().includes(lower))
       .sort((a, b) => a.localeCompare(b)) // Alphabetical sorting
@@ -81,6 +77,7 @@ export default function SearchBarSuggest() {
 
     setSuggestions(filtered);
     setHighlightedIndex(-1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [term]);
 
   const handleSubmit = (value: string) => {

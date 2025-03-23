@@ -25,7 +25,7 @@ export default function SearchBar({
   const [searchTerm, setSearchTerm] = useState(value);
 
   const debouncedChange = useMemo(
-    () => debounce(onSearchChange, 500),
+    () => debounce(onSearchChange, 250),
     [onSearchChange],
   );
 
