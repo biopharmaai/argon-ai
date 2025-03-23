@@ -517,7 +517,7 @@ export default function SearchResultsTable({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Export Selected Studies</DialogTitle>
+            <DialogTitle>Export Selected Clinical Studies</DialogTitle>
             <DialogDescription>
               Choose your export format and whether to zip the results.
             </DialogDescription>
