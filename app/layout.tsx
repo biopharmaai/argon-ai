@@ -1,18 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Geist, Geist_Mono } from "next/font/google";
+
 import "./globals.css";
 import Logo from "@/components/Logo";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Clinical Trials",
@@ -24,23 +14,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // return (
-  //   <html lang="en">
-  //     <body
-  //       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-  //     >
-  //       {children}
-  //     </body>
-  //   </html>
-  // );
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`antialiased`}>
         {/* Navigation Bar */}
-        <header className="bg-white text-black p-4">
-          <nav className="w-full mx-auto flex items-center">
+        <header className="bg-white p-4 text-black">
+          <nav className="mx-auto flex w-full items-center">
             <Link
               href="/"
               aria-label="Argon-Ai Logo"
