@@ -111,6 +111,8 @@ export default function SearchResultsTable({
         return { field, direction: dir as "asc" | "desc" };
       });
       setSortTokens(parsed);
+    } else {
+      setSortTokens([]);
     }
   }, [querystring]);
 

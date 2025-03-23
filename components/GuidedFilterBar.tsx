@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import qs from "qs";
 import { filterEnumMap } from "@/types/filterEnums";
-
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -89,9 +88,10 @@ export default function GuidedFilterBar({
   };
 
   return (
-    <div className="flex flex-col space-y-3">
-      {/* Add filter section */}
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="w-full space-y-4 rounded-md border bg-white p-4 shadow-sm">
+      <h2 className="text-lg font-semibold">Filters</h2>
+
+      <div className="flex flex-wrap items-center gap-4">
         <Select
           value={selectedField}
           onValueChange={(val) => {
@@ -99,7 +99,7 @@ export default function GuidedFilterBar({
             setSelectedValue("");
           }}
         >
-          <SelectTrigger className="w-48" aria-label="Select filter field">
+          <SelectTrigger className="w-48">
             <SelectValue placeholder="Select field..." />
           </SelectTrigger>
           <SelectContent>
@@ -116,7 +116,7 @@ export default function GuidedFilterBar({
             value={selectedValue}
             onValueChange={(val) => setSelectedValue(val)}
           >
-            <SelectTrigger className="w-48" aria-label="Select filter value">
+            <SelectTrigger className="w-48">
               <SelectValue placeholder="Select value..." />
             </SelectTrigger>
             <SelectContent>
@@ -133,45 +133,40 @@ export default function GuidedFilterBar({
           </Select>
         )}
 
-        <Button
-          onClick={addFilter}
-          disabled={!selectedField || !selectedValue}
-          aria-label="Add filter"
-        >
-          Add Filter
-        </Button>
+        {selectedField && selectedValue && (
+          <Button onClick={addFilter} className="h-10">
+            Add Filter
+          </Button>
+        )}
       </div>
 
-      {/* Filter chips */}
-      <div className="flex flex-wrap gap-2">
-        {filterTokens.map((token) => (
-          <div
-            key={token.field}
-            className="bg-muted flex items-center rounded px-3 py-1 text-sm"
-          >
-            {token.field}: {token.value}
-            <button
-              onClick={() => removeFilter(token.field)}
-              className="ml-2"
-              aria-label={`Remove filter for ${token.field}`}
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {/* Clear all */}
       {filterTokens.length > 0 && (
-        <Button
-          variant="link"
-          size="sm"
-          onClick={clearAll}
-          className="self-start p-0 text-blue-600"
-          aria-label="Clear all filters"
-        >
-          Clear All Filters
-        </Button>
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-2">
+            {filterTokens.map((token) => (
+              <div
+                key={token.field}
+                className="flex items-center gap-2 rounded-md bg-muted px-3 py-1 text-sm"
+              >
+                {token.field}: {token.value}
+                <button
+                  onClick={() => removeFilter(token.field)}
+                  className="text-gray-600 hover:text-red-500"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+          <Button
+            variant="link"
+            size="sm"
+            onClick={clearAll}
+            className="text-sm text-blue-600"
+          >
+            Clear All Filters
+          </Button>
+        </div>
       )}
     </div>
   );

@@ -8,9 +8,12 @@ import { ClinicalTrial } from "@/types/clinicalTrials";
 import SearchBar from "@/components/SearchBar";
 import LimitDropdown from "@/components/LimitDropdown";
 import SearchResultsTable from "@/components/SearchResultsTable";
-import GuidedFilterBar, { FilterToken } from "@/components/GuidedFilterBar";
 import Pagination from "@/components/Pagination";
-import { SortToken } from "@/components/GuidedSortBar";
+import { FilterToken } from "@/components/GuidedFilterBar";
+
+const GuidedFilterBar = dynamic(() => import("@/components/GuidedFilterBar"), {
+  ssr: false,
+});
 
 const GuidedSortBar = dynamic(() => import("@/components/GuidedSortBar"), {
   ssr: false,
@@ -134,16 +137,14 @@ export default function SearchPage() {
           onSearchChange={handleSearchChange}
           queryString={queryString}
         />
-
-        <div className="mt-4">
+        <div className="mt-4 flex items-center">
           <GuidedFilterBar
             onFiltersCommitted={onFiltersChange}
             queryString={queryString}
           />
         </div>
 
-        <div className="mt-4">
-          <h2 className="mb-2 text-lg font-semibold">Sort Order</h2>
+        <div className="mt-4 flex items-center">
           <GuidedSortBar
             queryString={queryString}
             onSortTokensChange={handleSortTokensChange}

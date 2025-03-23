@@ -54,30 +54,23 @@ function SortableSortItem({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className="flex items-center rounded border border-gray-300 bg-white px-2 py-1"
+      className="flex items-center justify-between rounded border border-gray-300 bg-white px-3 py-2 shadow-sm"
     >
-      <div {...listeners} className="mr-2 cursor-grab select-none">
+      <div {...listeners} className="mr-2 cursor-grab text-gray-500">
         ☰
       </div>
       <div
-        className="flex flex-1 items-center select-none"
+        className="flex-1 cursor-pointer select-none"
         onClick={onToggleDirection}
-        role="button"
-        aria-label={`Toggle sort direction for ${token.field}`}
       >
-        <span className="mr-1">{token.field}</span>
+        {token.field}{" "}
         {token.direction === "asc" ? (
-          <ChevronUp className="h-4 w-4" />
+          <ChevronUp className="inline h-4 w-4" />
         ) : (
-          <ChevronDown className="h-4 w-4" />
+          <ChevronDown className="inline h-4 w-4" />
         )}
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onRemove}
-        aria-label={`Remove sort for ${token.field}`}
-      >
+      <Button variant="ghost" size="icon" onClick={onRemove}>
         <X className="h-4 w-4 text-gray-500 hover:text-red-600" />
       </Button>
     </div>
@@ -159,10 +152,12 @@ export default function GuidedSortBar({
   };
 
   return (
-    <div className="flex flex-col space-y-4">
-      <div className="flex items-center space-x-2">
+    <div className="w-full space-y-4 rounded-md border bg-white p-4 shadow-sm">
+      <h2 className="text-lg font-semibold">Sort Order</h2>
+
+      <div className="flex flex-wrap items-center gap-4">
         <Select value={selectedField} onValueChange={setSelectedField}>
-          <SelectTrigger className="w-48" aria-label="Select field to sort">
+          <SelectTrigger className="w-48">
             <SelectValue placeholder="Select field..." />
           </SelectTrigger>
           <SelectContent>
@@ -179,7 +174,7 @@ export default function GuidedSortBar({
             value={selectedDirection}
             onValueChange={(v) => setSelectedDirection(v as "asc" | "desc")}
           >
-            <SelectTrigger className="w-24" aria-label="Select sort direction">
+            <SelectTrigger className="w-24">
               <SelectValue placeholder="asc/desc" />
             </SelectTrigger>
             <SelectContent>
@@ -189,13 +184,9 @@ export default function GuidedSortBar({
           </Select>
         )}
 
-        <Button
-          onClick={addSort}
-          disabled={!selectedField}
-          aria-label="Add sort field"
-        >
-          Add Sort
-        </Button>
+        {selectedField && selectedDirection && (
+          <Button onClick={addSort}>Add Sort</Button>
+        )}
       </div>
 
       {sortTokens.length > 0 && (
@@ -208,7 +199,7 @@ export default function GuidedSortBar({
               items={sortTokens.map((t) => t.field)}
               strategy={verticalListSortingStrategy}
             >
-              <div className="flex flex-col space-y-2">
+              <div className="space-y-2">
                 {sortTokens.map((token) => (
                   <SortableSortItem
                     key={token.field}
@@ -224,8 +215,7 @@ export default function GuidedSortBar({
           <Button
             variant="link"
             onClick={clearAllSorts}
-            className="self-start text-sm"
-            aria-label="Clear all sort fields"
+            className="text-sm text-blue-600"
           >
             Clear All Sorts
           </Button>
