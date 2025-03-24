@@ -26,12 +26,8 @@ import { useStickyOffset } from "../hooks/useStickyOffset";
 type Props = {
   data: ClinicalTrial[];
   querystring: string;
-  totalCount: number;
   selectedIds: string[];
   onSelectedIdsChange: (ids: string[]) => void;
-  selectAllAcrossPages: boolean;
-  onSelectAllAcrossPages: () => void;
-  onClearSelection: () => void;
   onSortTokensChange: (tokens: SortToken[]) => void;
 };
 
@@ -74,22 +70,13 @@ export const columnsDefinitions = [
 export default function SearchResultsTable({
   data,
   querystring,
-  totalCount,
   selectedIds,
   onSelectedIdsChange,
-  selectAllAcrossPages,
-  onSelectAllAcrossPages,
-  onClearSelection,
   onSortTokensChange,
 }: Props) {
   const visibleIds = useMemo(
     () => data.map((d) => d.protocolSection.identificationModule.nctId),
     [data],
-  );
-
-  const visibleSelectedCount = useMemo(
-    () => visibleIds.filter((id) => selectedIds.includes(id)).length,
-    [visibleIds, selectedIds],
   );
 
   const displayColumns = useMemo(() => {

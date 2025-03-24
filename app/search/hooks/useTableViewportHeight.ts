@@ -14,8 +14,12 @@ export function useTableViewportHeight(containerSelector: string) {
     }
 
     const handleResize = () => {
-      clearTimeout((handleResize as any)._id);
-      (handleResize as any)._id = setTimeout(calculate, 100);
+      clearTimeout(
+        (handleResize as unknown as { _id?: ReturnType<typeof setTimeout> })
+          ._id,
+      );
+      (handleResize as unknown as { _id?: ReturnType<typeof setTimeout> })._id =
+        setTimeout(calculate, 100);
     };
 
     calculate();

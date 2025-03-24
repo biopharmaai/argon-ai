@@ -186,12 +186,8 @@ export default function SearchPageContent() {
         <SearchResultsTable
           data={results}
           querystring={queryString}
-          totalCount={totalResults ?? 0}
           selectedIds={selectedIds}
           onSelectedIdsChange={setSelectedIds}
-          selectAllAcrossPages={selectAllAcrossPages}
-          onSelectAllAcrossPages={fetchAllMatchingIds}
-          onClearSelection={clearSelection}
           onSortTokensChange={handleSortTokensChange}
         />
       </div>
