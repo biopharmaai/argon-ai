@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 
 import { ColumnSelectorConfig } from "@/types/columns";
+import { defaultFields } from "@/lib/constants";
 
 interface ColumnSelectorProps {
   columns: ColumnSelectorConfig[];
@@ -139,15 +140,6 @@ export default function ColumnSelector({
         <Button
           variant="outline"
           onClick={() => {
-            const defaultFields = [
-              "nctId",
-              "briefTitle",
-              "organization",
-              "status",
-              "conditions",
-              "startDate",
-              "completionDate",
-            ];
             const updated = columns.map((col) =>
               defaultFields.includes(col.id)
                 ? { ...col, enabled: true }

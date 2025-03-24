@@ -12,7 +12,7 @@ export type ColumnConfig = {
   label: string;
   accessor: (row: ClinicalTrial) => string | undefined;
   cell?: (val: string) => JSX.Element | string;
-  enabled: boolean;
+  enabled?: boolean;
   meta?: {
     className: "max-w-[400px] truncate whitespace-nowrap overflow-hidden";
   };

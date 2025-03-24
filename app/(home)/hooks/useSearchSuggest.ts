@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import qs from "qs";
 import { debounce } from "lodash";
 import { useRouter } from "next/navigation";
+import { defaultFields } from "@/lib/constants";
 
 const placeholders = [
   "AUTOMATE COMPETITIVE INTELLIGENCE...",
@@ -82,15 +83,6 @@ export function useSearchSuggest() {
 
   const handleSubmit = (value: string) => {
     if (!value) return;
-    const defaultFields = [
-      "nctId",
-      "briefTitle",
-      "organization",
-      "status",
-      "conditions",
-      "startDate",
-      "completionDate",
-    ];
     const query = qs.stringify({
       term: value,
       fields: defaultFields.join(","),

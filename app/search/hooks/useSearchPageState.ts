@@ -8,16 +8,7 @@ import type { FilterToken } from "../components/GuidedFilterBar";
 import { columnsDefinitions } from "@/lib/constants";
 import { SortToken } from "../components/GuidedSortBar";
 import type { ColumnConfig } from "@/types/columns";
-
-const defaultColumnsVisiblility = {
-  nctId: true,
-  briefTitle: true,
-  organization: true,
-  status: true,
-  conditions: true,
-  startDate: true,
-  completionDate: true,
-};
+import { defaultFields } from "@/lib/constants";
 
 export function useSearchPageState() {
   const router = useRouter();
@@ -48,10 +39,7 @@ export function useSearchPageState() {
     if (!query.fields) {
       return columnsDefinitions.map((col) => ({
         ...col,
-        enabled:
-          defaultColumnsVisiblility[
-            col.id as keyof typeof defaultColumnsVisiblility
-          ] ?? true,
+        enabled: defaultFields.includes(col.id),
       }));
     } else if (typeof query.fields !== "string") {
       return columnsDefinitions.map<ColumnConfig>(
@@ -60,10 +48,7 @@ export function useSearchPageState() {
           label,
           accessor,
           cell,
-          enabled:
-            defaultColumnsVisiblility[
-              id as keyof typeof defaultColumnsVisiblility
-            ] ?? true,
+          enabled: defaultFields.includes(id),
         }),
       );
     } else {
@@ -110,15 +95,6 @@ export function useSearchPageState() {
     (term: string) => {
       const q = qs.parse(queryString);
       q.term = term;
-      const defaultFields = [
-        "nctId",
-        "briefTitle",
-        "organization",
-        "status",
-        "conditions",
-        "startDate",
-        "completionDate",
-      ];
       const hasSearch = term.trim() !== "";
       const hasFields = typeof q.fields === "string";
       if (hasSearch && !hasFields) {

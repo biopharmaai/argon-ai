@@ -39,7 +39,11 @@ import type { ColumnConfig, ColumnSelectorConfig } from "@/types/columns";
 export function toSelectorConfig(
   columns: ColumnConfig[],
 ): ColumnSelectorConfig[] {
-  return columns.map(({ id, label, enabled }) => ({ id, label, enabled }));
+  return columns.map(({ id, label, enabled }) => ({
+    id,
+    label,
+    enabled: !!enabled,
+  }));
 }
 
 export function mergeSelectorWithColumns(
