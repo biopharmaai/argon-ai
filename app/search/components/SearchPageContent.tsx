@@ -56,9 +56,9 @@ export default function SearchPageContent() {
   } = useSearchPageState();
 
   return (
-    <div className="flex flex-col pt-20">
+    <div className="flex flex-col">
       <div className="mx-auto w-full flex-1">
-        <div className="sticky top-20 z-10 mb-6 w-full space-y-2 bg-white px-6 py-3 shadow">
+        <div className="mb-6 w-full space-y-2 bg-white px-6 py-3 shadow">
           {/* First row: SearchBar and Advanced Button */}
           <div className="flex w-full flex-col gap-2 md:flex-row md:items-end">
             <div className="w-full max-w-5xl md:w-[75%]">

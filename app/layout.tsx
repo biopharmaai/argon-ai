@@ -18,7 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`antialiased`}>
         {/* Navigation Bar */}
-        <header className="fixed top-0 left-0 z-50 w-full bg-white p-4 text-black shadow">
+        <header className="w-full bg-white p-4 text-black shadow">
           <nav className="mx-auto flex w-full items-center">
             <Link
               href="/"
