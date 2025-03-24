@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import qs from "qs";
 import { columnsDefinitions, defaultColumns } from "@/lib/constants";
@@ -11,17 +11,11 @@ export function useDisplayColumns() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [selectedColumns, setSelectedColumns] = useState<ColumnConfig[]>([]);
-
-  useEffect(() => {
-    const query = qs.parse(searchParams.toString());
+  const query = qs.parse(searchParams.toString());
+  const initialColumns = (() => {
     const fieldIds =
       typeof query.fields === "string" ? query.fields.split(",") : null;
-
-    if (!fieldIds) {
-      setSelectedColumns(defaultColumns);
-      return;
-    }
+    if (!fieldIds) return defaultColumns;
 
     const enabledSet = new Set(fieldIds);
     const enabled = fieldIds
@@ -33,8 +27,12 @@ export function useDisplayColumns() {
       .filter((c) => !enabledSet.has(c.id))
       .map((c) => ({ ...c, enabled: false }));
 
-    setSelectedColumns([...enabled, ...disabled]);
-  }, [searchParams]);
+    return [...enabled, ...disabled];
+  })();
+
+  const [selectedColumns, setSelectedColumns] =
+    useState<ColumnConfig[]>(initialColumns);
+
   const handleSelectedColumnsChange = useCallback(
     (cols: ColumnConfig[]) => {
       setSelectedColumns(cols);
