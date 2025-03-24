@@ -54,7 +54,10 @@ export const columnsDefinitions = [
     accessor: (row: ClinicalTrial) =>
       row.protocolSection.identificationModule.nctId,
     cell: (val: string) => (
-      <Link href={`/study/${val}`} className="text-blue-600 hover:underline">
+      <Link
+        href={`/clinical-study/${val}`}
+        className="text-blue-600 hover:underline"
+      >
         {val}
       </Link>
     ),

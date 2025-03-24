@@ -18,7 +18,7 @@ export function useClinicalTrial(nctId: string | undefined) {
     if (!nctId) return;
     const getClinicalTrial = async () => {
       try {
-        const res = await fetch(`/api/study/${nctId}`);
+        const res = await fetch(`/api/clinical-study/${nctId}`);
         if (!res.ok) throw new Error("Not found");
         const json = await res.json();
         setTrial(json.trial);
