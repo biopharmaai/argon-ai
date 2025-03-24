@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ClinicalTrial } from "@/types/clinicalTrials";
-import { useDownloadClinicalTrial } from "@/hooks/useDownloadClinicalTrial";
+import { useDownloadClinicalTrial } from "@/app/clinical-trial/[id]/hooks/useDownloadClinicalTrial";
 
 export function useClinicalTrial(nctId: string | undefined) {
   const [trial, setTrial] = useState<ClinicalTrial | null>(null);
