@@ -444,7 +444,8 @@ export default function SearchResultsTable({
 
   return (
     <div className="mt-6">
-      <div className="mb-2 flex min-h-[2rem] items-center justify-between gap-4">
+      {/* <div className="mb-2 flex min-h-[2rem] items-center justify-between gap-4"> */}
+      <div className="sticky top-[8rem] z-30 mb-2 flex min-h-[2rem] items-center justify-between gap-4 bg-white px-4 py-2 shadow-sm">
         <div>
           <Button
             variant="outline"
