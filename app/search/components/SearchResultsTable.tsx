@@ -31,7 +31,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { ClinicalTrial } from "@/types/clinicalTrials";
-import { SortToken } from "@/components/GuidedSortBar";
+import { SortToken } from "@/app/search/components/GuidedSortBar";
 import JSZip from "jszip";
 
 type Props = {

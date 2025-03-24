@@ -1,17 +1,19 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useState, useCallback, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import qs from "qs";
 import { ClinicalTrial } from "@/types/clinicalTrials";
-import SearchBar from "@/components/SearchBar";
-import LimitDropdown from "@/components/LimitDropdown";
-import SearchResultsTable from "@/components/SearchResultsTable";
-import Pagination from "@/components/Pagination";
-import { FilterToken } from "@/components/GuidedFilterBar";
-import ColumnSelector from "@/components/ColumnSelector";
-import type { ColumnConfig } from "@/components/ColumnSelector";
+import SearchBar from "@/app/search/components/SearchBar";
+import LimitDropdown from "@/app/search/components/LimitDropdown";
+import SearchResultsTable from "@/app/search/components/SearchResultsTable";
+import Pagination from "@/app/search/components/Pagination";
+import { FilterToken } from "@/app/search/components/GuidedFilterBar";
+import ColumnSelector from "@/app/search/components/ColumnSelector";
+import type { ColumnConfig } from "@/app/search/components/ColumnSelector";
+import { SortToken } from "@/app/search/components/GuidedSortBar";
+import { columnsDefinitions } from "@/app/search/components/SearchResultsTable";
 import {
   Sheet,
   SheetContent,
@@ -21,16 +23,20 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { SortToken } from "@/components/GuidedSortBar";
-import { columnsDefinitions } from "@/components/SearchResultsTable";
 
-const GuidedFilterBar = dynamic(() => import("@/components/GuidedFilterBar"), {
-  ssr: false,
-});
+const GuidedFilterBar = dynamic(
+  () => import("@/app/search/components/GuidedFilterBar"),
+  {
+    ssr: false,
+  },
+);
 
-const GuidedSortBar = dynamic(() => import("@/components/GuidedSortBar"), {
-  ssr: false,
-});
+const GuidedSortBar = dynamic(
+  () => import("@/app/search/components/GuidedSortBar"),
+  {
+    ssr: false,
+  },
+);
 
 const defaultColumnsVisiblility = {
   nctId: true,
@@ -237,10 +243,8 @@ function SearchPageContent() {
             queryString={queryString}
           />
           <Sheet open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
-            <SheetTitle>Advanced Search Options</SheetTitle>
-            <SheetDescription>
-              Use these advanced options to refine your search results.
-            </SheetDescription>
+            <SheetTitle></SheetTitle>
+            <SheetDescription></SheetDescription>
             <SheetTrigger asChild>
               <Button variant="outline">Advanced</Button>
             </SheetTrigger>
