@@ -38,10 +38,7 @@ export const columnsDefinitions = [
     accessor: (row: ClinicalTrial) =>
       row.protocolSection.identificationModule.nctId,
     cell: (val: string) => (
-      <Link
-        href={`/clinical-study/${val}`}
-        className="text-blue-600 hover:underline"
-      >
+      <Link href={`/study/${val}`} className="text-blue-600 hover:underline">
         {val}
       </Link>
     ),
@@ -51,6 +48,9 @@ export const columnsDefinitions = [
     label: "Title",
     accessor: (row: ClinicalTrial) =>
       row.protocolSection.identificationModule.briefTitle,
+    meta: {
+      className: "max-w-[400px] truncate whitespace-nowrap overflow-hidden",
+    },
   },
   {
     id: "organization",
@@ -63,6 +63,86 @@ export const columnsDefinitions = [
     label: "Status",
     accessor: (row: ClinicalTrial) =>
       row.protocolSection.statusModule.overallStatus,
+  },
+  {
+    id: "conditions",
+    label: "Conditions",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.conditionsModule?.conditions?.join(", ") || "",
+  },
+  {
+    id: "startDate",
+    label: "Start Date",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.statusModule.startDateStruct?.date,
+  },
+  {
+    id: "completionDate",
+    label: "Completion Date",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.statusModule.completionDateStruct?.date,
+  },
+  {
+    id: "officialTitle",
+    label: "Official Title",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.identificationModule.officialTitle || "",
+  },
+  {
+    id: "briefSummary",
+    label: "Brief Summary",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.descriptionModule.briefSummary || "",
+  },
+  {
+    id: "leadSponsor",
+    label: "Lead Sponsor",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.sponsorCollaboratorsModule.leadSponsor.name || "",
+  },
+  {
+    id: "primaryOutcomeMeasure",
+    label: "Primary Outcome Measure",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.outcomesModule.primaryOutcomes?.[0]?.measure || "",
+  },
+  {
+    id: "enrollmentCount",
+    label: "Enrollment Count",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.designModule.enrollmentInfo?.count || "",
+  },
+  {
+    id: "studyType",
+    label: "Study Type",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.designModule.studyType || "",
+  },
+  {
+    id: "sex",
+    label: "Sex",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.eligibilityModule.sex || "",
+  },
+  {
+    id: "minimumAge",
+    label: "Minimum Age",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.eligibilityModule.minimumAge || "",
+  },
+  {
+    id: "maximumAge",
+    label: "Maximum Age",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.eligibilityModule.maximumAge || "",
+  },
+  {
+    id: "locations",
+    label: "Locations",
+    accessor: (row: ClinicalTrial) =>
+      row.protocolSection.contactsLocationsModule.locations
+        ?.map((loc) => loc.facility)
+        .join(", ") || "",
   },
 ];
 
@@ -224,10 +304,20 @@ export default function SearchResultsTable({
         cols.push(
           columnHelper.accessor(accessor, {
             id,
-            header: () => renderSortableHeader(id, label),
+            header: () => (
+              <div className={def.meta?.className}>
+                {renderSortableHeader(id, label)}
+              </div>
+            ),
             cell: cell
-              ? ({ getValue }) => cell(String(getValue()) || "")
-              : ({ getValue }) => getValue() || "-",
+              ? ({ getValue }) => (
+                  <div className={def.meta?.className}>
+                    {cell(String(getValue()) || "")}
+                  </div>
+                )
+              : ({ getValue }) => (
+                  <div className={def.meta?.className}>{getValue() || "-"}</div>
+                ),
           }),
         );
       }
