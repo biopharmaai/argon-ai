@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ClinicalTrial } from "@/types/clinicalTrials";
 import { filterEnumMap } from "@/types/filterEnums";
-import _data from "../../../ctg-studies.json";
+import _data from "../../../data/ctg-studies.json";
 import Fuse from "fuse.js";
 
 // Assert the JSON data as an array of ClinicalTrial

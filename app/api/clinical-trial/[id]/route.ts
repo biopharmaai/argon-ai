@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import _data from "@/ctg-studies.json"; // adjust path if needed
+import _data from "@/data/ctg-studies.json"; // adjust path if needed
 import { ClinicalTrial } from "@/types/clinicalTrials";
 
 const data = _data as ClinicalTrial[];

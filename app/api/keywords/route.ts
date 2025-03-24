@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
 import { ClinicalTrial } from "@/types/clinicalTrials";
+import _data from "@/data/ctg-studies.json";
 
-const filePath = path.join(process.cwd(), "ctg-studies.json");
-
-const raw = await fs.readFile(filePath, "utf-8");
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const term = (searchParams.get("term") || "").toLowerCase();
 
-  const data = JSON.parse(raw) as ClinicalTrial[];
+  const data = _data as ClinicalTrial[];
 
   const keywords = new Set<string>();
   data.forEach((trial) => {

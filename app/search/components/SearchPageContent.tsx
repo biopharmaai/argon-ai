@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import _data from "@/ctg-studies.json";
+import _data from "@/data/ctg-studies.json";
 import { ClinicalTrial } from "@/types/clinicalTrials";
 const data = _data as ClinicalTrial[];
 
