@@ -2,7 +2,7 @@
 
 import React, { useMemo, useEffect, useState, useCallback } from "react";
 import qs from "qs";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, View } from "lucide-react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -21,6 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ClinicalTrial } from "@/types/clinicalTrials";
 import { SortToken } from "@/app/search/components/GuidedSortBar";
 import { columnsDefinitions } from "@/lib/constants";
+import Link from "next/link";
 
 type Props = {
   data: ClinicalTrial[];
@@ -39,11 +40,6 @@ export default function SearchResultsTable({
   onSelectedIdsChange,
   onSortTokensChange,
 }: Props) {
-  const visibleIds = useMemo(
-    () => data.map((d) => d.protocolSection.identificationModule.nctId),
-    [data],
-  );
-
   const displayColumns = useMemo(() => {
     const query = qs.parse(querystring, { ignoreQueryPrefix: true });
     return [
@@ -52,9 +48,6 @@ export default function SearchResultsTable({
     ];
   }, [querystring]);
 
-  const allVisibleSelected = visibleIds.every((id) => selectedIds.includes(id));
-  const someVisibleSelected = visibleIds.some((id) => selectedIds.includes(id));
-
   useEffect(() => {
     if (selectedIds.length > 0) {
       localStorage.setItem("selectedNctIds", JSON.stringify(selectedIds));
@@ -62,16 +55,6 @@ export default function SearchResultsTable({
       localStorage.removeItem("selectedNctIds");
     }
   }, [selectedIds]);
-
-  const handleToggleAllVisible = useCallback(
-    (checked: boolean) => {
-      const updated = checked
-        ? Array.from(new Set([...selectedIds, ...visibleIds]))
-        : selectedIds.filter((id) => !visibleIds.includes(id));
-      onSelectedIdsChange(updated);
-    },
-    [selectedIds, visibleIds, onSelectedIdsChange],
-  );
 
   const handleToggleRow = useCallback(
     (id: string) => {
@@ -151,31 +134,28 @@ export default function SearchResultsTable({
       cols.push(
         columnHelper.display({
           id: "selection",
-          header: () => (
-            <Checkbox
-              checked={allVisibleSelected}
-              onCheckedChange={(checked) =>
-                handleToggleAllVisible(Boolean(checked))
-              }
-              ref={(el) => {
-                if (el instanceof HTMLInputElement) {
-                  el.indeterminate = someVisibleSelected && !allVisibleSelected;
-                }
-              }}
-              aria-label="Select all studies on this page"
-              className="bg-white"
-            />
-          ),
+          header: () => <div className="flex items-center gap-2">#</div>,
           cell: ({ row }) => {
             const nctId =
               row.original.protocolSection.identificationModule.nctId;
             return (
-              <Checkbox
-                checked={selectedIds.includes(nctId)}
-                onCheckedChange={() => handleToggleRow(nctId)}
-                aria-label={`Select study ${nctId}`}
-                className="bg-white"
-              />
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground w-4 text-right">
+                  {row.index + 1}
+                </span>
+                <Checkbox
+                  checked={selectedIds.includes(nctId)}
+                  onCheckedChange={() => handleToggleRow(nctId)}
+                  aria-label={`Select study ${nctId}`}
+                  className="bg-white"
+                />
+                <Link
+                  href={`/clinical-trial/${nctId}`}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  <View className="h-4 w-4" />
+                </Link>
+              </div>
             );
           },
         }),
@@ -210,15 +190,7 @@ export default function SearchResultsTable({
     });
 
     return cols;
-  }, [
-    displayColumns,
-    selectedIds,
-    allVisibleSelected,
-    someVisibleSelected,
-    handleToggleAllVisible,
-    handleToggleRow,
-    renderSortableHeader,
-  ]);
+  }, [displayColumns, selectedIds, handleToggleRow, renderSortableHeader]);
 
   const table = useReactTable({
     data,
