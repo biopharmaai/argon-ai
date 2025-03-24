@@ -145,7 +145,7 @@ export default function ColumnSelector({
         <Button
           variant="outline"
           onClick={() => {
-            const updated = columns.map((col) =>
+            const updated = columnsDefinitions.map((col) =>
               defaultFields.includes(col.id)
                 ? { ...col, enabled: true }
                 : { ...col, enabled: false },
