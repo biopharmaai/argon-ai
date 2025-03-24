@@ -2,8 +2,6 @@ import { ColumnConfig } from "@/types/columns";
 import { ClinicalTrial } from "@/types/clinicalTrials";
 import Link from "next/link";
 
-const defaultColumnsIds = ["nctId", "briefTitle", "organization", "status"];
-
 export const columnsDefinitions: ColumnConfig[] = [
   {
     id: "nctId",
@@ -25,14 +23,15 @@ export const columnsDefinitions: ColumnConfig[] = [
     label: "Title",
     accessor: (row: ClinicalTrial) =>
       row.protocolSection.identificationModule.briefTitle,
+    cell: (val: string) => val,
     enabled: true,
   },
-
   {
     id: "organization",
     label: "Sponsor / Organization",
     accessor: (row: ClinicalTrial) =>
       row.protocolSection.identificationModule.organization.fullName,
+    cell: (val: string) => val,
     enabled: true,
   },
   {
@@ -40,6 +39,7 @@ export const columnsDefinitions: ColumnConfig[] = [
     label: "Status",
     accessor: (row: ClinicalTrial) =>
       row.protocolSection.statusModule.overallStatus,
+    cell: (val: string) => val,
     enabled: true,
   },
   {
@@ -141,37 +141,34 @@ export const columnsDefinitions: ColumnConfig[] = [
   },
 ];
 
-export const defaultColumns: ColumnConfig[] = columnsDefinitions
-  .filter((col) => defaultColumnsIds.includes(col.id))
-  .map((col) => ({ ...col, enabled: true }));
-// export const defaultColumns: ColumnConfig[] = [
-//   {
-//     id: "nctId",
-//     label: "NCT ID",
-//     accessor: (row) => row.protocolSection.identificationModule.nctId,
-//     cell: (val) => val,
-//     enabled: true,
-//   },
-//   {
-//     id: "briefTitle",
-//     label: "Title",
-//     accessor: (row) => row.protocolSection.identificationModule.briefTitle,
-//     cell: (val) => val,
-//     enabled: true,
-//   },
-//   {
-//     id: "organization",
-//     label: "Sponsor / Organization",
-//     accessor: (row) =>
-//       row.protocolSection.identificationModule.organization.fullName,
-//     cell: (val) => val,
-//     enabled: true,
-//   },
-//   {
-//     id: "status",
-//     label: "Status",
-//     accessor: (row) => row.protocolSection.statusModule.overallStatus,
-//     cell: (val) => val,
-//     enabled: true,
-//   },
-// ];
+export const defaultColumns: ColumnConfig[] = [
+  {
+    id: "nctId",
+    label: "NCT ID",
+    accessor: (row) => row.protocolSection.identificationModule.nctId,
+    cell: (val) => val,
+    enabled: true,
+  },
+  {
+    id: "briefTitle",
+    label: "Title",
+    accessor: (row) => row.protocolSection.identificationModule.briefTitle,
+    cell: (val) => val,
+    enabled: true,
+  },
+  {
+    id: "organization",
+    label: "Sponsor / Organization",
+    accessor: (row) =>
+      row.protocolSection.identificationModule.organization.fullName,
+    cell: (val) => val,
+    enabled: true,
+  },
+  {
+    id: "status",
+    label: "Status",
+    accessor: (row) => row.protocolSection.statusModule.overallStatus,
+    cell: (val) => val,
+    enabled: true,
+  },
+];

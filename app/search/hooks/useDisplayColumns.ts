@@ -17,7 +17,13 @@ export function useDisplayColumns() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        setSelectedColumns(parsed);
+        const valid = parsed.every(
+          (col: any) =>
+            col.id && col.label && typeof col.accessor === "function",
+        );
+        if (valid) {
+          setSelectedColumns(parsed);
+        }
       } catch (e) {
         console.error("Failed to parse stored columns:", e);
       }

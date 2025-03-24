@@ -86,9 +86,6 @@ export default function SearchPageContent() {
 
   const [format, setFormat] = useState<"json" | "csv">("json");
   const [zipEach, setZipEach] = useState(false);
-  const selectedTrials = data.filter((d) =>
-    selectedIds.includes(d.protocolSection.identificationModule.nctId),
-  );
 
   const handleBulkDownload = async () => {
     const date = new Date().toISOString().split("T")[0];
@@ -294,6 +291,7 @@ export default function SearchPageContent() {
           selectedIds={selectedIds}
           onSelectedIdsChange={setSelectedIds}
           onSortTokensChange={handleSortTokensChange}
+          columns={selectedColumns} // Ensure selectedColumns has the full ColumnConfig shape
         />
       </div>
 

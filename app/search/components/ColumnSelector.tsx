@@ -20,7 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ColumnConfig } from "@/types/columns";
+
+export interface ColumnConfig {
+  id: string;
+  label: string;
+  enabled: boolean;
+  accessor: (row: any) => string;
+  cell?: (val: string) => JSX.Element | string;
+}
 
 interface ColumnSelectorProps {
   columns: ColumnConfig[];
