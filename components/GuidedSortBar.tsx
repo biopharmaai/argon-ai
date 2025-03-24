@@ -131,7 +131,9 @@ export default function GuidedSortBar({
       token.field === field
         ? {
             ...token,
-            direction: token.direction === "asc" ? "desc" : "asc",
+            direction: (token.direction === "asc" ? "desc" : "asc") as
+              | "asc"
+              | "desc",
           }
         : token,
     );

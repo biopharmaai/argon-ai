@@ -18,6 +18,7 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetHeader,
+  SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { SortToken } from "@/components/GuidedSortBar";
@@ -62,27 +63,28 @@ export default function SearchPage() {
   const [columnConfig, setColumnConfig] = useState<ColumnConfig[]>(() => {
     const query = qs.parse(searchParams.toString());
     if (!query.fields) {
-      return columnsDefinitions;
-    }
-    if (typeof query.fields !== "string") {
-      return columnsDefinitions.map<ColumnConfig>(({ id, label }) => {
-        return {
-          id,
-          label,
-          enabled:
-            defaultColumnsVisiblility[
-              id as keyof typeof defaultColumnsVisiblility
-            ],
-        };
-      });
+      return columnsDefinitions.map((col) => ({
+        ...col,
+        enabled:
+          defaultColumnsVisiblility[
+            col.id as keyof typeof defaultColumnsVisiblility
+          ] ?? true,
+      }));
+    } else if (typeof query.fields !== "string") {
+      return columnsDefinitions.map<ColumnConfig>(({ id, label }) => ({
+        id,
+        label,
+        enabled:
+          defaultColumnsVisiblility[
+            id as keyof typeof defaultColumnsVisiblility
+          ],
+      }));
     } else {
       const fieldIds = query.fields.split(",");
-      return columnsDefinitions.map((col) => {
-        return {
-          ...col,
-          enabled: fieldIds.includes(col.id),
-        };
-      });
+      return columnsDefinitions.map((col) => ({
+        ...col,
+        enabled: fieldIds.includes(col.id),
+      }));
     }
   });
 
@@ -235,7 +237,10 @@ export default function SearchPage() {
             queryString={queryString}
           />
           <Sheet open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
-            <SheetTitle></SheetTitle>
+            <SheetTitle>Advanced Search Options</SheetTitle>
+            <SheetDescription>
+              Use these advanced options to refine your search results.
+            </SheetDescription>
             <SheetTrigger asChild>
               <Button variant="outline">Advanced</Button>
             </SheetTrigger>
