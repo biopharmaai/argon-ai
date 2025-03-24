@@ -5,15 +5,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import qs from "qs";
 import { ClinicalTrial } from "@/types/clinicalTrials";
-import SearchBar from "@/app/search/components/SearchBar";
-import LimitDropdown from "@/app/search/components/LimitDropdown";
-import SearchResultsTable from "@/app/search/components/SearchResultsTable";
-import Pagination from "@/app/search/components/Pagination";
-import { FilterToken } from "@/app/search/components/GuidedFilterBar";
-import ColumnSelector from "@/app/search/components/ColumnSelector";
-import type { ColumnConfig } from "@/app/search/components/ColumnSelector";
-import { SortToken } from "@/app/search/components/GuidedSortBar";
-import { columnsDefinitions } from "@/app/search/components/SearchResultsTable";
+import SearchBar from "./components/SearchBar";
+import LimitDropdown from "./components/LimitDropdown";
+import SearchResultsTable from "./components/SearchResultsTable";
+import Pagination from "./components/Pagination";
+import type { FilterToken } from "./components/GuidedFilterBar";
+import ColumnSelector from "./components/ColumnSelector";
+import type { ColumnConfig } from "./components/ColumnSelector";
+import { SortToken } from "./components/GuidedSortBar";
+import { columnsDefinitions } from "./components/SearchResultsTable";
 import {
   Sheet,
   SheetContent,
@@ -24,19 +24,13 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
-const GuidedFilterBar = dynamic(
-  () => import("@/app/search/components/GuidedFilterBar"),
-  {
-    ssr: false,
-  },
-);
+const GuidedFilterBar = dynamic(() => import("./components/GuidedFilterBar"), {
+  ssr: false,
+});
 
-const GuidedSortBar = dynamic(
-  () => import("@/app/search/components/GuidedSortBar"),
-  {
-    ssr: false,
-  },
-);
+const GuidedSortBar = dynamic(() => import("./components/GuidedSortBar"), {
+  ssr: false,
+});
 
 const defaultColumnsVisiblility = {
   nctId: true,
