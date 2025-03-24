@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import { ClinicalTrial } from "@/types/clinicalTrials";
 
 export function useSelectionState() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);

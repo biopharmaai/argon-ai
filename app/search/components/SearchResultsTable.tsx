@@ -22,6 +22,7 @@ import { ClinicalTrial } from "@/types/clinicalTrials";
 import { SortToken } from "@/app/search/components/GuidedSortBar";
 import { columnsDefinitions } from "@/lib/constants";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   data: ClinicalTrial[];
@@ -29,6 +30,10 @@ type Props = {
   selectedIds: string[];
   onSelectedIdsChange: (ids: string[]) => void;
   onSortTokensChange: (tokens: SortToken[]) => void;
+  selectAllAcrossPages: boolean;
+  totalResults?: number; // Added totalResults prop
+  clearSelection: () => void; // Added clearSelection prop
+  fetchAllMatchingIds: () => void; // Added fetchAllMatchingIds prop
 };
 
 const columnHelper = createColumnHelper<ClinicalTrial>();
@@ -39,6 +44,10 @@ export default function SearchResultsTable({
   selectedIds,
   onSelectedIdsChange,
   onSortTokensChange,
+  selectAllAcrossPages,
+  totalResults, // Destructured totalResults
+  clearSelection, // Destructured clearSelection
+  fetchAllMatchingIds, // Destructured fetchAllMatchingIds
 }: Props) {
   const displayColumns = useMemo(() => {
     const query = qs.parse(querystring, { ignoreQueryPrefix: true });
@@ -47,6 +56,16 @@ export default function SearchResultsTable({
       ...(typeof query.fields === "string" ? query.fields.split(",") : []),
     ];
   }, [querystring]);
+
+  const visibleIds = useMemo(
+    () => data.map((d) => d.protocolSection.identificationModule.nctId),
+    [data],
+  );
+
+  const visibleSelectedCount = useMemo(
+    () => visibleIds.filter((id) => selectedIds.includes(id)).length,
+    [visibleIds, selectedIds],
+  );
 
   useEffect(() => {
     if (selectedIds.length > 0) {
@@ -65,6 +84,19 @@ export default function SearchResultsTable({
       );
     },
     [selectedIds, onSelectedIdsChange],
+  );
+
+  const handleToggleAllVisible = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        const updated = Array.from(new Set([...selectedIds, ...visibleIds]));
+        onSelectedIdsChange(updated);
+      } else {
+        const updated = selectedIds.filter((id) => !visibleIds.includes(id));
+        onSelectedIdsChange(updated);
+      }
+    },
+    [selectedIds, visibleIds, onSelectedIdsChange],
   );
 
   const [sortTokens, setSortTokens] = useState<SortToken[]>([]);
@@ -134,7 +166,30 @@ export default function SearchResultsTable({
       cols.push(
         columnHelper.display({
           id: "selection",
-          header: () => <div className="flex items-center gap-2">#</div>,
+          header: () => {
+            const allVisibleSelected = visibleIds.every((id) =>
+              selectedIds.includes(id),
+            );
+            const someVisibleSelected = visibleIds.some((id) =>
+              selectedIds.includes(id),
+            );
+            return (
+              <Checkbox
+                checked={allVisibleSelected}
+                onCheckedChange={(checked) =>
+                  handleToggleAllVisible(Boolean(checked))
+                }
+                ref={(el) => {
+                  if (el instanceof HTMLInputElement) {
+                    el.indeterminate =
+                      someVisibleSelected && !allVisibleSelected;
+                  }
+                }}
+                aria-label="Select all studies on this page"
+                className="bg-white"
+              />
+            );
+          },
           cell: ({ row }) => {
             const nctId =
               row.original.protocolSection.identificationModule.nctId;
@@ -190,7 +245,14 @@ export default function SearchResultsTable({
     });
 
     return cols;
-  }, [displayColumns, selectedIds, handleToggleRow, renderSortableHeader]);
+  }, [
+    displayColumns,
+    selectedIds,
+    handleToggleRow,
+    renderSortableHeader,
+    visibleIds,
+    handleToggleAllVisible,
+  ]);
 
   const table = useReactTable({
     data,

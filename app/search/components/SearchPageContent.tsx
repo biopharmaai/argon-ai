@@ -269,7 +269,9 @@ export default function SearchPageContent() {
                       {totalResults?.toLocaleString()} results.
                     </span>
                   ) : (
-                    <span>{`${selectedIds.length.toLocaleString()} selected.`}</span>
+                    <span>
+                      {`${selectedIds.length.toLocaleString()}–${totalResults?.toLocaleString()} selected.`}
+                    </span>
                   )}
                   <Button
                     variant="link"
@@ -362,6 +364,7 @@ export default function SearchPageContent() {
           data={results}
           querystring={queryString}
           selectedIds={selectedIds}
+          selectAllAcrossPages={selectAllAcrossPages}
           onSelectedIdsChange={setSelectedIds}
           onSortTokensChange={handleSortTokensChange}
         />
