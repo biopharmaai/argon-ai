@@ -16,8 +16,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+      </head>
       <body className={`antialiased`}>
-        {/* Navigation Bar */}
         <header className="w-full bg-white p-4 text-black shadow">
           <nav className="mx-auto flex w-full items-center">
             <Link
