@@ -8,18 +8,24 @@ export async function GET(req: Request) {
 
   const data = _data as ClinicalTrial[];
 
-  const keywords = new Set<string>();
+  const keywordMap = new Map<string, string>();
+
   data.forEach((trial) => {
-    trial.protocolSection.conditionsModule?.conditions?.forEach((kw) =>
-      keywords.add(kw),
-    );
-    trial.protocolSection.conditionsModule?.keywords?.forEach((kw) =>
-      keywords.add(kw),
-    );
+    const conditions = trial.protocolSection.conditionsModule;
+    [
+      ...(conditions?.conditions || []),
+      ...(conditions?.keywords || []),
+    ].forEach((kw) => {
+      const key = kw.toLowerCase();
+      if (!keywordMap.has(key)) {
+        keywordMap.set(key, kw); // store first casing
+      }
+    });
   });
 
-  const results = Array.from(keywords)
-    .filter((kw) => kw.toLowerCase().includes(term))
+  const results = Array.from(keywordMap.entries())
+    .filter(([key]) => key.includes(term))
+    .map(([, original]) => original)
     .sort((a, b) => a.localeCompare(b))
     .slice(0, 8);
 
