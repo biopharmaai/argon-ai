@@ -82,6 +82,10 @@ export async function GET(req: Request) {
       "protocolSection.armsInterventionsModule.armGroups.interventionNames",
       "protocolSection.armsInterventionsModule.interventions.name", // Field for drug names
       "protocolSection.armsInterventionsModule.interventions.description", // Field for drug descriptions
+      "protocolSection.designModule.phases",
+      "protocolSection.statusModule.overallStatus",
+      "protocolSection.identificationModule.organization.fullName",
+      "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
     ],
     threshold: 0.4,
     includeScore: true,
@@ -127,6 +131,44 @@ export async function GET(req: Request) {
         case "completionDate":
           actualValue =
             trial.protocolSection.statusModule.completionDateStruct?.date;
+          break;
+        case "officialTitle":
+          actualValue =
+            trial.protocolSection.identificationModule.officialTitle;
+          break;
+        case "briefSummary":
+          actualValue = trial.protocolSection.descriptionModule.briefSummary;
+          break;
+        case "leadSponsor":
+          actualValue =
+            trial.protocolSection.sponsorCollaboratorsModule.leadSponsor.name;
+          break;
+        case "primaryOutcomeMeasure":
+          actualValue =
+            trial.protocolSection.outcomesModule.primaryOutcomes?.[0]?.measure;
+          break;
+        case "enrollmentCount":
+          actualValue =
+            trial.protocolSection.designModule.enrollmentInfo?.count?.toString();
+          break;
+        case "sex":
+          actualValue = trial.protocolSection.eligibilityModule.sex;
+          break;
+        case "minimumAge":
+          actualValue = trial.protocolSection.eligibilityModule.minimumAge;
+          break;
+        case "maximumAge":
+          actualValue = trial.protocolSection.eligibilityModule.maximumAge;
+          break;
+        case "conditions":
+          actualValue = trial.protocolSection.conditionsModule?.conditions
+            ?.join(" ")
+            .toLowerCase();
+          break;
+        case "locations":
+          actualValue = trial.protocolSection.contactsLocationsModule.locations
+            ?.map((loc) => loc.facility)
+            .join(", ");
           break;
         default:
           return true;
