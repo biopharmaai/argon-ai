@@ -7,7 +7,7 @@ import { ClinicalTrial } from "@/types/clinicalTrials";
 import type { FilterToken } from "../components/GuidedFilterBar";
 import { columnsDefinitions } from "../components/SearchResultsTable";
 import { SortToken } from "../components/GuidedSortBar";
-import type { ColumnConfig } from "../components/ColumnSelector";
+import type { ColumnConfig } from "@/types/columns";
 
 const defaultColumnsVisiblility = {
   nctId: true,
@@ -54,14 +54,18 @@ export function useSearchPageState() {
           ] ?? true,
       }));
     } else if (typeof query.fields !== "string") {
-      return columnsDefinitions.map<ColumnConfig>(({ id, label }) => ({
-        id,
-        label,
-        enabled:
-          defaultColumnsVisiblility[
-            id as keyof typeof defaultColumnsVisiblility
-          ],
-      }));
+      return columnsDefinitions.map<ColumnConfig>(
+        ({ id, label, accessor, cell }) => ({
+          id,
+          label,
+          accessor,
+          cell,
+          enabled:
+            defaultColumnsVisiblility[
+              id as keyof typeof defaultColumnsVisiblility
+            ] ?? true,
+        }),
+      );
     } else {
       const fieldIds = query.fields.split(",");
       return columnsDefinitions.map((col) => ({

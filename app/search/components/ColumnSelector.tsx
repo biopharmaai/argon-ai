@@ -20,12 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-export interface ColumnConfig {
-  id: string;
-  label: string;
-  enabled: boolean;
-}
+import { ColumnConfig } from "@/types/columns";
 
 interface ColumnSelectorProps {
   columns: ColumnConfig[];
