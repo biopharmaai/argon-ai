@@ -67,11 +67,11 @@ export default function GuidedFilterBar({
     );
     updatedFilters.push(newToken);
 
-    const updatedQuery = { ...baseQueryObject };
-    updatedQuery.filter = {};
-    updatedFilters.forEach((token) => {
-      updatedQuery.filter[token.field] = token.value;
-    });
+    // const updatedQuery = { ...baseQueryObject };
+    // updatedQuery.filter = {};
+    // updatedFilters.forEach((token) => {
+    //   updatedQuery.filter[token.field] = token.value;
+    // });
 
     onFiltersCommitted(updatedFilters);
     setSelectedField("");
