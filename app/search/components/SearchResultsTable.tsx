@@ -3,7 +3,7 @@
 import React, { useMemo, useEffect, useState, useCallback } from "react";
 import qs from "qs";
 import Link from "next/link";
-import { ChevronUp, ChevronDown, Download } from "lucide-react";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -19,20 +19,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { ClinicalTrial } from "@/types/clinicalTrials";
 import { SortToken } from "@/app/search/components/GuidedSortBar";
-import JSZip from "jszip";
 
 type Props = {
   data: ClinicalTrial[];
@@ -80,86 +68,6 @@ export const columnsDefinitions = [
     accessor: (row: ClinicalTrial) =>
       row.protocolSection.statusModule.overallStatus,
   },
-  {
-    id: "conditions",
-    label: "Conditions",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.conditionsModule?.conditions?.join(", ") || "",
-  },
-  {
-    id: "startDate",
-    label: "Start Date",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.statusModule.startDateStruct?.date,
-  },
-  {
-    id: "completionDate",
-    label: "Completion Date",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.statusModule.completionDateStruct?.date,
-  },
-  {
-    id: "officialTitle",
-    label: "Official Title",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.identificationModule.officialTitle || "",
-  },
-  {
-    id: "briefSummary",
-    label: "Brief Summary",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.descriptionModule.briefSummary || "",
-  },
-  {
-    id: "leadSponsor",
-    label: "Lead Sponsor",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.sponsorCollaboratorsModule.leadSponsor.name || "",
-  },
-  {
-    id: "primaryOutcomeMeasure",
-    label: "Primary Outcome Measure",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.outcomesModule.primaryOutcomes?.[0]?.measure || "",
-  },
-  {
-    id: "enrollmentCount",
-    label: "Enrollment Count",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.designModule.enrollmentInfo?.count || "",
-  },
-  {
-    id: "studyType",
-    label: "Study Type",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.designModule.studyType || "",
-  },
-  {
-    id: "sex",
-    label: "Sex",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.eligibilityModule.sex || "",
-  },
-  {
-    id: "minimumAge",
-    label: "Minimum Age",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.eligibilityModule.minimumAge || "",
-  },
-  {
-    id: "maximumAge",
-    label: "Maximum Age",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.eligibilityModule.maximumAge || "",
-  },
-  {
-    id: "locations",
-    label: "Locations",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.contactsLocationsModule.locations
-        ?.map((loc) => loc.facility)
-        .join(", ") || "",
-  },
 ];
 
 export default function SearchResultsTable({
@@ -177,10 +85,12 @@ export default function SearchResultsTable({
     () => data.map((d) => d.protocolSection.identificationModule.nctId),
     [data],
   );
+
   const visibleSelectedCount = useMemo(
     () => visibleIds.filter((id) => selectedIds.includes(id)).length,
     [visibleIds, selectedIds],
   );
+
   const displayColumns = useMemo(() => {
     const query = qs.parse(querystring, { ignoreQueryPrefix: true });
     return [
@@ -192,7 +102,6 @@ export default function SearchResultsTable({
   const allVisibleSelected = visibleIds.every((id) => selectedIds.includes(id));
   const someVisibleSelected = visibleIds.some((id) => selectedIds.includes(id));
 
-  // Persist selection to localStorage
   useEffect(() => {
     if (selectedIds.length > 0) {
       localStorage.setItem("selectedNctIds", JSON.stringify(selectedIds));
@@ -203,13 +112,10 @@ export default function SearchResultsTable({
 
   const handleToggleAllVisible = useCallback(
     (checked: boolean) => {
-      if (checked) {
-        const updated = Array.from(new Set([...selectedIds, ...visibleIds]));
-        onSelectedIdsChange(updated);
-      } else {
-        const updated = selectedIds.filter((id) => !visibleIds.includes(id));
-        onSelectedIdsChange(updated);
-      }
+      const updated = checked
+        ? Array.from(new Set([...selectedIds, ...visibleIds]))
+        : selectedIds.filter((id) => !visibleIds.includes(id));
+      onSelectedIdsChange(updated);
     },
     [selectedIds, visibleIds, onSelectedIdsChange],
   );
@@ -225,7 +131,6 @@ export default function SearchResultsTable({
     [selectedIds, onSelectedIdsChange],
   );
 
-  // Sorting logic
   const [sortTokens, setSortTokens] = useState<SortToken[]>([]);
   useEffect(() => {
     const query = qs.parse(querystring, { ignoreQueryPrefix: true });
@@ -358,137 +263,8 @@ export default function SearchResultsTable({
     getCoreRowModel: getCoreRowModel(),
   });
 
-  // Export modal state
-  const [open, setOpen] = useState(false);
-  const [format, setFormat] = useState<"csv" | "json">("csv");
-  const [zipEach, setZipEach] = useState(false);
-
-  const handleDownload = async () => {
-    const date = new Date().toISOString().split("T")[0];
-    const selectedTrials = data.filter((d) =>
-      selectedIds.includes(d.protocolSection.identificationModule.nctId),
-    );
-
-    if (zipEach) {
-      const zip = new JSZip();
-
-      for (const trial of selectedTrials) {
-        const nctId = trial.protocolSection.identificationModule.nctId;
-        const content =
-          format === "json"
-            ? JSON.stringify(trial, null, 2)
-            : toCsv([trial], displayColumns);
-        zip.file(`${nctId}.${format}`, content);
-      }
-
-      const blob = await zip.generateAsync({ type: "blob" });
-      triggerDownload(blob, `${date}-study-${format}.zip`);
-    } else {
-      const content =
-        format === "json"
-          ? JSON.stringify(selectedTrials, null, 2)
-          : toCsv(selectedTrials, displayColumns);
-      const blob = new Blob([content], {
-        type:
-          format === "json" ? "application/json" : "text/csv;charset=utf-8;",
-      });
-      triggerDownload(blob, `${date}-study.${format}`);
-    }
-
-    setOpen(false);
-  };
-
-  const toCsv = (rows: ClinicalTrial[], columns: string[]) => {
-    const header = columns.join(",");
-    const body = rows
-      .map((trial) =>
-        columns
-          .map((col) => {
-            const val =
-              col === "nctId"
-                ? trial.protocolSection.identificationModule.nctId
-                : col === "briefTitle"
-                  ? trial.protocolSection.identificationModule.briefTitle
-                  : col === "organization"
-                    ? trial.protocolSection.identificationModule.organization
-                        .fullName
-                    : col === "status"
-                      ? trial.protocolSection.statusModule.overallStatus
-                      : col === "conditions"
-                        ? trial.protocolSection.conditionsModule?.conditions?.join(
-                            "|",
-                          )
-                        : col === "startDate"
-                          ? trial.protocolSection.statusModule.startDateStruct
-                              ?.date
-                          : col === "completionDate"
-                            ? trial.protocolSection.statusModule
-                                .completionDateStruct?.date
-                            : "";
-            return `"${(val || "").replace(/"/g, '""')}"`;
-          })
-          .join(","),
-      )
-      .join("\n");
-    return `${header}\n${body}`;
-  };
-
-  const triggerDownload = (blob: Blob, filename: string) => {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
-
   return (
     <div className="mt-6">
-      {/* <div className="mb-2 flex min-h-[2rem] items-center justify-between gap-4"> */}
-      <div className="sticky top-[8rem] z-30 mb-2 flex min-h-[2rem] items-center justify-between gap-4 bg-white px-4 py-2 shadow-sm">
-        <div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setOpen(true)}
-            disabled={selectedIds.length === 0}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-        </div>
-        {selectedIds.length > 0 && (
-          <div className="text-muted-foreground flex flex-wrap items-center justify-end gap-2 text-sm">
-            {selectAllAcrossPages ? (
-              <span>
-                {selectedIds.length.toLocaleString()} selected across{" "}
-                {totalCount.toLocaleString()} results.
-              </span>
-            ) : (
-              <span>
-                {`${visibleSelectedCount.toLocaleString()}–${totalCount.toLocaleString()} selected.`}
-              </span>
-            )}
-            <Button
-              variant="link"
-              className="h-auto p-0 text-blue-600"
-              onClick={onClearSelection}
-            >
-              Clear selection
-            </Button>
-            {selectedIds.length !== totalCount && (
-              <Button
-                variant="link"
-                className="h-auto p-0 text-blue-600"
-                onClick={onSelectAllAcrossPages}
-              >
-                Select all {totalCount.toLocaleString()} studies
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -518,47 +294,6 @@ export default function SearchResultsTable({
           ))}
         </TableBody>
       </Table>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Export Selected Clinical Studies</DialogTitle>
-            <DialogDescription>
-              Choose your export format and whether to zip the results.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <RadioGroup
-              value={format}
-              onValueChange={(val: "csv" | "json") => setFormat(val)}
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="csv" id="csv" />
-                <Label htmlFor="csv">CSV</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="json" id="json" />
-                <Label htmlFor="json">JSON</Label>
-              </div>
-            </RadioGroup>
-            {selectedIds.length > 1 && (
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="zipEach"
-                  checked={zipEach}
-                  onCheckedChange={(checked) => setZipEach(Boolean(checked))}
-                />
-                <Label htmlFor="zipEach">
-                  Put each study into its own file and zip
-                </Label>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button onClick={handleDownload}>Download</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
