@@ -189,8 +189,8 @@ export default function SearchPageContent() {
     handleClose();
   };
 
-  const handleColumnChange = (cols: ColumnSelectorConfig[]) => {
-    const merged = mergeSelectorWithColumns(cols, columnsDefinitions);
+  const handleColumnChange = (selectorConfig: ColumnSelectorConfig[]) => {
+    const merged = mergeSelectorWithColumns(selectorConfig, columnsDefinitions);
     setSelectedColumns(merged);
     handleSelectedColumnsChange(merged);
   };
@@ -230,7 +230,9 @@ export default function SearchPageContent() {
                   </SheetHeader>
                   <div className="space-y-6">
                     <ColumnSelector
-                      columns={toSelectorConfig(selectedColumns)}
+                      columns={toSelectorConfig(
+                        selectedColumns.filter((c) => c.enabled),
+                      )}
                       queryString={queryString}
                       onColumnsChange={handleColumnChange}
                     />

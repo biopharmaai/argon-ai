@@ -20,12 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import { columnsDefinitions } from "@/lib/constants";
 import { ColumnSelectorConfig } from "@/types/columns";
 import { defaultFields } from "@/lib/constants";
 
 interface ColumnSelectorProps {
-  columns: ColumnSelectorConfig[];
+  columns: ColumnSelectorConfig[]; // enabled & ordered
   onColumnsChange: (columns: ColumnSelectorConfig[]) => void;
   queryString: string;
 }
@@ -162,12 +162,9 @@ export default function ColumnSelector({
         <Select
           value={selectedField}
           onValueChange={(id) => {
-            const existing = columns.find((c) => c.id === id);
-            if (existing && !existing.enabled) {
-              const updated = columns.map((col) =>
-                col.id === id ? { ...col, enabled: true } : col,
-              );
-              onColumnsChange(updated);
+            const col = columnsDefinitions.find((c) => c.id === id);
+            if (col) {
+              onColumnsChange([...columns, { ...col, enabled: true }]);
             }
             setSelectedField("");
           }}
@@ -176,8 +173,10 @@ export default function ColumnSelector({
             <SelectValue placeholder="+ Add Field" />
           </SelectTrigger>
           <SelectContent>
-            {columns
-              .filter((c) => !c.enabled)
+            {columnsDefinitions
+              .filter(
+                (col) => !columns.some((c) => c.id === col.id && c.enabled),
+              )
               .map((col) => (
                 <SelectItem key={col.id} value={col.id}>
                   {col.label}
