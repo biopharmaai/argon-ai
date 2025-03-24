@@ -18,7 +18,7 @@ export function useDisplayColumns() {
       try {
         const parsed = JSON.parse(stored);
         const valid = parsed.every(
-          (col: any) =>
+          (col: ColumnConfig) =>
             col.id && col.label && typeof col.accessor === "function",
         );
         if (valid) {

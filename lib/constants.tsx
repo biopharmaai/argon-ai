@@ -21,9 +21,11 @@ export const columnsDefinitions: ColumnConfig[] = [
   {
     id: "briefTitle",
     label: "Title",
-    accessor: (row: ClinicalTrial) =>
-      row.protocolSection.identificationModule.briefTitle,
-    cell: (val: string) => val,
+    accessor: (row) => row.protocolSection.identificationModule.briefTitle,
+    cell: (val) => val,
+    meta: {
+      className: "max-w-[400px] truncate whitespace-nowrap overflow-hidden",
+    },
     enabled: true,
   },
   {

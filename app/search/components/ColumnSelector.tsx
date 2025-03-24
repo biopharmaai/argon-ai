@@ -21,17 +21,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export interface ColumnConfig {
-  id: string;
-  label: string;
-  enabled: boolean;
-  accessor: (row: any) => string;
-  cell?: (val: string) => JSX.Element | string;
-}
+import { ColumnSelectorConfig } from "@/types/columns";
 
 interface ColumnSelectorProps {
-  columns: ColumnConfig[];
-  onColumnsChange: (columns: ColumnConfig[]) => void;
+  columns: ColumnSelectorConfig[];
+  onColumnsChange: (columns: ColumnSelectorConfig[]) => void;
   queryString: string;
 }
 
@@ -39,7 +33,7 @@ function SortableColumnItem({
   column,
   onToggle,
 }: {
-  column: ColumnConfig;
+  column: ColumnSelectorConfig;
   onToggle: () => void;
 }) {
   const {
@@ -104,7 +98,7 @@ export default function ColumnSelector({
         const match = columns.find((col) => col.id === id);
         return match ? { ...match, enabled: true } : null;
       })
-      .filter(Boolean) as ColumnConfig[];
+      .filter(Boolean) as ColumnSelectorConfig[];
 
     const disabledColumns = columns
       .filter((col) => !fieldIds.includes(col.id))

@@ -35,9 +35,39 @@ import { useDialogState } from "../hooks/useDialogState";
 import { useDisplayColumns } from "../hooks/useDisplayColumns";
 import { useSelectionState } from "../hooks/useSelectionState";
 
+import type { ColumnConfig, ColumnSelectorConfig } from "@/types/columns";
+export function toSelectorConfig(
+  columns: ColumnConfig[],
+): ColumnSelectorConfig[] {
+  return columns.map(({ id, label, enabled }) => ({ id, label, enabled }));
+}
+
+export function mergeSelectorWithColumns(
+  selectorConfig: ColumnSelectorConfig[],
+  fullColumns: ColumnConfig[],
+): ColumnConfig[] {
+  const enabledSet = new Set(
+    selectorConfig.filter((c) => c.enabled).map((c) => c.id),
+  );
+  const orderMap = new Map(selectorConfig.map((c, i) => [c.id, i]));
+
+  return [...fullColumns]
+    .sort((a, b) => {
+      const aOrder = orderMap.get(a.id) ?? Infinity;
+      const bOrder = orderMap.get(b.id) ?? Infinity;
+      return aOrder - bOrder;
+    })
+    .map((col) => ({
+      ...col,
+      enabled: enabledSet.has(col.id),
+    }));
+}
 function toCsv(
-  data: any[],
-  columns: { id: string; accessor: (row: any) => string }[],
+  data: ClinicalTrial[],
+  columns: {
+    id: string;
+    accessor: (row: ClinicalTrial) => string | undefined;
+  }[],
 ) {
   const header = columns.map((col) => col.id).join(",");
   const rows = data.map((row) =>
@@ -102,7 +132,13 @@ export default function SearchPageContent() {
         const content =
           format === "json"
             ? JSON.stringify(trial, null, 2)
-            : toCsv([trial], selectedColumns);
+            : toCsv(
+                [trial],
+                selectedColumns as {
+                  id: string;
+                  accessor: (row: ClinicalTrial) => string | undefined;
+                }[],
+              );
         zip.file(`${nctId}.${format}`, content);
       }
 
@@ -112,7 +148,13 @@ export default function SearchPageContent() {
       const content =
         format === "json"
           ? JSON.stringify(trials, null, 2)
-          : toCsv(trials, selectedColumns);
+          : toCsv(
+              trials,
+              selectedColumns as {
+                id: string;
+                accessor: (row: ClinicalTrial) => string | undefined;
+              }[],
+            );
       const blob = new Blob([content], {
         type:
           format === "json" ? "application/json" : "text/csv;charset=utf-8;",
@@ -159,9 +201,13 @@ export default function SearchPageContent() {
                   </SheetHeader>
                   <div className="space-y-6">
                     <ColumnSelector
-                      columns={selectedColumns}
+                      columns={toSelectorConfig(selectedColumns)}
                       queryString={queryString}
-                      onColumnsChange={handleSelectedColumnsChange}
+                      onColumnsChange={(cols) =>
+                        handleSelectedColumnsChange(
+                          mergeSelectorWithColumns(cols, selectedColumns),
+                        )
+                      }
                     />
                     <GuidedFilterBar
                       queryString={queryString}
@@ -291,7 +337,6 @@ export default function SearchPageContent() {
           selectedIds={selectedIds}
           onSelectedIdsChange={setSelectedIds}
           onSortTokensChange={handleSortTokensChange}
-          columns={selectedColumns} // Ensure selectedColumns has the full ColumnConfig shape
         />
       </div>
 
