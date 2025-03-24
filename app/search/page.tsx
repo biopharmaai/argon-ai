@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import qs from "qs";
 import { ClinicalTrial } from "@/types/clinicalTrials";
@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { SortToken } from "@/components/GuidedSortBar";
 import { columnsDefinitions } from "@/components/SearchResultsTable";
+
 const GuidedFilterBar = dynamic(() => import("@/components/GuidedFilterBar"), {
   ssr: false,
 });
@@ -40,7 +41,9 @@ const defaultColumnsVisiblility = {
   startDate: true,
   completionDate: true,
 };
-export default function SearchPage() {
+
+function SearchPageContent() {
+  // Now that this is a separate component, useSearchParams is inside the Suspense boundary.
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -50,7 +53,6 @@ export default function SearchPage() {
   const [queryString, setQueryString] = useState(() => {
     const query = qs.parse(searchParams.toString());
     if (!query.page) query.page = "1";
-
     return qs.stringify(query);
   });
   useEffect(() => {
@@ -214,13 +216,11 @@ export default function SearchPage() {
       const enabledFields = columns
         .filter((col) => col.enabled)
         .map((col) => col.id);
-
       if (enabledFields.length > 0) {
         q.fields = enabledFields.join(",");
       } else {
         delete q.fields;
       }
-
       setQueryString(qs.stringify(q));
       setColumnConfig(columns);
     },
@@ -303,5 +303,13 @@ export default function SearchPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div>Loading search page...</div>}>
+      <SearchPageContent />
+    </Suspense>
   );
 }

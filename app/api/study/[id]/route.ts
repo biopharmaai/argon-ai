@@ -4,9 +4,11 @@ import { ClinicalTrial } from "@/types/clinicalTrials";
 
 const data = _data as ClinicalTrial[];
 
-export async function GET(req: NextRequest) {
-  const { id } = req.query;
-  console.log("id", id);
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
   const match = data.find(
     (trial) =>
       trial.protocolSection.identificationModule.nctId.toLowerCase() ===
