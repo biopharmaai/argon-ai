@@ -106,20 +106,66 @@ export async function GET(req: Request) {
   // ---------------------------
   const fuseOptions = {
     keys: [
-      "protocolSection.identificationModule.briefTitle",
-      "protocolSection.identificationModule.officialTitle", // Additional field for disease details
-      "protocolSection.descriptionModule.briefSummary", // Additional field for extended details
-      "protocolSection.conditionsModule.conditions",
-      "protocolSection.conditionsModule.keywords",
-      "protocolSection.armsInterventionsModule.armGroups.label",
-      "protocolSection.armsInterventionsModule.armGroups.description",
-      "protocolSection.armsInterventionsModule.armGroups.interventionNames",
-      "protocolSection.armsInterventionsModule.interventions.name", // Field for drug names
-      "protocolSection.armsInterventionsModule.interventions.description", // Field for drug descriptions
-      "protocolSection.designModule.phases",
-      "protocolSection.statusModule.overallStatus",
-      "protocolSection.identificationModule.organization.fullName",
-      "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+      {
+        name: "protocolSection.conditionsModule.conditions",
+        weight: 0.5, // 🔼 Higher priority
+      },
+      {
+        name: "protocolSection.conditionsModule.keywords",
+        weight: 0.5, // 🔼 Higher priority
+      },
+      {
+        name: "derivedSection.conditionBrowseModule.meshes.term",
+        weight: 0.6, // High priority standardized MeSH term
+      },
+      {
+        name: "derivedSection.conditionBrowseModule.ancestors.term",
+        weight: 0.3, // Ancestor MeSH terms, slightly lower priority
+      },
+      {
+        name: "protocolSection.identificationModule.briefTitle",
+        weight: 0.2,
+      },
+      {
+        name: "protocolSection.identificationModule.officialTitle",
+        weight: 0.2,
+      },
+      {
+        name: "protocolSection.descriptionModule.briefSummary",
+        weight: 0.2,
+      },
+      {
+        name: "protocolSection.armsInterventionsModule.armGroups.label",
+        weight: 0.1,
+      },
+      {
+        name: "protocolSection.armsInterventionsModule.armGroups.description",
+        weight: 0.1,
+      },
+      {
+        name: "protocolSection.armsInterventionsModule.armGroups.interventionNames",
+        weight: 0.1,
+      },
+      {
+        name: "protocolSection.armsInterventionsModule.interventions.name",
+        weight: 0.1,
+      },
+      {
+        name: "protocolSection.armsInterventionsModule.interventions.description",
+        weight: 0.1,
+      },
+      {
+        name: "protocolSection.designModule.phases",
+        weight: 0.05,
+      },
+      {
+        name: "protocolSection.identificationModule.organization.fullName",
+        weight: 0.05,
+      },
+      {
+        name: "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+        weight: 0.05,
+      },
     ],
     threshold: 0.4,
     includeScore: true,
