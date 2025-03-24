@@ -36,7 +36,7 @@ export default function SearchBarSuggest() {
             highlightedIndex >= 0 ? suggestions[highlightedIndex] : term;
           handleSubmit(value);
         }}
-        className="flex w-full items-center px-4 py-6 sm:py-4"
+        className="flex w-full items-center px-4 py-4"
       >
         <div className="relative w-full">
           <Input

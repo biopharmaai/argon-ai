@@ -21,6 +21,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { ClinicalTrial } from "@/types/clinicalTrials";
 import { SortToken } from "@/app/search/components/GuidedSortBar";
+import { useStickyOffset } from "../hooks/useStickyOffset";
 
 type Props = {
   data: ClinicalTrial[];
@@ -263,12 +264,18 @@ export default function SearchResultsTable({
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const stickyOffset = useStickyOffset("#search-header-container");
+
   return (
-    <div className="mt-6">
+    <div className="w-full overflow-x-auto">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow
+              key={headerGroup.id}
+              className="sticky z-10 bg-white"
+              style={{ top: stickyOffset ?? 0 }}
+            >
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id}>
                   {header.isPlaceholder

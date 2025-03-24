@@ -19,8 +19,8 @@ export default function SuggestionDropdown({
   return (
     <div
       className={cn(
-        "w-full rounded-b-lg border-t border-[#1B4DED] bg-white px-4 py-2 text-left text-base transition-all",
-        visible ? "visible opacity-100" : "invisible opacity-0",
+        "w-full rounded-b-lg border-t border-[#1B4DED] bg-white px-4 text-left text-base transition-all",
+        visible ? "visible py-2 opacity-100" : "invisible opacity-0",
       )}
     >
       {suggestions.map((suggestion, i) => (
