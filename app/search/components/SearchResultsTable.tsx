@@ -22,7 +22,6 @@ import { ClinicalTrial } from "@/types/clinicalTrials";
 import { SortToken } from "@/app/search/components/GuidedSortBar";
 import { columnsDefinitions } from "@/lib/constants";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 type Props = {
   data: ClinicalTrial[];
@@ -30,10 +29,6 @@ type Props = {
   selectedIds: string[];
   onSelectedIdsChange: (ids: string[]) => void;
   onSortTokensChange: (tokens: SortToken[]) => void;
-  selectAllAcrossPages: boolean;
-  totalResults?: number; // Added totalResults prop
-  clearSelection: () => void; // Added clearSelection prop
-  fetchAllMatchingIds: () => void; // Added fetchAllMatchingIds prop
 };
 
 const columnHelper = createColumnHelper<ClinicalTrial>();
@@ -44,10 +39,6 @@ export default function SearchResultsTable({
   selectedIds,
   onSelectedIdsChange,
   onSortTokensChange,
-  selectAllAcrossPages,
-  totalResults, // Destructured totalResults
-  clearSelection, // Destructured clearSelection
-  fetchAllMatchingIds, // Destructured fetchAllMatchingIds
 }: Props) {
   const displayColumns = useMemo(() => {
     const query = qs.parse(querystring, { ignoreQueryPrefix: true });
@@ -60,11 +51,6 @@ export default function SearchResultsTable({
   const visibleIds = useMemo(
     () => data.map((d) => d.protocolSection.identificationModule.nctId),
     [data],
-  );
-
-  const visibleSelectedCount = useMemo(
-    () => visibleIds.filter((id) => selectedIds.includes(id)).length,
-    [visibleIds, selectedIds],
   );
 
   useEffect(() => {

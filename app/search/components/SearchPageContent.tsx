@@ -364,7 +364,6 @@ export default function SearchPageContent() {
           data={results}
           querystring={queryString}
           selectedIds={selectedIds}
-          selectAllAcrossPages={selectAllAcrossPages}
           onSelectedIdsChange={setSelectedIds}
           onSortTokensChange={handleSortTokensChange}
         />
