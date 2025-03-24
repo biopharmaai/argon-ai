@@ -137,7 +137,6 @@ export default function ColumnSelector({
     onColumnsChange(newColumns);
   };
 
-  console.log("hasNoFields", hasNoFields);
   return (
     <div className="w-full space-y-4 rounded-md border bg-white p-4 shadow-sm">
       <h2 className="text-lg font-semibold">Selected Fields</h2>
