@@ -12,10 +12,23 @@ export async function GET(req: Request) {
 
   data.forEach((trial) => {
     const conditions = trial.protocolSection.conditionsModule;
-    [
+    const browse = trial.derivedSection?.conditionBrowseModule;
+
+    const terms: string[] = [
       ...(conditions?.conditions || []),
       ...(conditions?.keywords || []),
-    ].forEach((kw) => {
+      ...(browse?.meshes?.map((m) => m.term) || []),
+      ...(browse?.meshes?.flatMap((m) => {
+        const meshWithAncestors = m as typeof m & {
+          ancestors?: { term: string }[];
+        };
+        return Array.isArray(meshWithAncestors.ancestors)
+          ? meshWithAncestors.ancestors.map((a) => a.term)
+          : [];
+      }) || []),
+    ];
+
+    terms.forEach((kw) => {
       const key = kw.toLowerCase();
       if (!keywordMap.has(key)) {
         keywordMap.set(key, kw); // store first casing
