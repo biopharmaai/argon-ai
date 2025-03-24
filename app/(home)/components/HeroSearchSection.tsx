@@ -14,7 +14,7 @@ export default function HeroSearchSection() {
         safely deployed in your organization
       </p>
 
-      <div className="mt-10 w-full max-w-3xl">
+      <div className="w-full max-w-3xl" style={{ minHeight: "480px" }}>
         <SearchBarSuggest />
       </div>
     </section>

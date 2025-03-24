@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSearchSuggest } from "@/app/(home)/hooks/useSearchSuggest";
+import SuggestionDropdown from "./SuggestionDropdown";
 
 export default function SearchBarSuggest() {
   const {
@@ -57,21 +58,12 @@ export default function SearchBarSuggest() {
           </Button>
         </div>
       </form>
-      {suggestions.length > 0 && (
-        <div className="w-full rounded-b-lg border-t border-[#1B4DED] bg-white px-4 py-2 text-left text-base">
-          {suggestions.map((suggestion, i) => (
-            <div
-              key={i}
-              onClick={() => handleSubmit(suggestion)}
-              className={`cursor-pointer py-2 hover:bg-gray-100 ${
-                i === highlightedIndex ? "bg-gray-100" : ""
-              }`}
-            >
-              {suggestion}
-            </div>
-          ))}
-        </div>
-      )}
+      <SuggestionDropdown
+        suggestions={suggestions}
+        highlightedIndex={highlightedIndex}
+        visible={suggestions.length > 0}
+        onSelect={(value) => handleSubmit(value)}
+      />
     </div>
   );
 }
