@@ -228,7 +228,7 @@ function SearchPageContent() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex flex-col pt-20">
       <div className="mx-auto w-full flex-1 p-6">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <SearchBar

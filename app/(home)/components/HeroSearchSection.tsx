@@ -2,7 +2,7 @@ import SearchBarSuggest from "./SearchBarSuggest";
 
 export default function HeroSearchSection() {
   return (
-    <section className="flex min-h-screen flex-col items-center justify-start px-6 pt-32 pb-10 text-center">
+    <section className="flex min-h-screen flex-col items-center justify-center px-6 pb-10 text-center">
       <h1 className="text-muted-foreground text-4xl font-semibold sm:text-5xl">
         <span className="block font-medium text-[#1B4DED]">
           Trusted AI Knowledge

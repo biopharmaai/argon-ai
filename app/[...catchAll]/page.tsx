@@ -1,14 +1,12 @@
-import { redirect } from "next/navigation";
+// import { redirect } from "next/navigation";
 
-// interface CatchAllParams {
-//   params: Promise<{ catchAll?: string[] }>;
+// export default async function CatchAllPage() {
+//   redirect("/");
 // }
 
-export default async function CatchAllPage() {
-  console.log("CatchAllPage");
-  // const { catchAll } = await params;
+import { notFound } from "next/navigation";
 
-  // Access cookies to check for the `id_token`
-
-  redirect("/search");
+export default function CatchAllPage() {
+  console.log("🔥 Catch-all route hit!");
+  notFound();
 }
