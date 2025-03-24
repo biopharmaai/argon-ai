@@ -26,7 +26,41 @@ function getSortValue(trial: ClinicalTrial, field: string): string {
       return (
         trial.protocolSection.statusModule.completionDateStruct?.date || ""
       );
-    // Note: We intentionally do not sort by "conditions".
+    case "officialTitle":
+      return trial.protocolSection.identificationModule.officialTitle || "";
+    case "briefSummary":
+      return trial.protocolSection.descriptionModule.briefSummary || "";
+    case "leadSponsor":
+      return (
+        trial.protocolSection.sponsorCollaboratorsModule.leadSponsor.name || ""
+      );
+    case "primaryOutcomeMeasure":
+      return (
+        trial.protocolSection.outcomesModule.primaryOutcomes?.[0]?.measure || ""
+      );
+    case "enrollmentCount":
+      return (
+        trial.protocolSection.designModule.enrollmentInfo?.count?.toString() ||
+        ""
+      );
+    case "studyType":
+      return trial.protocolSection.designModule.studyType || "";
+    case "sex":
+      return trial.protocolSection.eligibilityModule.sex || "";
+    case "minimumAge":
+      return trial.protocolSection.eligibilityModule.minimumAge || "";
+    case "maximumAge":
+      return trial.protocolSection.eligibilityModule.maximumAge || "";
+    case "conditions":
+      return (
+        trial.protocolSection.conditionsModule?.conditions?.join(" ") || ""
+      );
+    case "locations":
+      return (
+        trial.protocolSection.contactsLocationsModule.locations
+          ?.map((loc) => loc.facility)
+          .join(", ") || ""
+      );
     default:
       return "";
   }
