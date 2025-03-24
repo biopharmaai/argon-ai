@@ -18,12 +18,12 @@ export function useSelectionState() {
 
       const res = await fetch(url.toString());
       const data = await res.json();
-      if (Array.isArray(data)) {
-        const allIds = data.map(
-          (d: ClinicalTrial) => d.protocolSection.identificationModule.nctId,
-        );
-        setSelectedIds(allIds);
+
+      if (Array.isArray(data.nctIds)) {
+        setSelectedIds(data.nctIds);
         setSelectAllAcrossPages(true);
+      } else {
+        console.error("Unexpected format for nctIds in API response:", data);
       }
     } catch (e) {
       console.error("Failed to fetch all matching IDs:", e);
