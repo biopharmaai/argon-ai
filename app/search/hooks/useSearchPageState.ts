@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import qs from "qs";
 import { ClinicalTrial } from "@/types/clinicalTrials";
 import type { FilterToken } from "../components/GuidedFilterBar";
-import { columnsDefinitions } from "../components/SearchResultsTable";
+import { columnsDefinitions } from "@/lib/constants";
 import { SortToken } from "../components/GuidedSortBar";
 import type { ColumnConfig } from "@/types/columns";
 

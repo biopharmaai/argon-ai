@@ -11,7 +11,10 @@ export const columnsDefinitions: ColumnConfig[] = [
     accessor: (row: ClinicalTrial) =>
       row.protocolSection.identificationModule.nctId,
     cell: (val: string) => (
-      <Link href={`/study/${val}`} className="text-blue-600 hover:underline">
+      <Link
+        href={`/clinical-trial/${val}`}
+        className="text-blue-600 hover:underline"
+      >
         {val}
       </Link>
     ),
@@ -92,7 +95,11 @@ export const columnsDefinitions: ColumnConfig[] = [
     id: "enrollmentCount",
     label: "Enrollment Count",
     accessor: (row: ClinicalTrial) =>
-      row.protocolSection.designModule.enrollmentInfo?.count || "",
+      row.protocolSection.designModule.enrollmentInfo?.count
+        ? Number(
+            row.protocolSection.designModule.enrollmentInfo?.count,
+          ).toLocaleString()
+        : "",
     enabled: false,
   },
   {

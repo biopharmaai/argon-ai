@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ClinicalTrial } from "@/types/clinicalTrials";
-import { useDownloadClinicalTrial } from "./useDownloadClinicalTrial";
+import { useDownloadClinicalTrial } from "@/hooks/useDownloadClinicalTrial";
 
 export function useClinicalTrial(nctId: string | undefined) {
   const [trial, setTrial] = useState<ClinicalTrial | null>(null);
@@ -18,7 +18,7 @@ export function useClinicalTrial(nctId: string | undefined) {
     if (!nctId) return;
     const getClinicalTrial = async () => {
       try {
-        const res = await fetch(`/api/clinical-study/${nctId}`);
+        const res = await fetch(`/api/clinical-trial/${nctId}`);
         if (!res.ok) throw new Error("Not found");
         const json = await res.json();
         setTrial(json.trial);

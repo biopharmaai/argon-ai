@@ -50,14 +50,14 @@ export default function ClinicalTrialDetails({
     <div className="mx-auto max-w-5xl space-y-6 p-6">
       <div>
         <Button variant="outline" onClick={() => setOpen(true)}>
-          Export Clinical Study
+          Export Clinical Trial
         </Button>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Export Clinical Study</DialogTitle>
+            <DialogTitle>Export Clinical Trial</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <RadioGroup

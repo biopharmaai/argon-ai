@@ -1,5 +1,10 @@
 "use client";
 
+import { useState } from "react";
+import _data from "@/ctg-studies.json";
+import { ClinicalTrial } from "@/types/clinicalTrials";
+const data = _data as ClinicalTrial[];
+
 import SearchBar from "./SearchBar";
 import LimitDropdown from "./LimitDropdown";
 import Pagination from "./Pagination";
@@ -30,6 +35,30 @@ import { useDialogState } from "../hooks/useDialogState";
 import { useDisplayColumns } from "../hooks/useDisplayColumns";
 import { useSelectionState } from "../hooks/useSelectionState";
 
+function toCsv(
+  data: any[],
+  columns: { id: string; accessor: (row: any) => string }[],
+) {
+  const header = columns.map((col) => col.id).join(",");
+  const rows = data.map((row) =>
+    columns
+      .map((col) => `"${(col.accessor(row) ?? "").replace(/"/g, '""')}"`)
+      .join(","),
+  );
+  return [header, ...rows].join("\n");
+}
+
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 export default function SearchPageContent() {
   const { open, handleOpen, handleClose } = useDialogState();
   const {
@@ -54,6 +83,48 @@ export default function SearchPageContent() {
     onLimitChange,
     handlePageChange,
   } = useSearchPageState();
+
+  const [format, setFormat] = useState<"json" | "csv">("json");
+  const [zipEach, setZipEach] = useState(false);
+  const selectedTrials = data.filter((d) =>
+    selectedIds.includes(d.protocolSection.identificationModule.nctId),
+  );
+
+  const handleBulkDownload = async () => {
+    const date = new Date().toISOString().split("T")[0];
+    const trials = data.filter((d) =>
+      selectedIds.includes(d.protocolSection.identificationModule.nctId),
+    );
+
+    if (zipEach) {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+
+      for (const trial of trials) {
+        const nctId = trial.protocolSection.identificationModule.nctId;
+        const content =
+          format === "json"
+            ? JSON.stringify(trial, null, 2)
+            : toCsv([trial], selectedColumns);
+        zip.file(`${nctId}.${format}`, content);
+      }
+
+      const blob = await zip.generateAsync({ type: "blob" });
+      triggerDownload(blob, `${date}-study-${format}.zip`);
+    } else {
+      const content =
+        format === "json"
+          ? JSON.stringify(trials, null, 2)
+          : toCsv(trials, selectedColumns);
+      const blob = new Blob([content], {
+        type:
+          format === "json" ? "application/json" : "text/csv;charset=utf-8;",
+      });
+      triggerDownload(blob, `${date}-study.${format}`);
+    }
+
+    handleClose();
+  };
 
   return (
     <div className="flex flex-col">
@@ -169,13 +240,47 @@ export default function SearchPageContent() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Export studies</DialogTitle>
+                    <DialogTitle>Export Clinical Trials</DialogTitle>
                     <DialogDescription>
                       Exporting {selectedIds.length} studies...
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="text-muted-foreground mt-4 text-sm">
-                    You can customize export functionality here.
+
+                  <div className="mt-4 space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Format</label>
+                      <select
+                        className="w-full rounded border px-3 py-2 text-sm"
+                        value={format}
+                        onChange={(e) =>
+                          setFormat(e.target.value as "json" | "csv")
+                        }
+                      >
+                        <option value="csv">CSV</option>
+                        <option value="json">JSON</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="zipEach"
+                        type="checkbox"
+                        checked={zipEach}
+                        onChange={(e) => setZipEach(e.target.checked)}
+                      />
+                      <label htmlFor="zipEach" className="text-sm">
+                        Zip individual studies into separate files
+                      </label>
+                    </div>
+
+                    <Button
+                      className="w-full"
+                      onClick={handleBulkDownload}
+                      disabled={selectedIds.length === 0}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Download
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>
