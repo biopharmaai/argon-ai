@@ -92,8 +92,8 @@ export default function ColumnSelector({
     let fieldIds: string[] = [];
 
     if (typeof query.fields === "string") {
-      fieldIds = query.fields.split(",");
-      setHasNoFields(false);
+      fieldIds = query.fields.split(",").filter(Boolean);
+      setHasNoFields(fieldIds.length === 0);
     } else {
       setHasNoFields(true);
     }
@@ -137,6 +137,7 @@ export default function ColumnSelector({
     onColumnsChange(newColumns);
   };
 
+  console.log("hasNoFields", hasNoFields);
   return (
     <div className="w-full space-y-4 rounded-md border bg-white p-4 shadow-sm">
       <h2 className="text-lg font-semibold">Selected Fields</h2>
@@ -151,6 +152,7 @@ export default function ColumnSelector({
                 : { ...col, enabled: false },
             );
             onColumnsChange(updated);
+            setHasNoFields(false);
           }}
         >
           Use Default Fields
@@ -210,6 +212,7 @@ export default function ColumnSelector({
           onClick={() => {
             const reset = columns.map((c) => ({ ...c, enabled: false }));
             onColumnsChange(reset);
+            setHasNoFields(true);
           }}
           className="text-sm text-blue-600"
         >
