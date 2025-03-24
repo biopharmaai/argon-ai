@@ -5,6 +5,7 @@ import qs from "qs";
 import { debounce } from "lodash";
 import { useRouter } from "next/navigation";
 import { defaultFields } from "@/lib/constants";
+import { DEFAULT_DEBOUNCE_TIME } from "@/lib/constants";
 
 const placeholders = [
   "AUTOMATE COMPETITIVE INTELLIGENCE...",
@@ -70,7 +71,7 @@ export function useSearchSuggest() {
   }, []);
 
   const debouncedFetchSuggestions = useMemo(
-    () => debounce(fetchSuggestions, 300),
+    () => debounce(fetchSuggestions, DEFAULT_DEBOUNCE_TIME),
     [fetchSuggestions],
   );
 

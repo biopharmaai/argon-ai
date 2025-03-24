@@ -2,6 +2,8 @@ import { ColumnConfig } from "@/types/columns";
 import { ClinicalTrial } from "@/types/clinicalTrials";
 import Link from "next/link";
 
+export const DEFAULT_DEBOUNCE_TIME = 200;
+
 export const defaultFields = [
   "nctId",
   "briefTitle",

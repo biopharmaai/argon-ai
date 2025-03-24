@@ -7,6 +7,7 @@ import { Search as SearchIcon, X as ClearIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DEFAULT_DEBOUNCE_TIME } from "@/lib/constants";
 
 interface SearchBarProps {
   className?: string;
@@ -28,7 +29,7 @@ export default function SearchBar({
   const [searchTerm, setSearchTerm] = useState(value);
 
   const debouncedChange = useMemo(
-    () => debounce(onSearchChange, 300),
+    () => debounce(onSearchChange, DEFAULT_DEBOUNCE_TIME),
     [onSearchChange],
   );
 
@@ -58,7 +59,6 @@ export default function SearchBar({
         Search studies
       </Label>
       <div className="relative">
-        {/* Search Icon */}
         <SearchIcon
           className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2"
           aria-hidden="true"
