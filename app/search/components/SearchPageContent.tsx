@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import SearchBar from "./SearchBar";
 import LimitDropdown from "./LimitDropdown";
 import Pagination from "./Pagination";
@@ -27,30 +26,35 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useSearchPageState } from "../hooks/useSearchPageState";
+import { useDialogState } from "../hooks/useDialogState";
+import { useDisplayColumns } from "../hooks/useDisplayColumns";
+import { useSelectionState } from "../hooks/useSelectionState";
 
 export default function SearchPageContent() {
-  const [open, setOpen] = useState(false);
+  const { open, handleOpen, handleClose } = useDialogState();
+  const {
+    selectedIds,
+    setSelectedIds,
+    selectAllAcrossPages,
+    fetchAllMatchingIds,
+    clearSelection,
+  } = useSelectionState();
+  const { selectedColumns, handleSelectedColumnsChange } = useDisplayColumns();
 
   const {
     results,
     totalResults,
     totalPages,
     queryString,
-    columnConfig,
     isAdvancedOpen,
     setIsAdvancedOpen,
-    selectedIds,
-    setSelectedIds,
-    selectAllAcrossPages,
-    fetchAllMatchingIds,
-    clearSelection,
     handleSearchChange,
     handleSortTokensChange,
-    handleFieldSelectionChange,
     onFiltersChange,
     onLimitChange,
     handlePageChange,
   } = useSearchPageState();
+
   return (
     <div className="flex flex-col pt-20">
       <div className="mx-auto w-full flex-1">
@@ -80,9 +84,9 @@ export default function SearchPageContent() {
                   </SheetHeader>
                   <div className="space-y-6">
                     <ColumnSelector
-                      columns={columnConfig}
+                      columns={selectedColumns}
                       queryString={queryString}
-                      onColumnsChange={handleFieldSelectionChange}
+                      onColumnsChange={handleSelectedColumnsChange}
                     />
                     <GuidedFilterBar
                       queryString={queryString}
@@ -107,7 +111,10 @@ export default function SearchPageContent() {
 
             {/* Export Button & Selection Info */}
             <div className="flex w-full flex-col gap-2 md:w-2/5 md:items-end md:justify-end">
-              <Dialog open={open} onOpenChange={setOpen}>
+              <Dialog
+                open={open}
+                onOpenChange={(open) => (open ? handleOpen() : handleClose())}
+              >
                 <DialogTrigger asChild>
                   <Button
                     variant="outline"
@@ -126,7 +133,6 @@ export default function SearchPageContent() {
                       Exporting {selectedIds.length} studies...
                     </DialogDescription>
                   </DialogHeader>
-                  {/* Placeholder export options */}
                   <div className="text-muted-foreground mt-4 text-sm">
                     You can customize export functionality here.
                   </div>
