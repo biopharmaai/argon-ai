@@ -80,10 +80,15 @@ export default function ColumnSelector({
   columns,
   onColumnsChange,
 }: ColumnSelectorProps) {
+  console.log("[ColumnSelector] columns prop:", columns);
   const [selectedField, setSelectedField] = React.useState("");
   const [hasNoFields, setHasNoFields] = React.useState(false);
+  const initializedRef = React.useRef(false); // ✅ moved here
 
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
     const query = qs.parse(queryString);
     let fieldIds: string[] = [];
 
@@ -115,6 +120,7 @@ export default function ColumnSelector({
       onColumnsChange(next);
     }
   }, [queryString, columns, onColumnsChange]);
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {

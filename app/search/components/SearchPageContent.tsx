@@ -14,6 +14,7 @@ import GuidedFilterBar from "./GuidedFilterBar";
 import GuidedSortBar from "./GuidedSortBar";
 import { Button } from "@/components/ui/button";
 import { Download, Settings } from "lucide-react";
+import { columnsDefinitions } from "@/lib/constants";
 import {
   Sheet,
   SheetContent,
@@ -50,21 +51,34 @@ export function mergeSelectorWithColumns(
   selectorConfig: ColumnSelectorConfig[],
   fullColumns: ColumnConfig[],
 ): ColumnConfig[] {
-  const enabledSet = new Set(
-    selectorConfig.filter((c) => c.enabled).map((c) => c.id),
-  );
-  const orderMap = new Map(selectorConfig.map((c, i) => [c.id, i]));
+  const fullMap = new Map(fullColumns.map((col) => [col.id, col]));
 
-  return [...fullColumns]
-    .sort((a, b) => {
-      const aOrder = orderMap.get(a.id) ?? Infinity;
-      const bOrder = orderMap.get(b.id) ?? Infinity;
-      return aOrder - bOrder;
-    })
+  // Preserve the order from selectorConfig first
+  const selectedOrdered: ColumnConfig[] = selectorConfig.map((sel) => {
+    const col = fullMap.get(sel.id);
+    return col
+      ? {
+          ...col,
+          enabled: sel.enabled,
+        }
+      : {
+          id: sel.id,
+          label: sel.label,
+          accessor: () => "",
+          enabled: sel.enabled,
+        };
+  });
+
+  // Add any remaining columns from fullColumns not in selectorConfig
+  const selectedIds = new Set(selectorConfig.map((c) => c.id));
+  const remaining = fullColumns
+    .filter((col) => !selectedIds.has(col.id))
     .map((col) => ({
       ...col,
-      enabled: enabledSet.has(col.id),
+      enabled: false,
     }));
+
+  return [...selectedOrdered, ...remaining];
 }
 function toCsv(
   data: ClinicalTrial[],
@@ -102,7 +116,13 @@ export default function SearchPageContent() {
     fetchAllMatchingIds,
     clearSelection,
   } = useSelectionState();
-  const { selectedColumns, handleSelectedColumnsChange } = useDisplayColumns();
+  const {
+    selectedColumns: defaultSelectedColumns,
+    handleSelectedColumnsChange,
+  } = useDisplayColumns();
+  const [selectedColumns, setSelectedColumns] = useState(
+    defaultSelectedColumns,
+  );
 
   const {
     results,
@@ -169,6 +189,11 @@ export default function SearchPageContent() {
     handleClose();
   };
 
+  const handleColumnChange = (cols: ColumnSelectorConfig[]) => {
+    const merged = mergeSelectorWithColumns(cols, columnsDefinitions);
+    setSelectedColumns(merged);
+    handleSelectedColumnsChange(merged);
+  };
   return (
     <div className="flex flex-col">
       <div className="mx-auto w-full flex-1">
@@ -207,11 +232,7 @@ export default function SearchPageContent() {
                     <ColumnSelector
                       columns={toSelectorConfig(selectedColumns)}
                       queryString={queryString}
-                      onColumnsChange={(cols) =>
-                        handleSelectedColumnsChange(
-                          mergeSelectorWithColumns(cols, selectedColumns),
-                        )
-                      }
+                      onColumnsChange={handleColumnChange}
                     />
                     <GuidedFilterBar
                       queryString={queryString}
