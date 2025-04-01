@@ -3,6 +3,9 @@
 ### Deployed Application 
 Go [here](https://argon-ai-git-main-chulanders-projects.vercel.app/)
 
+### Video Demo
+Go [here](https://drive.google.com/file/d/1PRIvxuGaHOqYqbYqRp47mP7ME4e_OorF/view?usp=drive_link)
+
 ### For local development
 ```
 npm install
