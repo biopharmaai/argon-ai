@@ -1,4 +1,18 @@
-# Problem Overview
+## Argon AI - Frontend Coding Challenge
+
+### Deployed Application 
+Go [here](https://argon-ai-git-main-chulanders-projects.vercel.app/)
+
+### For local development
+```
+npm install
+npm run dev
+```
+
+
+
+
+### Problem Overview
 Sarah, an executive at Pharma Co., is in charge of a drug called Luminarex, an immunotherapy which has not yet been approved by the FDA. Sarah’s drug is currently in phase 3 of Clinical Trials, specifically targeting a disease called Non Small Cell Lung Cancer (NSCLC), and Sarah hopes that her drug will be approved soon.
 Sarah wants to develop a better understanding of her competitive landscape. Specifically, she wants to know about other pharma companies with clinical trials in the NSCLC space.
 
